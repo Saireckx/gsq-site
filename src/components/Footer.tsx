@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SERVER_INFO, NAV_LINKS } from '../lib/constants';
-import { ArrowUp, Disc as DiscordIcon, Send, Play } from 'lucide-react';
+import { ArrowUp, Disc as DiscordIcon, Send, Play, Shield } from 'lucide-react';
 import { CopyIpButton } from './CopyIpButton';
 
 export const Footer: React.FC = () => {
@@ -44,6 +44,15 @@ export const Footer: React.FC = () => {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  to="/admin"
+                  className="text-neutral-500 hover:text-amber-400 transition-colors duration-200 flex items-center gap-1.5 group pt-1"
+                >
+                  <Shield className="w-3.5 h-3.5 text-amber-500/70 group-hover:text-amber-400" />
+                  <span>Панель управления</span>
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -110,14 +119,25 @@ export const Footer: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-neutral-400 hover:text-white border border-white/[0.06] hover:border-white/20 transition-all group"
-            title="Вернуться наверх"
-          >
-            <span>Наверх</span>
-            <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
-          </button>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/admin"
+              className="text-neutral-500 hover:text-amber-400 transition-colors flex items-center gap-1"
+              title="Панель администратора"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              <span>Админка</span>
+            </Link>
+
+            <button
+              onClick={scrollToTop}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-neutral-400 hover:text-white border border-white/[0.06] hover:border-white/20 transition-all group"
+              title="Вернуться наверх"
+            >
+              <span>Наверх</span>
+              <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>

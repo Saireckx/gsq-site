@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Check, CreditCard, ShieldCheck, Sparkles, User, ArrowRight, Loader2 } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
+import { X, Check, ShieldCheck, User, ArrowRight, Loader2 } from 'lucide-react';
 
 export interface CheckoutItem {
   id: string;
@@ -16,12 +17,14 @@ interface CheckoutModalProps {
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) => {
+  const { validateCoupon, createOrder } = useStore();
+
   const [nickname, setNickname] = useState('');
   const [customPrice, setCustomPrice] = useState('100');
   const [promoCode, setPromoCode] = useState('');
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'sbp' | 'card' | 'sberpay' | 'crypto'>('sbp');
+  const [paymentMethod, setPaymentMethod] = useState<'СБП' | 'Банковская карта' | 'Т-Банк / СберPay' | 'Криптовалюта'>('СБП');
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState('');
@@ -32,16 +35,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
   const finalPrice = Math.max(1, Math.round(basePrice * (1 - promoDiscount / 100)));
 
   const handleApplyPromo = () => {
-    const cleanCode = promoCode.trim().toUpperCase();
-    if (cleanCode === 'GSQ' || cleanCode === 'VANILLA' || cleanCode === 'START') {
-      setPromoDiscount(15);
-      setPromoMessage('Промокод применён! Скидка 15%');
-    } else if (cleanCode === 'FREE') {
-      setPromoDiscount(25);
-      setPromoMessage('Промокод применён! Скидка 25%');
+    if (!promoCode.trim()) {
+      setPromoDiscount(0);
+      setPromoMessage(null);
+      return;
+    }
+
+    const result = validateCoupon(promoCode, item.id);
+    if (result.valid) {
+      setPromoDiscount(result.discount);
+      setPromoMessage(result.message);
     } else {
       setPromoDiscount(0);
-      setPromoMessage('Неверный или недействительный промокод');
+      setPromoMessage(result.message || 'Недействительный промокод');
     }
   };
 
@@ -52,9 +58,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      setOrderId('GSQ-' + Math.floor(100000 + Math.random() * 900000));
+
+      // Register order in store context (accessible in Admin Panel)
+      const created = createOrder({
+        nickname: nickname.trim(),
+        productId: item.id,
+        productName: item.name,
+        amount: finalPrice,
+        paymentMethod,
+        promoCode: promoDiscount > 0 ? promoCode.trim().toUpperCase() : undefined,
+      });
+
+      setOrderId(created.orderNumber);
       setOrderComplete(true);
-    }, 1200);
+    }, 1000);
   };
 
   return (
@@ -169,7 +186,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                 </p>
               </div>
 
-              {/* Promo Code Input */}
+              {/* Promo Code Input (Validated by StoreContext) */}
               <div>
                 <label className="block text-xs font-medium text-neutral-300 mb-1.5">
                   Промокод (если есть)
@@ -179,7 +196,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                     type="text"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="Промокод (напр. GSQ)"
+                    placeholder="Например: GSQ, TECH10, CODE20"
                     className="w-full px-4 py-2 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:border-white/30 text-sm uppercase font-mono"
                   />
                   <button
@@ -193,7 +210,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                 {promoMessage && (
                   <p
                     className={`mt-1 text-xs ${
-                      promoDiscount > 0 ? 'text-emerald-400' : 'text-neutral-400'
+                      promoDiscount > 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400'
                     }`}
                   >
                     {promoMessage}
@@ -208,10 +225,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                 </label>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {[
-                    { id: 'sbp', label: 'СБП (0% комиссия)', icon: '⚡' },
-                    { id: 'card', label: 'Банковская карта', icon: '💳' },
-                    { id: 'sberpay', label: 'Т-Банк / СберPay', icon: '🏦' },
-                    { id: 'crypto', label: 'Криптовалюта (USDT)', icon: '💎' },
+                    { id: 'СБП', label: 'СБП (0% комиссия)', icon: '⚡' },
+                    { id: 'Банковская карта', label: 'Банковская карта', icon: '💳' },
+                    { id: 'Т-Банк / СберPay', label: 'Т-Банк / СберPay', icon: '🏦' },
+                    { id: 'Криптовалюта', label: 'Криптовалюта (USDT)', icon: '💎' },
                   ].map((method) => (
                     <button
                       key={method.id}
@@ -240,7 +257,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Переход к оплате...</span>
+                      <span>Обработка платежа...</span>
                     </>
                   ) : (
                     <>
@@ -253,7 +270,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
 
               <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-500">
                 <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
-                <span>Безопасная оплата. Привилегия выдаётся в течение 1–2 минут.</span>
+                <span>Безопасная оплата. Привилегия выдаётся автоматически за 1–2 мин.</span>
               </div>
             </form>
           </div>
@@ -264,9 +281,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
               <Check className="w-8 h-8 stroke-[3]" />
             </div>
 
-            <h3 className="text-2xl font-black text-white">Заказ успешно оформлен!</h3>
+            <h3 className="text-2xl font-black text-white">Заказ успешно оплачен!</h3>
             <p className="text-sm text-neutral-400 max-w-sm mx-auto">
-              Услуга <span className="text-white font-semibold">{item.name}</span> будет активирована на ник <span className="text-white font-mono font-semibold">{nickname}</span> автоматически.
+              Услуга <span className="text-white font-semibold">{item.name}</span> отправлена на ник <span className="text-white font-mono font-semibold">{nickname}</span>.
             </p>
 
             <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-left space-y-1.5 text-xs">
@@ -284,7 +301,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-400">Статус:</span>
-                <span className="text-emerald-400 font-semibold">Оплачено</span>
+                <span className="text-emerald-400 font-semibold">Оплачено (добавлено в журнал)</span>
               </div>
             </div>
 

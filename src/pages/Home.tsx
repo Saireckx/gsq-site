@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SERVER_INFO, SERVER_FEATURES } from '../lib/constants';
+import { useStore } from '../context/StoreContext';
 import { CopyIpButton } from '../components/CopyIpButton';
 import { 
   Box, 
@@ -11,7 +12,6 @@ import {
   Mic, 
   Coins, 
   Pickaxe, 
-  ArrowRight, 
   BookOpen, 
   ShoppingBag,
   Layers,
@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 
 export const Home: React.FC = () => {
+  const { serverSettings } = useStore();
+
   const iconMap: Record<string, React.ReactNode> = {
     Pickaxe: <Pickaxe className="w-6 h-6 text-neutral-300" />,
     Cpu: <Cpu className="w-6 h-6 text-neutral-300" />,
@@ -41,18 +43,6 @@ export const Home: React.FC = () => {
 
         {/* Dark Minecraft Vibe Silhouette / Vignette */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#070709]/70 via-[#070709]/85 to-[#070709]" />
-
-        {/* Ambient block texture accents */}
-        <div className="absolute top-20 right-10 w-96 h-96 opacity-10 blur-sm pointer-events-none">
-          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-white fill-current">
-            <rect x="20" y="20" width="40" height="40" fillOpacity="0.3" />
-            <rect x="60" y="20" width="40" height="40" fillOpacity="0.6" />
-            <rect x="100" y="20" width="40" height="40" fillOpacity="0.2" />
-            <rect x="20" y="60" width="40" height="40" fillOpacity="0.5" />
-            <rect x="60" y="60" width="40" height="40" fillOpacity="0.8" />
-            <rect x="100" y="60" width="40" height="40" fillOpacity="0.4" />
-          </svg>
-        </div>
       </div>
 
       {/* Main Hero Section */}
@@ -67,7 +57,7 @@ export const Home: React.FC = () => {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
               <span className="text-xs font-semibold text-neutral-300">
-                Сервер онлайн: <span className="text-white font-mono">{SERVER_INFO.onlinePlayers}</span> из {SERVER_INFO.maxPlayers}
+                Сервер онлайн: <span className="text-white font-mono">{serverSettings.onlinePlayers}</span> из {serverSettings.maxPlayers}
               </span>
               <span className="w-1 h-1 rounded-full bg-neutral-600" />
               <span className="text-xs text-neutral-400 font-mono">TPS 20.0</span>
@@ -97,7 +87,7 @@ export const Home: React.FC = () => {
               <div>
                 <div className="text-xs text-neutral-400 font-medium">Версия игры</div>
                 <div className="text-base sm:text-lg font-mono font-semibold text-white tracking-wide">
-                  {SERVER_INFO.version}
+                  {serverSettings.version}
                 </div>
               </div>
             </div>
@@ -174,9 +164,6 @@ export const Home: React.FC = () => {
       <section className="relative z-10 py-16 border-t border-white/[0.08]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="p-8 sm:p-12 rounded-3xl bg-neutral-900/70 border border-white/10 relative overflow-hidden shadow-2xl">
-            {/* Background glow */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/[0.03] rounded-full blur-3xl pointer-events-none" />
-
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-7 space-y-4">
                 <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
@@ -190,7 +177,7 @@ export const Home: React.FC = () => {
                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 border border-white/20 text-white font-mono text-xs font-bold flex items-center justify-center">
                       1
                     </span>
-                    <span>Запустите Minecraft версии <strong className="text-white">1.21.x</strong> (лицензия или проверенный лаунчер).</span>
+                    <span>Запустите Minecraft версии <strong className="text-white">{serverSettings.version}</strong> (лицензия или проверенный лаунчер).</span>
                   </div>
                   <div className="flex items-start gap-3 text-sm text-neutral-300">
                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 border border-white/20 text-white font-mono text-xs font-bold flex items-center justify-center">
@@ -202,7 +189,7 @@ export const Home: React.FC = () => {
                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 border border-white/20 text-white font-mono text-xs font-bold flex items-center justify-center">
                       3
                     </span>
-                    <span>Вставьте адрес <strong className="text-white font-mono">play.gsq.ru</strong> и нажимайте «Подключиться»!</span>
+                    <span>Вставьте адрес <strong className="text-white font-mono">{serverSettings.ip}</strong> и нажимайте «Подключиться»!</span>
                   </div>
                 </div>
               </div>
@@ -211,7 +198,7 @@ export const Home: React.FC = () => {
                 <div className="p-4 rounded-xl bg-black/60 border border-white/10 text-center space-y-2">
                   <span className="text-xs text-neutral-400">Прямое подключение</span>
                   <div className="font-mono text-lg font-bold text-white tracking-wide">
-                    {SERVER_INFO.ip}
+                    {serverSettings.ip}
                   </div>
                   <CopyIpButton variant="badge" className="w-full justify-center" />
                 </div>

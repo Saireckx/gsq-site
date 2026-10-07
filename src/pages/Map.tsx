@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MAP_URL, SERVER_INFO } from '../lib/constants';
+import { useStore } from '../context/StoreContext';
 import { 
   MapPin, 
   Maximize2, 
@@ -8,22 +8,20 @@ import {
   ExternalLink, 
   Compass, 
   Settings, 
-  Layers,
-  ZoomIn,
-  ZoomOut,
-  Info
+  Link as LinkIcon
 } from 'lucide-react';
 
 export const Map: React.FC = () => {
+  const { serverSettings, updateServerSettings } = useStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [activeDimension, setActiveDimension] = useState<'overworld' | 'nether' | 'end'>('overworld');
-  const [customMapUrl, setCustomMapUrl] = useState(MAP_URL);
   const [isUrlSettingsOpen, setIsUrlSettingsOpen] = useState(false);
+  const [inputUrl, setInputUrl] = useState(serverSettings.mapUrl);
   const [iframeLoading, setIframeLoading] = useState(true);
 
-  // Check if current URL is the placeholder example
-  const isExampleUrl = customMapUrl.includes('map.example.com');
+  const activeMapUrl = serverSettings.mapUrl;
+  const isExampleUrl = activeMapUrl.includes('map.example.com');
 
   const toggleFullscreen = () => {
     const elem = document.getElementById('map-container');
@@ -39,6 +37,12 @@ export const Map: React.FC = () => {
   const handleRefresh = () => {
     setIframeLoading(true);
     setIframeKey((prev) => prev + 1);
+  };
+
+  const handleSaveUrl = () => {
+    updateServerSettings({ mapUrl: inputUrl });
+    handleRefresh();
+    setIsUrlSettingsOpen(false);
   };
 
   return (
@@ -86,7 +90,10 @@ export const Map: React.FC = () => {
 
         {/* Change URL quick button */}
         <button
-          onClick={() => setIsUrlSettingsOpen(!isUrlSettingsOpen)}
+          onClick={() => {
+            setInputUrl(serverSettings.mapUrl);
+            setIsUrlSettingsOpen(!isUrlSettingsOpen);
+          }}
           className="p-2 rounded-xl bg-[#0e0e12]/90 border border-white/15 text-neutral-300 hover:text-white backdrop-blur-md shadow-lg transition-all"
           title="Настройка ссылки на карту"
         >
@@ -116,7 +123,7 @@ export const Map: React.FC = () => {
 
         {/* External Link */}
         <a
-          href={customMapUrl}
+          href={activeMapUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="p-2.5 rounded-xl bg-[#0e0e12]/90 border border-white/15 text-neutral-300 hover:text-white backdrop-blur-md shadow-lg transition-all hover:scale-105"
@@ -141,30 +148,27 @@ export const Map: React.FC = () => {
             </button>
           </div>
           <p className="text-xs text-neutral-400 mb-3">
-            Вы можете изменить ссылку прямо здесь для проверки или указать её в файле <code className="text-white bg-white/10 px-1 py-0.5 rounded font-mono">src/lib/constants.ts</code>:
+            Вставьте ссылку на веб-карту (BlueMap / Dynmap) — она сохранится и сразу откроется:
           </p>
           <div className="space-y-2">
             <input
               type="url"
-              value={customMapUrl}
-              onChange={(e) => setCustomMapUrl(e.target.value)}
+              value={inputUrl}
+              onChange={(e) => setInputUrl(e.target.value)}
               placeholder="https://your-server-map.com"
               className="w-full px-3 py-2 rounded-xl bg-white/[0.05] border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-white/40"
             />
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  handleRefresh();
-                  setIsUrlSettingsOpen(false);
-                }}
+                onClick={handleSaveUrl}
                 className="w-full py-2 rounded-lg bg-white text-black text-xs font-bold hover:bg-neutral-200 transition-colors"
               >
-                Применить
+                Сохранить
               </button>
               <button
                 onClick={() => {
-                  setCustomMapUrl(MAP_URL);
-                  handleRefresh();
+                  setInputUrl('https://map.example.com/?world=gsq');
+                  updateServerSettings({ mapUrl: 'https://map.example.com/?world=gsq' });
                   setIsUrlSettingsOpen(false);
                 }}
                 className="px-3 py-2 rounded-lg bg-white/10 text-neutral-300 text-xs font-medium hover:text-white hover:bg-white/20 transition-colors"
@@ -178,10 +182,9 @@ export const Map: React.FC = () => {
 
       {/* Main Map Viewport / Iframe */}
       <div className="relative w-full h-full flex-1 overflow-hidden">
-        {/* If user hasn't replaced example URL yet, show an interactive placeholder & guidance with dark Minecraft map graphic */}
         {isExampleUrl ? (
           <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950">
-            {/* Dark isometric Minecraft map texture pattern */}
+            {/* Dark isometric texture pattern */}
             <div
               className="absolute inset-0 opacity-40 bg-cover bg-center filter grayscale contrast-125"
               style={{
@@ -189,10 +192,9 @@ export const Map: React.FC = () => {
               }}
             />
 
-            {/* Subtle terrain voxel simulation lines */}
             <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
 
-            {/* Instruction Card in Center */}
+            {/* Instruction Card */}
             <div className="relative z-10 max-w-md mx-4 p-6 sm:p-8 rounded-3xl bg-[#0f0f13]/90 border border-white/15 backdrop-blur-xl shadow-2xl text-center space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto text-white shadow-glow-sm">
                 <Compass className="w-7 h-7" />
@@ -211,9 +213,9 @@ export const Map: React.FC = () => {
                 <div className="text-[11px] text-neutral-500 font-sans font-medium uppercase tracking-wider">
                   Как подключить вашу карту:
                 </div>
-                <div>1. Откройте файл: <span className="text-white font-semibold">src/lib/constants.ts</span></div>
-                <div>2. Замените переменную <span className="text-white font-semibold">MAP_URL</span></div>
-                <div>3. Карта сразу откроется на весь экран!</div>
+                <div>1. Нажмите кнопку «Ввести ссылку сейчас» ниже или откройте Админку</div>
+                <div>2. Вставьте ваш URL BlueMap / Dynmap</div>
+                <div>3. Карта мгновенно откроется во весь экран!</div>
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2">
@@ -225,8 +227,7 @@ export const Map: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    // Try loading a live BlueMap demo for immediate preview
-                    setCustomMapUrl('https://map.wyncraft.com');
+                    updateServerSettings({ mapUrl: 'https://map.wyncraft.com' });
                     handleRefresh();
                   }}
                   className="py-2.5 px-3 rounded-xl bg-white/10 text-white font-medium text-xs hover:bg-white/20 transition-colors"
@@ -238,10 +239,9 @@ export const Map: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* Live Iframe */
           <iframe
             key={iframeKey}
-            src={customMapUrl}
+            src={activeMapUrl}
             title="Онлайн карта сервера GSQ"
             className="w-full h-full border-0 select-none bg-neutral-950"
             allow="fullscreen"

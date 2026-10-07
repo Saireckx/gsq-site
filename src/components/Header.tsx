@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { NAV_LINKS, SERVER_INFO } from '../lib/constants';
+import { NAV_LINKS } from '../lib/constants';
+import { useStore } from '../context/StoreContext';
 import { Menu, X, Wifi, Copy, Check } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const location = useLocation();
+  const { serverSettings } = useStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleCopyIp = async () => {
     try {
-      await navigator.clipboard.writeText(SERVER_INFO.ip);
+      await navigator.clipboard.writeText(serverSettings.ip);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -68,7 +70,7 @@ export const Header: React.FC = () => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="font-medium">
-              <span className="text-white font-semibold">{SERVER_INFO.onlinePlayers}</span> / {SERVER_INFO.maxPlayers}
+              <span className="text-white font-semibold">{serverSettings.onlinePlayers}</span> / {serverSettings.maxPlayers}
             </span>
             <span className="text-neutral-500 text-[10px]">онлайн</span>
           </div>
@@ -87,7 +89,7 @@ export const Header: React.FC = () => {
             ) : (
               <>
                 <Wifi className="w-3.5 h-3.5 text-neutral-400" />
-                <span>{SERVER_INFO.ip}</span>
+                <span>{serverSettings.ip}</span>
                 <Copy className="w-3 h-3 text-neutral-400 ml-0.5" />
               </>
             )}
@@ -98,7 +100,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-2 md:hidden">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/10 text-xs text-neutral-300">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-white font-mono font-medium">{SERVER_INFO.onlinePlayers}</span>
+            <span className="text-white font-mono font-medium">{serverSettings.onlinePlayers}</span>
           </div>
 
           <button
@@ -133,7 +135,7 @@ export const Header: React.FC = () => {
           })}
 
           <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between">
-            <span className="text-xs text-neutral-400 font-mono">{SERVER_INFO.ip}</span>
+            <span className="text-xs text-neutral-400 font-mono">{serverSettings.ip}</span>
             <button
               onClick={handleCopyIp}
               className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs text-white flex items-center gap-1.5"

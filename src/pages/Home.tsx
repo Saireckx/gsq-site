@@ -25,7 +25,7 @@ import {
 
 export const Home: React.FC = () => {
   const { serverSettings } = useStore();
-  const serverStatus = useServerStatus(serverSettings.ip, serverSettings.onlinePlayers, serverSettings.maxPlayers);
+  const serverStatus = useServerStatus(serverSettings.ip);
 
   const [copiedIp, setCopiedIp] = useState<string | null>(null);
 
@@ -74,7 +74,8 @@ export const Home: React.FC = () => {
               <span className="text-xs font-semibold text-neutral-300">
                 {serverStatus.isOnline ? (
                   <>
-                    Сервер онлайн: <span className="text-white font-mono">{Math.max(0, serverStatus.playersOnline)}</span> из {serverStatus.maxPlayers > 0 ? serverStatus.maxPlayers : 100}
+                    Сервер онлайн: <span className="text-white font-mono">{serverStatus.playersOnline}</span>
+                    {serverStatus.maxPlayers && serverStatus.maxPlayers > 0 ? ` из ${serverStatus.maxPlayers}` : ' игроков'}
                   </>
                 ) : (
                   <span className="text-rose-400">Сервер оффлайн / запуск</span>

@@ -33,8 +33,6 @@ export const SERVER_INFO = {
   backupNote: 'Если не работает IP сверху: play.mygsq.fun:25605 или 5.83.140.201:25605',
   version: '26.1.2',
   defaultPort: 25605,
-  onlinePlayers: 0,
-  maxPlayers: 100,
   links: {
     discord: 'https://discord.gg/GbgNVXDdtf',
     tiktok: 'https://www.tiktok.com/@gsq_mc',

@@ -49,8 +49,8 @@ export interface OrderItem {
 interface ServerSettings {
   ip: string;
   version: string;
-  onlinePlayers: number;
-  maxPlayers: number;
+  onlinePlayers?: number;
+  maxPlayers?: number;
   mapUrl: string;
 }
 

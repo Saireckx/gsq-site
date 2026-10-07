@@ -8,7 +8,7 @@ import { Menu, X, Wifi, Copy, Check } from 'lucide-react';
 export const Header: React.FC = () => {
   const location = useLocation();
   const { serverSettings } = useStore();
-  const serverStatus = useServerStatus(serverSettings.ip, serverSettings.onlinePlayers, serverSettings.maxPlayers);
+  const serverStatus = useServerStatus(serverSettings.ip);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -92,12 +92,14 @@ export const Header: React.FC = () => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
               )}
             </span>
-            <span className="font-medium">
+            <span className="font-medium flex items-center">
               {serverStatus.isOnline ? (
                 <>
-                  <span className="text-white font-semibold font-mono">{Math.max(0, serverStatus.playersOnline)}</span>
-                  <span className="text-neutral-500 font-mono"> / {serverStatus.maxPlayers > 0 ? serverStatus.maxPlayers : 100}</span>
-                  <span className="text-emerald-400 text-[10px] ml-1">онлайн</span>
+                  <span className="text-white font-semibold font-mono">{serverStatus.playersOnline}</span>
+                  {serverStatus.maxPlayers && serverStatus.maxPlayers > 0 ? (
+                    <span className="text-neutral-500 font-mono"> / {serverStatus.maxPlayers}</span>
+                  ) : null}
+                  <span className="text-emerald-400 text-[10px] ml-1.5 font-sans">онлайн</span>
                 </>
               ) : (
                 <span className="text-rose-400 text-[11px] font-medium">Оффлайн</span>

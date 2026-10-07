@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
+import { useServerStatus } from '../../hooks/useServerStatus';
 import { Server, MapPin, Check, RotateCcw, ShieldCheck } from 'lucide-react';
 
 export const ServerSettingsTab: React.FC = () => {
   const { serverSettings, updateServerSettings } = useStore();
+  const serverStatus = useServerStatus(serverSettings.ip);
   const [formData, setFormData] = useState(serverSettings);
   const [saved, setSaved] = useState(false);
 
@@ -17,11 +19,9 @@ export const ServerSettingsTab: React.FC = () => {
   const handleReset = () => {
     if (confirm('Сбросить все настройки сервера к значениям по умолчанию?')) {
       const defaults = {
-        ip: 'play.gsq.ru',
-        version: '1.21.x',
-        onlinePlayers: 138,
-        maxPlayers: 250,
-        mapUrl: 'https://map.example.com/?world=gsq',
+        ip: 'play.mygsq.fun',
+        version: '26.1.2',
+        mapUrl: 'https://map.mygsq.fun/',
       };
       setFormData(defaults);
       updateServerSettings(defaults);
@@ -86,34 +86,25 @@ export const ServerSettingsTab: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Текущий онлайн (отображается на сайте)
-            </label>
-            <input
-              type="number"
-              min="0"
-              value={formData.onlinePlayers}
-              onChange={(e) => setFormData({ ...formData, onlinePlayers: Number(e.target.value) || 0 })}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1422] border border-slate-800 text-white font-mono text-sm focus:border-amber-400 focus:outline-none"
-              required
-            />
+        {/* Live Server Status Monitor Card */}
+        <div className="p-4 rounded-xl bg-[#0e1422] border border-slate-800 space-y-2">
+          <div className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${serverStatus.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+              <span>Реальный статус сервера (живой опрос по API)</span>
+            </span>
+            <span className="text-xs text-emerald-400 font-mono font-bold">
+              {serverStatus.isOnline ? (
+                <>
+                  {serverStatus.playersOnline}
+                  {serverStatus.maxPlayers && serverStatus.maxPlayers > 0 ? ` / ${serverStatus.maxPlayers}` : ''} онлайн
+                </>
+              ) : 'Оффлайн'}
+            </span>
           </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Максимальный онлайн (слотов)
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.maxPlayers}
-              onChange={(e) => setFormData({ ...formData, maxPlayers: Number(e.target.value) || 100 })}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1422] border border-slate-800 text-white font-mono text-sm focus:border-amber-400 focus:outline-none"
-              required
-            />
-          </div>
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            Онлайн запрашивается напрямую с игрового сервера в реальном времени без накрутки. Обновляется каждые 30 секунд.
+          </p>
         </div>
 
         {/* Live Map URL input */}

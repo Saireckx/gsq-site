@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { NAV_LINKS } from '../lib/constants';
 import { useStore } from '../context/StoreContext';
+import { useServerStatus } from '../hooks/useServerStatus';
 import { Menu, X, Wifi, Copy, Check } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const { serverSettings } = useStore();
+  const serverStatus = useServerStatus(serverSettings.ip, serverSettings.onlinePlayers, serverSettings.maxPlayers);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -24,17 +27,31 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#070709]/85 backdrop-blur-xl transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Left: Brand Logo */}
+        {/* Left: Brand Logo + Status Dot matching requirement */}
         <div className="flex items-center gap-8">
           <Link
             to="/"
-            className="flex items-center gap-2 group focus:outline-none"
+            className="flex items-center gap-2.5 group focus:outline-none"
             aria-label="GSQ Главная"
+            title={serverStatus.isOnline ? `Сервер онлайн (${serverStatus.playersOnline} игроков)` : 'Сервер оффлайн'}
           >
             <span className="text-2xl sm:text-3xl font-black tracking-tighter text-white group-hover:text-neutral-200 transition-colors drop-shadow-sm">
               GSQ
             </span>
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-white opacity-40 group-hover:opacity-100 transition-opacity" />
+
+            {/* Glowing Status Dot next to GSQ logo */}
+            <span className="relative flex h-2.5 w-2.5">
+              {serverStatus.isOnline ? (
+                <>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                </>
+              ) : (
+                <>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 shadow-[0_0_6px_#f43f5e]"></span>
+                </>
+              )}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -61,18 +78,31 @@ export const Header: React.FC = () => {
           </nav>
         </div>
 
-        {/* Right: Server Status & Quick Actions */}
+        {/* Right: Real Server Status & Quick Actions */}
         <div className="hidden sm:flex items-center gap-3">
           {/* Server Online Badge */}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-neutral-300">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              {serverStatus.isOnline ? (
+                <>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </>
+              ) : (
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+              )}
             </span>
             <span className="font-medium">
-              <span className="text-white font-semibold">{serverSettings.onlinePlayers}</span> / {serverSettings.maxPlayers}
+              {serverStatus.isOnline ? (
+                <>
+                  <span className="text-white font-semibold font-mono">{serverStatus.playersOnline}</span>
+                  <span className="text-neutral-500 font-mono"> / {serverStatus.maxPlayers}</span>
+                  <span className="text-emerald-400 text-[10px] ml-1">онлайн</span>
+                </>
+              ) : (
+                <span className="text-rose-400 text-[11px] font-medium">Оффлайн</span>
+              )}
             </span>
-            <span className="text-neutral-500 text-[10px]">онлайн</span>
           </div>
 
           {/* Quick Copy IP Button */}
@@ -99,8 +129,10 @@ export const Header: React.FC = () => {
         {/* Mobile Hamburger Button */}
         <div className="flex items-center gap-2 md:hidden">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/10 text-xs text-neutral-300">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-white font-mono font-medium">{serverSettings.onlinePlayers}</span>
+            <span className={`inline-block w-1.5 h-1.5 rounded-full ${serverStatus.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
+            <span className="text-white font-mono font-medium">
+              {serverStatus.isOnline ? serverStatus.playersOnline : 'off'}
+            </span>
           </div>
 
           <button

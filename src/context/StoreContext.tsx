@@ -391,13 +391,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [serverSettings, setServerSettings] = useState<ServerSettings>(() => {
     try {
       const saved = localStorage.getItem('gsq_server_settings');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.version === '1.21.x' || parsed.ip === 'play.gsq.ru') {
+          parsed.version = '26.1.2';
+          parsed.ip = 'mc.gsq.ru';
+        }
+        return parsed;
+      }
     } catch {}
     return {
-      ip: DEFAULT_SERVER_INFO.ip,
-      version: DEFAULT_SERVER_INFO.version,
-      onlinePlayers: DEFAULT_SERVER_INFO.onlinePlayers,
-      maxPlayers: DEFAULT_SERVER_INFO.maxPlayers,
+      ip: 'mc.gsq.ru',
+      version: '26.1.2',
+      onlinePlayers: 0,
+      maxPlayers: 100,
       mapUrl: DEFAULT_MAP_URL,
     };
   });

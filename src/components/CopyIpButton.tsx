@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { SERVER_INFO } from '../lib/constants';
+import { useStore } from '../context/StoreContext';
 
 interface CopyIpButtonProps {
   variant?: 'card' | 'badge' | 'minimal';
@@ -8,18 +8,18 @@ interface CopyIpButtonProps {
 }
 
 export const CopyIpButton: React.FC<CopyIpButtonProps> = ({ variant = 'card', className = '' }) => {
+  const { serverSettings } = useStore();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(SERVER_INFO.ip);
+      await navigator.clipboard.writeText(serverSettings.ip);
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
     } catch {
-      // Fallback
       const textArea = document.createElement('textarea');
-      textArea.value = SERVER_INFO.ip;
+      textArea.value = serverSettings.ip;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -43,7 +43,7 @@ export const CopyIpButton: React.FC<CopyIpButtonProps> = ({ variant = 'card', cl
           title="Скопировать IP"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
-          <span className="font-mono">{SERVER_INFO.ip}</span>
+          <span className="font-mono">{serverSettings.ip}</span>
         </button>
       </div>
     );
@@ -61,7 +61,7 @@ export const CopyIpButton: React.FC<CopyIpButtonProps> = ({ variant = 'card', cl
           onClick={handleCopy}
           className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-sm font-medium text-neutral-200 hover:text-white group ${className}`}
         >
-          <span className="font-mono">{SERVER_INFO.ip}</span>
+          <span className="font-mono">{serverSettings.ip}</span>
           {copied ? (
             <Check className="w-4 h-4 text-emerald-400 transition-transform scale-110" />
           ) : (
@@ -72,7 +72,7 @@ export const CopyIpButton: React.FC<CopyIpButtonProps> = ({ variant = 'card', cl
     );
   }
 
-  // Card variant matching the hero card on reference image
+  // Card variant matching hero card
   return (
     <div
       onClick={handleCopy}
@@ -98,7 +98,7 @@ export const CopyIpButton: React.FC<CopyIpButtonProps> = ({ variant = 'card', cl
         <div>
           <div className="text-xs text-neutral-400 font-medium">IP-адрес</div>
           <div className="text-base sm:text-lg font-mono font-semibold text-white tracking-wide flex items-center gap-2">
-            {SERVER_INFO.ip}
+            {serverSettings.ip}
           </div>
         </div>
       </div>

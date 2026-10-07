@@ -117,6 +117,14 @@ export const Home: React.FC = () => {
             <CopyIpButton variant="card" />
           </div>
 
+          {/* Backup IP note on Slide 1 */}
+          <div className="text-xs text-neutral-400 font-mono -mt-8 mb-10 flex items-center gap-2">
+            <span className="text-neutral-500">Если не работает IP сверху:</span>
+            <span className="text-neutral-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">play.mygsq.fun:25605</span>
+            <span className="text-neutral-500">или</span>
+            <span className="text-neutral-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">5.83.140.201:25605</span>
+          </div>
+
           {/* Action Navigation Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <a
@@ -295,8 +303,8 @@ export const Home: React.FC = () => {
 
                   {/* Backup IPs */}
                   <div className="space-y-2 pt-1">
-                    <span className="text-[11px] text-neutral-500 font-medium block">
-                      Запасные адреса (если основной недоступен):
+                    <span className="text-[11px] text-neutral-400 font-medium block leading-relaxed">
+                      Если не работает IP сверху: <strong className="text-white font-mono font-semibold">play.mygsq.fun:25605</strong> или <strong className="text-white font-mono font-semibold">5.83.140.201:25605</strong>
                     </span>
 
                     {SERVER_INFO.backupIps.slice(1).map((backup) => (

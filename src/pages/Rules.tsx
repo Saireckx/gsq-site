@@ -60,6 +60,21 @@ export const Rules: React.FC = () => {
         </div>
       </div>
 
+      {/* Rules Notice Banner matching user prompt */}
+      <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-neutral-900/80 border border-white/10 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-sm sm:text-base font-semibold text-white">
+            Соблюдение правил обязательно для всех игроков — незнание не освобождает от ответственности.
+          </p>
+          <p className="text-xs text-rose-400 font-medium">
+            Абьюз правил — запрещён
+          </p>
+        </div>
+        <div className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-bold text-neutral-200 tracking-wider uppercase flex-shrink-0">
+          Сервер 12+
+        </div>
+      </div>
+
       {/* Main Grid: Left Sidebar + Center Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* Left Sticky Sidebar (matching Screenshot 2) */}

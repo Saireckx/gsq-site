@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { CheckoutModal, CheckoutItem } from '../components/CheckoutModal';
-import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Sword, Info } from 'lucide-react';
-import { CubeIcon } from '../components/admin/CubeIcon';
+import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Clock } from 'lucide-react';
 
 export const Store: React.FC = () => {
-  const { products } = useStore();
+  const { products, orders } = useStore();
   const [selectedItem, setSelectedItem] = useState<CheckoutItem | null>(null);
+  const [visibleOrdersCount, setVisibleOrdersCount] = useState(6);
 
   // Subscriptions (SUB and SUB+ only)
   const subscriptionProducts = products.filter(
@@ -167,7 +167,6 @@ export const Store: React.FC = () => {
                   <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-105 group-hover:bg-white/10 transition-all">
                     {getServiceIcon(service.type, service.id)}
                   </div>
-                  <CubeIcon color={service.iconColor} size="sm" />
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-2">
@@ -200,17 +199,84 @@ export const Store: React.FC = () => {
         </div>
       </div>
 
-      {/* Info banner */}
-      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.08] flex items-start gap-3.5 text-xs text-neutral-400">
-        <Info className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <p className="text-neutral-300 font-medium">
-            Правила и условия предоставления услуг:
-          </p>
-          <p>
-            Все средства идут на оплату выделенного сервера, защиту от DDoS-атак и развитие сообщества. Привилегии не нарушают ванильный игровой баланс.
-          </p>
+      {/* Recent Purchases Block */}
+      <div className="mb-14">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+              <Clock className="w-3.5 h-3.5 text-neutral-300" />
+              <span>Лента активности</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Последние покупки
+            </h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Игроки, которые недавно поддержали сервер и получили свои привилегии.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs text-neutral-300 self-start sm:self-center shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Обновляется онлайн</span>
+          </div>
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {orders.slice(0, visibleOrdersCount).map((order) => (
+            <div
+              key={order.id}
+              className="p-4 rounded-2xl bg-neutral-900/60 hover:bg-neutral-850/80 border border-white/[0.08] hover:border-white/20 transition-all duration-200 shadow-sm flex items-center justify-between gap-3 group"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Player Avatar */}
+                <div className="w-10 h-10 rounded-xl bg-neutral-800 border border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
+                  <img
+                    src={`https://mc-heads.net/avatar/${encodeURIComponent(order.nickname)}/40`}
+                    alt={order.nickname}
+                    className="w-full h-full object-cover relative z-10"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.opacity = '0';
+                    }}
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center text-xs font-bold font-mono text-white bg-white/10">
+                    {order.nickname.slice(0, 2).toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-white truncate group-hover:text-neutral-100">
+                    {order.nickname}
+                  </div>
+                  <div className="text-xs text-neutral-400 truncate flex items-center gap-1.5">
+                    <span>{order.productName}</span>
+                    <span className="text-neutral-600">•</span>
+                    <span className="text-[11px] text-neutral-500">{order.createdAt}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-right flex-shrink-0">
+                <div className="text-sm font-mono font-bold text-emerald-400">
+                  +{Math.round(order.amount)} ₽
+                </div>
+                <div className="text-[10px] text-neutral-500 font-medium">
+                  {order.paymentMethod}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {orders.length > visibleOrdersCount && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setVisibleOrdersCount((prev) => prev + 6)}
+              className="px-5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-semibold transition-all"
+            >
+              Показать ещё покупки ({orders.length - visibleOrdersCount})
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Checkout Modal */}

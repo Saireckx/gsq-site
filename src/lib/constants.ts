@@ -4,7 +4,8 @@
  * =========================================================================
  */
 
-export const MAP_URL = 'https://map.example.com/?world=gsq';
+// Прямая ссылка на онлайн карту сервера
+export const MAP_URL = 'https://map.mygsq.fun/';
 
 export interface NavLink {
   to: string;
@@ -35,9 +36,7 @@ export const SERVER_INFO = {
   maxPlayers: 100,
   links: {
     discord: 'https://discord.gg/GbgNVXDdtf',
-    telegram: 'https://t.me/gsq_mc',
-    vk: 'https://vk.com/gsq_mc',
-    youtube: 'https://youtube.com/@gsq_mc',
+    tiktok: 'https://www.tiktok.com/@gsq_mc',
   },
 };
 
@@ -311,7 +310,7 @@ export const SERVER_FEATURES = [
   },
   {
     title: 'Дружное комьюнити',
-    description: 'Совместные масштабные постройки, ивенты, помощь новичкам и ламповые посиделки у ночного костра.',
+    description: 'Совместные масштабные постройки, клановые проекты, ивенты, помощь новичкам и ламповые посиделки у ночного костра.',
     icon: 'Users',
   },
 ];

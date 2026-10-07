@@ -140,38 +140,6 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     ],
   },
   {
-    id: 'sub-1m',
-    numericId: 1060506,
-    name: 'Подписка SUB (1 месяц)',
-    price: 139,
-    oldPrice: 159,
-    period: '1 месяц',
-    type: 'Привилегия',
-    command: 'lp user {user} parent addtemp sub 30d',
-    description: 'Ежемесячная базовая подписка для комфортной игры.',
-    category: 'Подписки',
-    iconColor: 'magenta',
-    hidden: false,
-    offlineAllowed: true,
-    features: ['Все возможности SUB на 30 дней'],
-  },
-  {
-    id: 'sub-plus-1m',
-    numericId: 1060507,
-    name: 'Подписка SUB+ (1 месяц)',
-    price: 289,
-    oldPrice: 329,
-    period: '1 месяц',
-    type: 'Привилегия',
-    command: 'lp user {user} parent addtemp sub+ 30d',
-    description: 'Ежемесячная премиальная подписка со всеми возможностями.',
-    category: 'Подписки',
-    iconColor: 'red',
-    hidden: false,
-    offlineAllowed: true,
-    features: ['Все возможности SUB+ на 30 дней'],
-  },
-  {
     id: 'unban',
     numericId: 1060511,
     name: 'Разбан',
@@ -215,21 +183,6 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     hidden: false,
     offlineAllowed: true,
     features: ['Благодарность в чате и значок мецената в Discord'],
-  },
-  {
-    id: 'diamond-sword',
-    numericId: 1060513,
-    name: 'Алмазный меч',
-    price: 10,
-    period: '1 шт.',
-    type: 'Предмет',
-    command: 'give {user} minecraft:diamond_sword {amount}',
-    description: 'Убивайте мобов эффективней! Зачарованный алмазный меч.',
-    category: 'Предметы',
-    iconColor: 'sword',
-    hidden: false,
-    offlineAllowed: true,
-    features: ['Алмазный меч с прочностью III'],
   },
 ];
 
@@ -364,7 +317,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [products, setProducts] = useState<ProductItem[]>(() => {
     try {
       const saved = localStorage.getItem('gsq_products');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: ProductItem[] = JSON.parse(saved);
+        const cleaned = parsed.filter(
+          (p) => p.id !== 'diamond-sword' && !p.id.includes('-1m')
+        );
+        if (cleaned.length > 0) return cleaned;
+      }
     } catch {}
     return DEFAULT_PRODUCTS;
   });
@@ -397,6 +356,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           parsed.version = '26.1.2';
           parsed.ip = 'mc.gsq.ru';
         }
+        if (!parsed.mapUrl || parsed.mapUrl.includes('example.com')) {
+          parsed.mapUrl = 'https://map.mygsq.fun/';
+        }
         return parsed;
       }
     } catch {}
@@ -405,7 +367,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       version: '26.1.2',
       onlinePlayers: 0,
       maxPlayers: 100,
-      mapUrl: DEFAULT_MAP_URL,
+      mapUrl: 'https://map.mygsq.fun/',
     };
   });
 

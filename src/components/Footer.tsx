@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SERVER_INFO, NAV_LINKS } from '../lib/constants';
-import { ArrowUp, Disc as DiscordIcon, Send, Play, Shield } from 'lucide-react';
+import { ArrowUp, Disc as DiscordIcon, Shield } from 'lucide-react';
 import { CopyIpButton } from './CopyIpButton';
 
 export const Footer: React.FC = () => {
@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
               <span className="w-1.5 h-1.5 rounded-full bg-white opacity-40" />
             </div>
             <p className="text-sm text-neutral-400 max-w-md leading-relaxed">
-              Ванильный сервер Minecraft нового поколения. Настоящая ламповая атмосфера, честная экономика без разрушающего баланс доната и стабильный TPS 20.0.
+              GSQ — ванильный сервер Minecraft с ламповой атмосферой, закрытым доступом по заявкам и честной экономикой на АР.
             </p>
             <div className="pt-2">
               <CopyIpButton variant="badge" />
@@ -56,54 +56,34 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Col 3: Community & Socials */}
+          {/* Col 3: Community (Discord & TikTok ONLY) */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-200 mb-4">
               Сообщество
             </h4>
-            <ul className="space-y-2.5 text-sm">
+            <ul className="space-y-3 text-sm">
               <li>
                 <a
                   href={SERVER_INFO.links.discord}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-2 group"
+                  className="hover:text-white transition-colors flex items-center gap-2.5 group"
                 >
-                  <DiscordIcon className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors" />
+                  <DiscordIcon className="w-4 h-4 text-sky-400 group-hover:text-white transition-colors" />
                   <span>Discord Сервер</span>
                 </a>
               </li>
               <li>
                 <a
-                  href={SERVER_INFO.links.telegram}
+                  href={SERVER_INFO.links.tiktok}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-2 group"
+                  className="hover:text-white transition-colors flex items-center gap-2.5 group"
                 >
-                  <Send className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors" />
-                  <span>Telegram Канал</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href={SERVER_INFO.links.vk}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-2 group"
-                >
-                  <span className="text-xs font-bold px-1 py-0.5 rounded bg-white/10 text-neutral-300 group-hover:text-white">VK</span>
-                  <span>Группа ВКонтакте</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href={SERVER_INFO.links.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-2 group"
-                >
-                  <Play className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors" />
-                  <span>YouTube</span>
+                  <svg className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors fill-current" viewBox="0 0 24 24">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.47 6.27 6.27 0 0 0 1.86-4.47V8.71a8.18 8.18 0 0 0 4.78 1.52V6.78a4.85 4.85 0 0 1-.87-.09z"/>
+                  </svg>
+                  <span>TikTok</span>
                 </a>
               </li>
             </ul>

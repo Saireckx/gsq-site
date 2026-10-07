@@ -8,21 +8,27 @@ export const Store: React.FC = () => {
   const { products } = useStore();
   const [selectedItem, setSelectedItem] = useState<CheckoutItem | null>(null);
 
-  // Subscriptions (SUB, SUB+, etc.)
+  // Subscriptions (SUB and SUB+ only)
   const subscriptionProducts = products.filter(
-    (p) => !p.hidden && (p.category === 'Подписки' || p.id === 'sub' || p.id === 'sub-plus') && !p.id.includes('-1m')
+    (p) => !p.hidden && (p.id === 'sub' || p.id === 'sub-plus')
   );
 
-  // Additional services & items (unban, unmute, donate, diamond-sword, etc.)
+  // Additional services (strictly unban, unmute, donate - no duplicates, no sword)
   const additionalProducts = products.filter(
-    (p) => !p.hidden && !subscriptionProducts.some((sub) => sub.id === p.id)
+    (p) =>
+      !p.hidden &&
+      p.id !== 'sub' &&
+      p.id !== 'sub-plus' &&
+      p.id !== 'diamond-sword' &&
+      !p.id.includes('-1m') &&
+      !p.name.toLowerCase().includes('sub') &&
+      !p.name.toLowerCase().includes('меч')
   );
 
-  const getServiceIcon = (type: string, id: string) => {
+  const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
     if (id === 'unmute') return <MessageSquare className="w-5 h-5 text-neutral-300" />;
     if (id === 'donate') return <Heart className="w-5 h-5 text-neutral-300" />;
-    if (id === 'diamond-sword' || type === 'Предмет') return <Sword className="w-5 h-5 text-neutral-300" />;
     return <Sparkles className="w-5 h-5 text-neutral-300" />;
   };
 
@@ -138,14 +144,14 @@ export const Store: React.FC = () => {
         })}
       </div>
 
-      {/* Additional Services & Items Section */}
+      {/* Additional Services Section matching screenshot 3 */}
       <div className="mb-14">
         <div className="mb-8">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Дополнительные услуги и товары
+            Дополнительные услуги
           </h2>
           <p className="mt-1 text-sm text-neutral-400">
-            Полезные услуги и предметы для комфортной игры.
+            Полезные услуги для комфортной игры.
           </p>
         </div>
 

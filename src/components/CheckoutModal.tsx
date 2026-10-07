@@ -29,6 +29,26 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState('');
 
+  // Reset order state when item changes or modal reopens
+  React.useEffect(() => {
+    if (item) {
+      setOrderComplete(false);
+      setLoading(false);
+      setPromoCode('');
+      setPromoDiscount(0);
+      setPromoMessage(null);
+    }
+  }, [item?.id]);
+
+  const handleModalClose = () => {
+    setOrderComplete(false);
+    setLoading(false);
+    setPromoCode('');
+    setPromoDiscount(0);
+    setPromoMessage(null);
+    onClose();
+  };
+
   if (!item) return null;
 
   const basePrice = item.isCustomAmount ? Math.max(50, Number(customPrice) || 50) : item.price;
@@ -75,14 +95,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      onClick={handleModalClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+    >
       <div
         className="relative w-full max-w-lg rounded-2xl bg-[#0f0f13] border border-white/15 p-6 sm:p-8 shadow-2xl text-white animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={handleModalClose}
           className="absolute top-5 right-5 p-2 rounded-xl text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/10 transition-colors"
           aria-label="Закрыть"
         >
@@ -307,7 +330,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
 
             <div className="pt-4">
               <button
-                onClick={onClose}
+                onClick={handleModalClose}
                 className="w-full py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm transition-all shadow-glow-sm"
               >
                 Вернуться на сайт

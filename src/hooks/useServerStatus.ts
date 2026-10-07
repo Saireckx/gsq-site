@@ -11,8 +11,8 @@ interface ServerStatusResult {
 
 export function useServerStatus(ip: string, fallbackOnline = 0, fallbackMax = 100): ServerStatusResult {
   const [isOnline, setIsOnline] = useState<boolean>(false);
-  const [playersOnline, setPlayersOnline] = useState<number>(fallbackOnline);
-  const [maxPlayers, setMaxPlayers] = useState<number>(fallbackMax);
+  const [playersOnline, setPlayersOnline] = useState<number>(Math.max(0, fallbackOnline));
+  const [maxPlayers, setMaxPlayers] = useState<number>(fallbackMax > 0 ? fallbackMax : 100);
   const [loading, setLoading] = useState<boolean>(true);
   const [motd, setMotd] = useState<string | undefined>(undefined);
 
@@ -34,8 +34,10 @@ export function useServerStatus(ip: string, fallbackOnline = 0, fallbackMax = 10
         const data = await res.json();
         if (data.online) {
           setIsOnline(true);
-          setPlayersOnline(data.players?.online ?? 0);
-          setMaxPlayers(data.players?.max ?? 100);
+          const rawOnline = typeof data.players?.online === 'number' ? data.players.online : 0;
+          const rawMax = typeof data.players?.max === 'number' ? data.players.max : fallbackMax;
+          setPlayersOnline(rawOnline >= 0 ? rawOnline : (fallbackOnline >= 0 ? fallbackOnline : 0));
+          setMaxPlayers(rawMax > 0 ? rawMax : (fallbackMax > 0 ? fallbackMax : 100));
           if (data.motd?.clean) {
             setMotd(Array.isArray(data.motd.clean) ? data.motd.clean.join(' ') : data.motd.clean);
           }

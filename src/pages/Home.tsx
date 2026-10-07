@@ -74,7 +74,7 @@ export const Home: React.FC = () => {
               <span className="text-xs font-semibold text-neutral-300">
                 {serverStatus.isOnline ? (
                   <>
-                    Сервер онлайн: <span className="text-white font-mono">{serverStatus.playersOnline}</span> из {serverStatus.maxPlayers}
+                    Сервер онлайн: <span className="text-white font-mono">{Math.max(0, serverStatus.playersOnline)}</span> из {serverStatus.maxPlayers > 0 ? serverStatus.maxPlayers : 100}
                   </>
                 ) : (
                   <span className="text-rose-400">Сервер оффлайн / запуск</span>
@@ -94,7 +94,7 @@ export const Home: React.FC = () => {
               {SERVER_INFO.tagline}
             </h2>
             <p className="text-base sm:text-lg text-neutral-400 max-w-2xl leading-relaxed font-normal">
-              Присоединяйся к нашему серверу и окунись в атмосферу настоящего лампового выживания. Уютный сервер, верные друзья и масштабные совместные проекты без лишнего мусора.
+              Присоединяйся к нашему серверу и окунись в атмосферу настоящего лампового выживания. Уютный, ванильный сервер, доброе комьюнити и масштабные проекты без лишних плагинов.
             </p>
           </div>
 

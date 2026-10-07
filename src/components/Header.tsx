@@ -95,8 +95,8 @@ export const Header: React.FC = () => {
             <span className="font-medium">
               {serverStatus.isOnline ? (
                 <>
-                  <span className="text-white font-semibold font-mono">{serverStatus.playersOnline}</span>
-                  <span className="text-neutral-500 font-mono"> / {serverStatus.maxPlayers}</span>
+                  <span className="text-white font-semibold font-mono">{Math.max(0, serverStatus.playersOnline)}</span>
+                  <span className="text-neutral-500 font-mono"> / {serverStatus.maxPlayers > 0 ? serverStatus.maxPlayers : 100}</span>
                   <span className="text-emerald-400 text-[10px] ml-1">онлайн</span>
                 </>
               ) : (

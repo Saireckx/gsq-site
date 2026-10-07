@@ -5,8 +5,8 @@
   "homepage": "https://saireckx.github.io/gsq-site",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build && cp -r dist/assets . && rm -rf docs && mkdir -p docs && cp -r dist/* docs/ && cp 404.html docs/ && touch .nojekyll docs/.nojekyll dist/.nojekyll",
+    "dev": "cp index.source.html index.html && vite",
+    "build": "cp index.source.html index.html && tsc && vite build && cp -r dist/* . && rm -rf docs && mkdir -p docs && cp -r dist/* docs/ && cp 404.html docs/ && touch .nojekyll docs/.nojekyll dist/.nojekyll",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist -t"

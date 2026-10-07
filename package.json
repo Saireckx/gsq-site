@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && cp -r dist/* . && rm -rf docs && mkdir -p docs && cp -r dist/* docs/ && cp 404.html docs/ && touch .nojekyll docs/.nojekyll dist/.nojekyll",
+    "build": "tsc && vite build && cp -r dist/assets . && rm -rf docs && mkdir -p docs && cp -r dist/* docs/ && cp 404.html docs/ && touch .nojekyll docs/.nojekyll dist/.nojekyll",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"

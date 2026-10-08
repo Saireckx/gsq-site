@@ -505,6 +505,97 @@ const server = http.createServer(async (req, res) => {
       }
 
       // ---------------------------------------------------------------------
+      // Payment Gateways & Webhooks (AnyPay, Lava, AAIO, FreeKassa, ЮKassa, etc.)
+      // ---------------------------------------------------------------------
+      if (pathname === '/api/payments/create-bill' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { nickname, productId, promoCode, paymentMethod, customAmount } = body;
+        
+        const matchingProduct = (db.products || []).find((p) => p.id === productId);
+        const basePrice = customAmount ? Number(customAmount) : (matchingProduct?.price || 0);
+
+        // Calculate coupon discount
+        let discountPercent = 0;
+        let appliedCoupon = null;
+        if (promoCode) {
+          const cleanCode = String(promoCode).trim().toUpperCase();
+          const coupon = (db.coupons || []).find((c) => c.code === cleanCode && c.active);
+          if (coupon && (!coupon.maxUses || coupon.usesCount < coupon.maxUses)) {
+            discountPercent = coupon.discount;
+            appliedCoupon = coupon;
+          }
+        }
+
+        const finalAmount = Math.max(1, Math.round(basePrice * (1 - discountPercent / 100)));
+        const orderId = `ord-${Date.now()}`;
+        const orderNumber = `GSQ-${Math.floor(100000 + Math.random() * 900000)}`;
+
+        const order = {
+          id: orderId,
+          orderNumber,
+          nickname: String(nickname || 'Игрок').trim(),
+          productId: productId || 'donate',
+          productName: matchingProduct?.name || 'Пожертвование',
+          amount: finalAmount,
+          promoCode: appliedCoupon?.code,
+          discountAmount: discountPercent > 0 ? (basePrice - finalAmount) : 0,
+          paymentMethod: paymentMethod || 'СБП',
+          status: 'pending',
+          createdAt: 'Только что',
+          iconColor: matchingProduct?.iconColor || 'magenta',
+        };
+
+        db.orders.unshift(order);
+        await writeDb(db);
+
+        return sendJson(res, 201, {
+          success: true,
+          order,
+          // Ссылка на платежный шлюз
+          paymentUrl: `/store?order=${orderNumber}&paid=true`,
+        });
+      }
+
+      // Webhook endpoint for Payment Gateways
+      if (pathname === '/api/payments/webhook' && (method === 'POST' || method === 'GET')) {
+        let payload = {};
+        if (method === 'POST') {
+          payload = await parseJsonBody(req);
+        } else {
+          payload = Object.fromEntries(parsedUrl.searchParams.entries());
+        }
+
+        const orderIdent = payload.orderNumber || payload.order_id || payload.orderId || payload.label || payload.merchant_order_id;
+        const matchingOrder = (db.orders || []).find(
+          (o) => o.orderNumber === orderIdent || o.id === orderIdent
+        );
+
+        if (matchingOrder) {
+          matchingOrder.status = 'completed';
+          matchingOrder.paymentId = payload.payment_id || payload.id || `pay-${Date.now()}`;
+          if (payload.pay_method) matchingOrder.paymentMethod = payload.pay_method;
+
+          // Increment coupon usage
+          if (matchingOrder.promoCode) {
+            const cp = (db.coupons || []).find((c) => c.code === matchingOrder.promoCode);
+            if (cp) cp.usesCount = (cp.usesCount || 0) + 1;
+          }
+
+          // Log console notification for Minecraft server operator
+          const targetProduct = (db.products || []).find((p) => p.id === matchingOrder.productId);
+          if (targetProduct?.command) {
+            const mcCommand = targetProduct.command.replace('{user}', matchingOrder.nickname);
+            console.log(`[PAYMENT WEBHOOK] Order ${matchingOrder.orderNumber} PAID! Executing Minecraft command: ${mcCommand}`);
+          }
+
+          await writeDb(db);
+          return sendJson(res, 200, { status: 'OK', message: 'Order completed' });
+        }
+
+        return sendJson(res, 200, { status: 'IGNORED', message: 'Order not found or already processed' });
+      }
+
+      // ---------------------------------------------------------------------
       // Server Settings Endpoints
       // ---------------------------------------------------------------------
       if (pathname === '/api/settings') {

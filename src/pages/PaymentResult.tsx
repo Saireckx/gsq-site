@@ -197,6 +197,26 @@ export const PaymentResult: React.FC = () => {
               </button>
             </div>
 
+            {/* If hat box was purchased and completed, offer instant opening! */}
+            {isCompleted && (currentOrder.productId === 'hat-box' || currentOrder.productName?.toLowerCase().includes('шляп')) && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/40 text-center space-y-3 shadow-lg">
+                <div className="flex items-center justify-center gap-2 text-amber-300 font-bold text-sm">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Коробка со шляпой готова к открытию!</span>
+                </div>
+                <p className="text-xs text-neutral-300">
+                  Испытайте удачу прямо сейчас с рулеткой и заберите свой аксессуар:
+                </p>
+                <Link
+                  to="/store?openBox=true"
+                  className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg flex items-center justify-center gap-2 active:scale-98"
+                >
+                  <Sparkles className="w-4 h-4 text-black" />
+                  <span>🎁 Открыть коробку со шляпой</span>
+                </Link>
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Link

@@ -6,6 +6,8 @@ interface HatBoxModalProps {
   isOpen: boolean;
   onClose: () => void;
   price?: number;
+  availableBoxes?: number;
+  onOpenSuccess?: () => void;
   onBuy?: () => void;
 }
 
@@ -123,6 +125,8 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
   isOpen,
   onClose,
   price = 49,
+  availableBoxes = 0,
+  onOpenSuccess,
   onBuy,
 }) => {
   const [activeTab, setActiveTab] = useState<'open' | 'collection'>('open');
@@ -200,6 +204,9 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
       setWonHat(target);
       setIsOpening(false);
       playWinSound(audioContextRef, target.rarity, soundEnabled);
+      if (onOpenSuccess) {
+        onOpenSuccess();
+      }
     }, 4900);
 
     timerRef.current.push(t1, t2);
@@ -448,13 +455,23 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                 </div>
 
                 <div className="pt-2 w-full flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    onClick={handleStartOpening}
-                    className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-glow-white active:scale-95"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Крутить ещё раз</span>
-                  </button>
+                  {availableBoxes > 0 ? (
+                    <button
+                      onClick={handleStartOpening}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-extrabold text-xs transition-all flex items-center gap-2 shadow-glow-sm active:scale-95"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Открыть следующую (осталось {availableBoxes} шт.)</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleStartOpening}
+                      className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-glow-white active:scale-95"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Крутить ещё раз (Тест)</span>
+                    </button>
+                  )}
                   {onBuy && (
                     <button
                       onClick={() => {
@@ -464,7 +481,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                       className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors flex items-center gap-2 active:scale-95"
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Купить в игре ({price} ₽)</span>
+                      <span>Купить ещё ({price} ₽)</span>
                     </button>
                   )}
                 </div>
@@ -494,31 +511,60 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
             {/* Action Buttons Toolbar */}
             {!wonHat && (
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleStartOpening}
-                  disabled={isOpening}
-                  className={`flex-1 py-3.5 px-6 rounded-2xl font-black text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-glow-sm ${
-                    isOpening
-                      ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
-                      : 'bg-white hover:bg-neutral-200 text-black shadow-glow-white active:scale-95'
-                  }`}
-                >
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>{isOpening ? 'Открываем...' : 'Открыть коробку (Тест)'}</span>
-                </button>
+                {availableBoxes > 0 ? (
+                  <button
+                    type="button"
+                    onClick={handleStartOpening}
+                    disabled={isOpening}
+                    className={`flex-1 py-3.5 px-6 rounded-2xl font-black text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-glow-sm ${
+                      isOpening
+                        ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black shadow-glow-lg active:scale-95'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-black" />
+                    <span>{isOpening ? 'Открываем...' : `🎁 Открыть коробку (${availableBoxes} шт.)`}</span>
+                  </button>
+                ) : (
+                  <>
+                    {onBuy && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onBuy();
+                        }}
+                        className="flex-1 py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>Купить коробку ({price} ₽)</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleStartOpening}
+                      disabled={isOpening}
+                      className={`py-3.5 px-5 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 text-white ${
+                        isOpening ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'
+                      }`}
+                    >
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <span>{isOpening ? 'Крутится...' : 'Тест рулетки'}</span>
+                    </button>
+                  </>
+                )}
 
-                {onBuy && (
+                {availableBoxes > 0 && onBuy && (
                   <button
                     type="button"
                     onClick={() => {
                       onClose();
                       onBuy();
                     }}
-                    className="py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-md active:scale-95 flex items-center gap-2"
+                    className="py-3.5 px-5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 active:scale-95 flex items-center gap-2"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    <span>Купить ключ ({price} ₽)</span>
+                    <span>Купить ещё ({price} ₽)</span>
                   </button>
                 )}
               </div>

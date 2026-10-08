@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { CheckoutModal, CheckoutItem } from '../components/CheckoutModal';
 import { HatBoxModal } from '../components/HatBoxModal';
@@ -28,9 +28,51 @@ export const Store: React.FC = () => {
       !p.name.toLowerCase().includes('меч')
   );
 
+  const DEFAULT_HAT_BOX: ProductItem = {
+    id: 'hat-box',
+    numericId: 1060515,
+    name: 'Коробка со шляпой',
+    price: 49,
+    period: '1 шт.',
+    type: 'Рулетка',
+    command: 'box give {user} hat_box 1',
+    description: 'Кейс с аксессуарами: 17 шляп (70% Базовые, 25% Редкие, 5% Легендарные).',
+    category: 'Кейсы',
+    iconColor: 'gold',
+    hidden: false,
+    offlineAllowed: true,
+    popular: true,
+    features: [
+      '17 уникальных шляп и аксессуаров',
+      'Шанс 5% на легендарную вещь (Нимб, Сигарета, MLG очки)',
+      'Шанс 25% на редкие маски, Алтын и эффекты огня',
+      'Моментальное открытие и примерка',
+    ],
+  };
+
   const [isHatBoxModalOpen, setIsHatBoxModalOpen] = useState(false);
-  const hatBoxProduct = products.find((p) => p.id === 'hat-box');
+  const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
+
+  // Track purchased and opened boxes
+  const [openedBoxesCount, setOpenedBoxesCount] = useState<number>(() => {
+    return Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
+  });
+
+  const completedBoxOrders = orders.filter(
+    (o) => o.productId === 'hat-box' && o.status === 'completed'
+  ).length;
+
+  const availableBoxes = Math.max(0, completedBoxOrders - openedBoxesCount);
+
+  // Auto-open modal if navigated with ?openBox=true
+  useEffect(() => {
+    const search = window.location.hash.split('?')[1] || window.location.search;
+    const params = new URLSearchParams(search);
+    if (params.get('openBox') === 'true') {
+      setIsHatBoxModalOpen(true);
+    }
+  }, []);
 
   const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
@@ -269,35 +311,77 @@ export const Store: React.FC = () => {
                 </div>
               </div>
 
+              {/* If player has unopened boxes, show celebratory banner */}
+              {availableBoxes > 0 && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/40 flex items-center justify-between gap-3 shadow-lg animate-in fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">🎁</span>
+                    <div>
+                      <span className="text-xs font-bold text-amber-300 block">
+                        У вас есть {availableBoxes} {availableBoxes === 1 ? 'оплаченная коробка' : 'оплаченные коробки'}!
+                      </span>
+                      <span className="text-[11px] text-neutral-300 block">
+                        Нажмите кнопку ниже, чтобы открыть коробку и получить шляпу.
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsHatBoxModalOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs transition-all shadow-md active:scale-95 whitespace-nowrap"
+                  >
+                    Крутить ({availableBoxes})
+                  </button>
+                </div>
+              )}
+
               {/* Price and Buttons */}
               <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-black text-white font-mono">
                     {hatBoxPrice} ₽
                   </span>
-                  <span className="text-sm text-neutral-400">/ 1 открытие</span>
+                  <span className="text-sm text-neutral-400">/ 1 шт.</span>
                 </div>
 
                 <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-                  <button
-                    onClick={() => setIsHatBoxModalOpen(true)}
-                    className="flex-1 py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all shadow-glow-white hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-600" />
-                    <span>Открыть коробку</span>
-                  </button>
+                  {availableBoxes > 0 ? (
+                    <>
+                      <button
+                        onClick={() => setIsHatBoxModalOpen(true)}
+                        className="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                      >
+                        <Sparkles className="w-4 h-4 text-black" />
+                        <span>Открыть коробку ({availableBoxes} шт.)</span>
+                      </button>
 
-                  <button
-                    onClick={() => {
-                      if (hatBoxProduct) {
-                        handleBuy(hatBoxProduct);
-                      }
-                    }}
-                    className="py-3.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>Купить</span>
-                  </button>
+                      <button
+                        onClick={() => handleBuy(hatBoxProduct)}
+                        className="py-3.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 flex items-center justify-center gap-1.5"
+                        title="Купить ещё коробку"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>+1 ещё ({hatBoxPrice} ₽)</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleBuy(hatBoxProduct)}
+                        className="flex-1 py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm transition-all shadow-glow-white hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>Купить коробку ({hatBoxPrice} ₽)</span>
+                      </button>
+
+                      <button
+                        onClick={() => setIsHatBoxModalOpen(true)}
+                        className="py-3.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Тест рулетки</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -445,10 +529,19 @@ export const Store: React.FC = () => {
         isOpen={isHatBoxModalOpen}
         onClose={() => setIsHatBoxModalOpen(false)}
         price={hatBoxPrice}
-        onBuy={() => {
-          if (hatBoxProduct) {
-            handleBuy(hatBoxProduct);
+        availableBoxes={availableBoxes}
+        onOpenSuccess={() => {
+          if (availableBoxes > 0) {
+            setOpenedBoxesCount((prev) => {
+              const next = prev + 1;
+              localStorage.setItem('gsq_opened_boxes_count', String(next));
+              return next;
+            });
           }
+        }}
+        onBuy={() => {
+          setIsHatBoxModalOpen(false);
+          handleBuy(hatBoxProduct);
         }}
       />
 

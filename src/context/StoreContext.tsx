@@ -292,29 +292,39 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem('gsq_products');
       if (saved) {
         const parsed: ProductItem[] = JSON.parse(saved);
-        const cleaned = parsed.map((p) => {
-          if (p.id === 'sub' && (p.price === 199 || !p.monthlyPrice)) {
-            return {
-              ...p,
-              name: 'Подписка SUB 🍇',
-              price: 299,
-              monthlyPrice: 139,
-              features: DEFAULT_PRODUCTS[0].features,
-            };
+        const cleaned: ProductItem[] = parsed
+          .map((p): ProductItem => {
+            if (p.id === 'sub' && (p.price === 199 || !p.monthlyPrice)) {
+              return {
+                ...p,
+                name: 'Подписка SUB 🍇',
+                price: 299,
+                monthlyPrice: 139,
+                features: DEFAULT_PRODUCTS[0].features,
+              };
+            }
+            if (p.id === 'sub-plus' && (p.price === 399 || !p.monthlyPrice)) {
+              return {
+                ...p,
+                name: 'Подписка SUB+ 🍎',
+                price: 749,
+                monthlyPrice: 289,
+                features: DEFAULT_PRODUCTS[1].features,
+              };
+            }
+            return p;
+          })
+          .filter(
+            (p) => Boolean(p) && p.id !== 'diamond-sword' && !p.id.includes('-1m')
+          );
+
+        // Ensure hat-box and all other default products are always present
+        for (const def of DEFAULT_PRODUCTS) {
+          if (!cleaned.some((p) => p.id === def.id)) {
+            cleaned.push(def);
           }
-          if (p.id === 'sub-plus' && (p.price === 399 || !p.monthlyPrice)) {
-            return {
-              ...p,
-              name: 'Подписка SUB+ 🍎',
-              price: 749,
-              monthlyPrice: 289,
-              features: DEFAULT_PRODUCTS[1].features,
-            };
-          }
-          return p;
-        }).filter(
-          (p) => p.id !== 'diamond-sword' && !p.id.includes('-1m')
-        );
+        }
+
         if (cleaned.length > 0) return cleaned;
       }
     } catch {}

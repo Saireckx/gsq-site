@@ -172,4 +172,71 @@ export const api = {
   async getStats() {
     return request<any>('/stats');
   },
+
+  // YooKassa API
+  async createYooKassaPayment(data: {
+    nickname: string;
+    productId: string;
+    productName: string;
+    amount: number;
+    promoCode?: string;
+    period?: string;
+    returnUrl?: string;
+  }) {
+    return request<{
+      success: boolean;
+      orderNumber: string;
+      paymentId?: string;
+      paymentUrl?: string;
+      isDemo?: boolean;
+      message?: string;
+      status?: string;
+    }>('/yookassa/create-payment', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async checkYooKassaPayment(paymentId: string) {
+    return request<{
+      status: string;
+      paid: boolean;
+      order?: any;
+    }>(`/yookassa/check/${paymentId}`);
+  },
+
+  async checkYooKassaOrder(orderNumber: string) {
+    return request<{
+      found: boolean;
+      order?: any;
+      paid: boolean;
+    }>(`/yookassa/check-order/${orderNumber}`);
+  },
+
+  async getYooKassaSettings() {
+    return request<{
+      shopId: string;
+      secretKey: string;
+      hasSecretKey: boolean;
+      testMode: boolean;
+      enabled: boolean;
+      isConfigured: boolean;
+      webhookUrl: string;
+    }>('/yookassa/settings');
+  },
+
+  async updateYooKassaSettings(settings: {
+    shopId?: string;
+    secretKey?: string;
+    testMode?: boolean;
+    enabled?: boolean;
+  }) {
+    return request<{
+      success: boolean;
+      isConfigured: boolean;
+    }>('/yookassa/settings', {
+      method: 'POST',
+      body: JSON.stringify(settings),
+    });
+  },
 };

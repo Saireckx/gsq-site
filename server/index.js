@@ -45,6 +45,12 @@ async function ensureDb() {
         pin: ADMIN_PIN,
         password: ADMIN_PASSWORD,
       },
+      yookassa: {
+        shopId: process.env.YOOKASSA_SHOP_ID || '',
+        secretKey: process.env.YOOKASSA_SECRET_KEY || '',
+        testMode: true,
+        enabled: true,
+      },
     };
     await fs.writeFile(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
   }
@@ -502,94 +508,261 @@ const server = http.createServer(async (req, res) => {
       }
 
       // ---------------------------------------------------------------------
-      // Payment Gateways & Webhooks (AnyPay, Lava, AAIO, FreeKassa, ЮKassa, etc.)
+      // YooKassa Payment Gateway Integration (Official YooKassa API v3)
       // ---------------------------------------------------------------------
-      if (pathname === '/api/payments/create-bill' && method === 'POST') {
-        const body = await parseJsonBody(req);
-        const { nickname, productId, promoCode, paymentMethod, customAmount } = body;
-        
-        const matchingProduct = (db.products || []).find((p) => p.id === productId);
-        const basePrice = customAmount ? Number(customAmount) : (matchingProduct?.price || 0);
 
-        // Calculate coupon discount
-        let discountPercent = 0;
-        let appliedCoupon = null;
-        if (promoCode) {
-          const cleanCode = String(promoCode).trim().toUpperCase();
-          const coupon = (db.coupons || []).find((c) => c.code === cleanCode && c.active);
-          if (coupon && (!coupon.maxUses || coupon.usesCount < coupon.maxUses)) {
-            discountPercent = coupon.discount;
-            appliedCoupon = coupon;
+      // 1. Get YooKassa configuration (Admin only for full details)
+      if (pathname === '/api/yookassa/settings') {
+        if (method === 'GET') {
+          const yk = db.yookassa || {
+            shopId: process.env.YOOKASSA_SHOP_ID || '',
+            secretKey: process.env.YOOKASSA_SECRET_KEY || '',
+            testMode: true,
+            enabled: true,
+          };
+          const host = req.headers.host || 'play.mygsq.fun';
+          const proto = req.headers['x-forwarded-proto'] || 'https';
+          const currentShopId = yk.shopId || process.env.YOOKASSA_SHOP_ID || '';
+          const currentSecret = yk.secretKey || process.env.YOOKASSA_SECRET_KEY || '';
+
+          return sendJson(res, 200, {
+            shopId: currentShopId,
+            secretKey: currentSecret ? (currentSecret.slice(0, 8) + '••••••••••••') : '',
+            hasSecretKey: !!currentSecret,
+            testMode: yk.testMode ?? true,
+            enabled: yk.enabled ?? true,
+            isConfigured: !!(currentShopId && currentSecret),
+            webhookUrl: `${proto}://${host}/api/yookassa/webhook`,
+          });
+        }
+
+        if (method === 'POST') {
+          if (!isAuthorized(req, db)) return sendJson(res, 401, { error: 'Unauthorized' });
+          const body = await parseJsonBody(req);
+          db.yookassa = {
+            ...(db.yookassa || {}),
+            shopId: body.shopId !== undefined ? String(body.shopId).trim() : (db.yookassa?.shopId || ''),
+            secretKey: body.secretKey && !body.secretKey.includes('•••') ? String(body.secretKey).trim() : (db.yookassa?.secretKey || ''),
+            testMode: body.testMode !== undefined ? Boolean(body.testMode) : true,
+            enabled: body.enabled !== undefined ? Boolean(body.enabled) : true,
+          };
+          await writeDb(db);
+          return sendJson(res, 200, {
+            success: true,
+            isConfigured: !!(db.yookassa.shopId && db.yookassa.secretKey),
+          });
+        }
+      }
+
+      // 2. Create payment in YooKassa
+      if (pathname === '/api/yookassa/create-payment' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const { nickname, productId, productName, amount, promoCode, period, returnUrl } = body;
+
+        const cleanNick = String(nickname || '').trim();
+        if (!cleanNick || cleanNick.length < 3 || cleanNick.length > 16) {
+          return sendJson(res, 400, { error: 'Никнейм должен содержать от 3 до 16 символов' });
+        }
+
+        const matchingProduct = (db.products || []).find((p) => p.id === productId);
+        const finalAmount = Math.max(1, Math.round(Number(amount) || matchingProduct?.price || 50));
+        const orderNumber = `GSQ-${Math.floor(100000 + Math.random() * 900000)}`;
+        const orderId = `ord-${Date.now()}`;
+
+        const shopId = process.env.YOOKASSA_SHOP_ID || db.yookassa?.shopId;
+        const secretKey = process.env.YOOKASSA_SECRET_KEY || db.yookassa?.secretKey;
+        const host = req.headers.host || 'play.mygsq.fun';
+        const proto = req.headers['x-forwarded-proto'] || 'https';
+        const defaultReturnUrl = returnUrl || `${proto}://${host}/#/payment/result?orderNumber=${orderNumber}`;
+
+        const newOrder = {
+          id: orderId,
+          orderNumber,
+          nickname: cleanNick,
+          productId: productId || 'item',
+          productName: productName || matchingProduct?.name || 'Товар',
+          amount: finalAmount,
+          promoCode: promoCode ? String(promoCode).trim().toUpperCase() : undefined,
+          paymentMethod: 'ЮKassa',
+          status: 'pending',
+          createdAt: 'Только что',
+          createdAtIso: new Date().toISOString(),
+          iconColor: matchingProduct?.iconColor || 'gold',
+        };
+
+        // If credentials are configured, create real payment via YooKassa API v3
+        if (shopId && secretKey) {
+          try {
+            const idempotenceKey = crypto.randomUUID();
+            const authHeader = 'Basic ' + Buffer.from(`${shopId}:${secretKey}`).toString('base64');
+
+            const yooRes = await fetch('https://api.yookassa.ru/v3/payments', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Idempotence-Key': idempotenceKey,
+                'Authorization': authHeader,
+              },
+              body: JSON.stringify({
+                amount: {
+                  value: `${finalAmount}.00`,
+                  currency: 'RUB',
+                },
+                capture: true,
+                confirmation: {
+                  type: 'redirect',
+                  return_url: defaultReturnUrl,
+                },
+                description: `GSQ: ${newOrder.productName} (Ник: ${cleanNick}, Заказ: ${orderNumber})`,
+                metadata: {
+                  nickname: cleanNick,
+                  productId: productId || '',
+                  orderNumber,
+                  promoCode: newOrder.promoCode || '',
+                },
+              }),
+            });
+
+            const yooData = await yooRes.json();
+
+            if (!yooRes.ok) {
+              console.error('[YooKassa API Error]:', yooData);
+              return sendJson(res, 400, {
+                error: yooData.description || 'Ошибка при создании платежа в ЮKassa',
+                details: yooData,
+              });
+            }
+
+            newOrder.yookassaPaymentId = yooData.id;
+            newOrder.paymentUrl = yooData.confirmation?.confirmation_url;
+            newOrder.yooStatus = yooData.status;
+
+            db.orders.unshift(newOrder);
+            await writeDb(db);
+
+            return sendJson(res, 201, {
+              success: true,
+              orderNumber,
+              paymentId: yooData.id,
+              paymentUrl: yooData.confirmation?.confirmation_url,
+              status: yooData.status,
+            });
+          } catch (apiErr) {
+            console.error('[YooKassa Request Error]:', apiErr);
+            return sendJson(res, 502, { error: 'Не удалось связаться с сервером ЮKassa: ' + apiErr.message });
           }
         }
 
-        const finalAmount = Math.max(1, Math.round(basePrice * (1 - discountPercent / 100)));
-        const orderId = `ord-${Date.now()}`;
-        const orderNumber = `GSQ-${Math.floor(100000 + Math.random() * 900000)}`;
-
-        const order = {
-          id: orderId,
-          orderNumber,
-          nickname: String(nickname || 'Игрок').trim(),
-          productId: productId || 'donate',
-          productName: matchingProduct?.name || 'Пожертвование',
-          amount: finalAmount,
-          promoCode: appliedCoupon?.code,
-          discountAmount: discountPercent > 0 ? (basePrice - finalAmount) : 0,
-          paymentMethod: paymentMethod || 'СБП',
-          status: 'pending',
-          createdAt: 'Только что',
-          iconColor: matchingProduct?.iconColor || 'magenta',
-        };
-
-        db.orders.unshift(order);
+        // Keys not configured yet -> Test / demo mode response
+        newOrder.isDemo = true;
+        newOrder.paymentUrl = `#/payment/result?orderNumber=${orderNumber}&demo=true`;
+        db.orders.unshift(newOrder);
         await writeDb(db);
 
-        return sendJson(res, 201, {
+        return sendJson(res, 200, {
           success: true,
-          order,
-          // Ссылка на платежный шлюз
-          paymentUrl: `/store?order=${orderNumber}&paid=true`,
+          orderNumber,
+          isDemo: true,
+          paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
+          message: 'ЮKassa готова к приёму платежей! Укажите Shop ID и Секретный ключ в панели управления.',
         });
       }
 
-      // Webhook endpoint for Payment Gateways
+      // 3. YooKassa Webhook endpoint (POST https://your-domain/api/yookassa/webhook)
+      if (pathname === '/api/yookassa/webhook' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const event = body.event;
+        const paymentObj = body.object;
+
+        if (paymentObj) {
+          const paymentId = paymentObj.id;
+          const orderNumber = paymentObj.metadata?.orderNumber;
+
+          const order = (db.orders || []).find(
+            (o) => o.yookassaPaymentId === paymentId || (orderNumber && o.orderNumber === orderNumber)
+          );
+
+          if (order) {
+            if (event === 'payment.succeeded') {
+              order.status = 'completed';
+              order.paidAt = new Date().toISOString();
+              if (paymentObj.payment_method?.title) {
+                order.paymentMethod = `ЮKassa (${paymentObj.payment_method.title})`;
+              }
+
+              // Increment promo code usage if used
+              if (order.promoCode) {
+                const cp = (db.coupons || []).find((c) => c.code === order.promoCode);
+                if (cp) cp.usesCount = (cp.usesCount || 0) + 1;
+              }
+
+              // Execute Minecraft server command if set
+              const targetProduct = (db.products || []).find((p) => p.id === order.productId);
+              if (targetProduct?.command) {
+                const mcCommand = targetProduct.command.replace('{user}', order.nickname);
+                console.log(`[YOOKASSA SUCCESS] Order ${order.orderNumber} for ${order.nickname} PAID! Executing command: ${mcCommand}`);
+              }
+            } else if (event === 'payment.canceled') {
+              order.status = 'canceled';
+              order.canceledReason = paymentObj.cancellation_details?.reason;
+            }
+
+            await writeDb(db);
+          }
+        }
+
+        return sendJson(res, 200, { status: 'OK' });
+      }
+
+      // 4. Status Check by Payment ID or Order Number
+      if (pathname.startsWith('/api/yookassa/check/')) {
+        const paymentId = pathname.replace('/api/yookassa/check/', '');
+        const order = (db.orders || []).find((o) => o.yookassaPaymentId === paymentId || o.id === paymentId);
+
+        const shopId = process.env.YOOKASSA_SHOP_ID || db.yookassa?.shopId;
+        const secretKey = process.env.YOOKASSA_SECRET_KEY || db.yookassa?.secretKey;
+
+        if (shopId && secretKey && paymentId && !order?.isDemo) {
+          try {
+            const authHeader = 'Basic ' + Buffer.from(`${shopId}:${secretKey}`).toString('base64');
+            const checkRes = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
+              headers: { 'Authorization': authHeader },
+            });
+            if (checkRes.ok) {
+              const checkData = await checkRes.json();
+              if (checkData.status === 'succeeded' && order && order.status !== 'completed') {
+                order.status = 'completed';
+                await writeDb(db);
+              }
+              return sendJson(res, 200, {
+                status: checkData.status,
+                paid: checkData.paid,
+                order,
+              });
+            }
+          } catch {}
+        }
+
+        return sendJson(res, 200, {
+          status: order?.status || 'not_found',
+          paid: order?.status === 'completed',
+          order,
+        });
+      }
+
+      if (pathname.startsWith('/api/yookassa/check-order/')) {
+        const orderNumber = pathname.replace('/api/yookassa/check-order/', '');
+        const order = (db.orders || []).find((o) => o.orderNumber === orderNumber);
+        return sendJson(res, 200, {
+          found: !!order,
+          order,
+          paid: order?.status === 'completed',
+        });
+      }
+
+      // Backwards-compatible legacy webhook endpoint
       if (pathname === '/api/payments/webhook' && (method === 'POST' || method === 'GET')) {
-        let payload = {};
-        if (method === 'POST') {
-          payload = await parseJsonBody(req);
-        } else {
-          payload = Object.fromEntries(parsedUrl.searchParams.entries());
-        }
-
-        const orderIdent = payload.orderNumber || payload.order_id || payload.orderId || payload.label || payload.merchant_order_id;
-        const matchingOrder = (db.orders || []).find(
-          (o) => o.orderNumber === orderIdent || o.id === orderIdent
-        );
-
-        if (matchingOrder) {
-          matchingOrder.status = 'completed';
-          matchingOrder.paymentId = payload.payment_id || payload.id || `pay-${Date.now()}`;
-          if (payload.pay_method) matchingOrder.paymentMethod = payload.pay_method;
-
-          // Increment coupon usage
-          if (matchingOrder.promoCode) {
-            const cp = (db.coupons || []).find((c) => c.code === matchingOrder.promoCode);
-            if (cp) cp.usesCount = (cp.usesCount || 0) + 1;
-          }
-
-          // Log console notification for Minecraft server operator
-          const targetProduct = (db.products || []).find((p) => p.id === matchingOrder.productId);
-          if (targetProduct?.command) {
-            const mcCommand = targetProduct.command.replace('{user}', matchingOrder.nickname);
-            console.log(`[PAYMENT WEBHOOK] Order ${matchingOrder.orderNumber} PAID! Executing Minecraft command: ${mcCommand}`);
-          }
-
-          await writeDb(db);
-          return sendJson(res, 200, { status: 'OK', message: 'Order completed' });
-        }
-
-        return sendJson(res, 200, { status: 'IGNORED', message: 'Order not found or already processed' });
+        return sendJson(res, 200, { status: 'OK' });
       }
 
       // ---------------------------------------------------------------------

@@ -43,9 +43,10 @@ export interface OrderItem {
   promoCode?: string;
   discountAmount?: number;
   paymentMethod: string;
-  status: 'completed' | 'pending' | 'refunded';
+  status: 'completed' | 'pending' | 'canceled' | 'refunded';
   createdAt: string;
   iconColor: CubeColor;
+  paymentUrl?: string;
 }
 
 interface ServerSettings {
@@ -74,6 +75,22 @@ interface StoreContextType {
   validateCoupon: (code: string, productId?: string) => { valid: boolean; discount: number; message: string; coupon?: CouponItem };
   // Order management
   createOrder: (order: { nickname: string; productId: string; productName: string; amount: number; paymentMethod: string; promoCode?: string }) => OrderItem;
+  createYooKassaPayment: (params: {
+    nickname: string;
+    productId: string;
+    productName: string;
+    amount: number;
+    promoCode?: string;
+    period?: string;
+  }) => Promise<{
+    success: boolean;
+    orderNumber: string;
+    paymentUrl?: string;
+    paymentId?: string;
+    isDemo?: boolean;
+    message?: string;
+  }>;
+  completeOrder: (orderNumber: string) => void;
   generateMockSale: () => void;
   clearOrders: () => void;
   // Server settings
@@ -579,6 +596,102 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return newOrder;
   };
 
+  const createYooKassaPayment = async ({
+    nickname,
+    productId,
+    productName,
+    amount,
+    promoCode,
+    period,
+  }: {
+    nickname: string;
+    productId: string;
+    productName: string;
+    amount: number;
+    promoCode?: string;
+    period?: string;
+  }) => {
+    const cleanNick = nickname.trim();
+    const returnUrl = `${window.location.origin}${window.location.pathname}#/payment/result`;
+
+    try {
+      const res = await api.createYooKassaPayment({
+        nickname: cleanNick,
+        productId,
+        productName,
+        amount,
+        promoCode,
+        period,
+        returnUrl,
+      });
+
+      if (res && res.orderNumber) {
+        const matchingProduct = products.find((p) => p.id === productId);
+        const newOrder: OrderItem = {
+          id: 'ord-' + Date.now(),
+          orderNumber: res.orderNumber,
+          nickname: cleanNick,
+          productId,
+          productName,
+          amount,
+          promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
+          paymentMethod: 'ЮKassa',
+          status: 'pending',
+          createdAt: 'Только что',
+          iconColor: matchingProduct?.iconColor || 'gold',
+          paymentUrl: res.paymentUrl,
+        };
+        setOrders((prev) => [newOrder, ...prev.filter((o) => o.orderNumber !== res.orderNumber)]);
+      }
+
+      return res;
+    } catch (err: any) {
+      console.warn('[YooKassa API unreachable, using client offline mode]:', err);
+      const orderNumber = 'GSQ-' + Math.floor(100000 + Math.random() * 900000);
+      const matchingProduct = products.find((p) => p.id === productId);
+      const newOrder: OrderItem = {
+        id: 'ord-' + Date.now(),
+        orderNumber,
+        nickname: cleanNick,
+        productId,
+        productName,
+        amount,
+        promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
+        paymentMethod: 'ЮKassa',
+        status: 'pending',
+        createdAt: 'Только что',
+        iconColor: matchingProduct?.iconColor || 'gold',
+        paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
+      };
+      setOrders((prev) => [newOrder, ...prev]);
+
+      return {
+        success: true,
+        orderNumber,
+        isDemo: true,
+        paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
+        message: 'ЮKassa готова к приёму платежей! Укажите ключи в панели управления.',
+      };
+    }
+  };
+
+  const completeOrder = (orderNumber: string) => {
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.orderNumber === orderNumber) {
+          if (o.promoCode) {
+            const clean = o.promoCode.trim().toUpperCase();
+            setCoupons((cps) =>
+              cps.map((c) => (c.code === clean ? { ...c, usesCount: c.usesCount + 1 } : c))
+            );
+          }
+          return { ...o, status: 'completed' };
+        }
+        return o;
+      })
+    );
+  };
+
   const generateMockSale = () => {
     const sampleNicknames = ['Danik_Pro', 'Miner_77', 'AlexCool', 'ShadowNinja', 'EnderGamer', 'CraftKing', 'Ksenia_MC'];
     const randomNick = sampleNicknames[Math.floor(Math.random() * sampleNicknames.length)];
@@ -664,6 +777,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteCoupon,
         validateCoupon,
         createOrder,
+        createYooKassaPayment,
+        completeOrder,
         generateMockSale,
         clearOrders,
         updateServerSettings,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { ProductIcon } from '../../components/admin/ProductIcon';
-import { Search, PlusCircle, Trash2, Download, CheckCircle2, Clock } from 'lucide-react';
+import { Search, PlusCircle, Trash2, Download, CheckCircle2, Clock, XCircle } from 'lucide-react';
 
 export const OrdersTab: React.FC = () => {
   const { orders, generateMockSale, clearOrders } = useStore();
@@ -168,10 +168,29 @@ export const OrdersTab: React.FC = () => {
 
                     {/* Status */}
                     <td className="py-3.5 px-4 text-right">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>Оплачен</span>
-                      </span>
+                      {(order.status === 'completed' || !order.status) && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Оплачен</span>
+                        </span>
+                      )}
+                      {order.status === 'pending' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <Clock className="w-3 h-3" />
+                          <span>Ожидает</span>
+                        </span>
+                      )}
+                      {order.status === 'canceled' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                          <XCircle className="w-3 h-3" />
+                          <span>Отменён</span>
+                        </span>
+                      )}
+                      {order.status === 'refunded' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                          <span>Возврат</span>
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))

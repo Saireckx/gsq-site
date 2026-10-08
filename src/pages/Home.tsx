@@ -119,11 +119,33 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Backup IP note on Slide 1 */}
-          <div className="text-xs text-neutral-400 font-mono -mt-8 mb-10 flex items-center gap-2">
+          <div className="text-xs text-neutral-400 font-mono -mt-8 mb-10 flex flex-wrap items-center gap-2">
             <span className="text-neutral-500">Если не работает IP сверху:</span>
-            <span className="text-neutral-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">play.mygsq.fun:25605</span>
+            <button
+              onClick={() => handleCopy('play.mygsq.fun:25605')}
+              className="text-neutral-300 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/10 hover:border-white/25 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+              title="Нажмите, чтобы скопировать"
+            >
+              <span>play.mygsq.fun:25605</span>
+              {copiedIp === 'play.mygsq.fun:25605' ? (
+                <Check className="w-3 h-3 text-emerald-400" />
+              ) : (
+                <Copy className="w-3 h-3 text-neutral-400" />
+              )}
+            </button>
             <span className="text-neutral-500">или</span>
-            <span className="text-neutral-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">5.83.140.201:25605</span>
+            <button
+              onClick={() => handleCopy('5.83.140.201:25605')}
+              className="text-neutral-300 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/10 hover:border-white/25 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+              title="Нажмите, чтобы скопировать"
+            >
+              <span>5.83.140.201:25605</span>
+              {copiedIp === '5.83.140.201:25605' ? (
+                <Check className="w-3 h-3 text-emerald-400" />
+              ) : (
+                <Copy className="w-3 h-3 text-neutral-400" />
+              )}
+            </button>
           </div>
 
           {/* Action Navigation Buttons */}
@@ -304,30 +326,30 @@ export const Home: React.FC = () => {
 
                   {/* Backup IPs */}
                   <div className="space-y-2 pt-1">
-                    <span className="text-[11px] text-neutral-400 font-medium block leading-relaxed">
-                      Если не работает IP сверху: <strong className="text-white font-mono font-semibold">play.mygsq.fun:25605</strong> или <strong className="text-white font-mono font-semibold">5.83.140.201:25605</strong>
-                    </span>
-
                     {SERVER_INFO.backupIps.slice(1).map((backup) => (
                       <div
                         key={backup.ip}
-                        className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs"
+                        onClick={() => handleCopy(backup.ip)}
+                        className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 flex items-center justify-between text-xs cursor-pointer transition-all active:scale-[0.99] group"
+                        title="Нажмите, чтобы скопировать адрес"
                       >
                         <div>
-                          <span className="text-[10px] text-neutral-400 block">{backup.label}</span>
-                          <span className="font-mono text-neutral-200">{backup.ip}</span>
+                          <span className="text-[10px] text-neutral-400 group-hover:text-neutral-300 block">{backup.label}</span>
+                          <span className="font-mono text-neutral-200 group-hover:text-white font-medium">{backup.ip}</span>
                         </div>
-                        <button
-                          onClick={() => handleCopy(backup.ip)}
-                          className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
-                          title="Скопировать запасной IP"
-                        >
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 group-hover:bg-white/10 text-neutral-400 group-hover:text-white transition-colors">
                           {copiedIp === backup.ip ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              <span className="text-[11px] text-emerald-300 font-medium">Скопировано!</span>
+                            </>
                           ) : (
-                            <Copy className="w-3.5 h-3.5" />
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span className="text-[11px]">Копия</span>
+                            </>
                           )}
-                        </button>
+                        </div>
                       </div>
                     ))}
                   </div>

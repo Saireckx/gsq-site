@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { CheckoutModal, CheckoutItem } from '../components/CheckoutModal';
-import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Clock } from 'lucide-react';
+import { HatBoxModal } from '../components/HatBoxModal';
+import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Clock, Package, ShoppingBag } from 'lucide-react';
 
 export const Store: React.FC = () => {
   const { products, orders } = useStore();
@@ -13,17 +14,23 @@ export const Store: React.FC = () => {
     (p) => !p.hidden && (p.id === 'sub' || p.id === 'sub-plus')
   );
 
-  // Additional services (strictly unban, unmute, donate - no duplicates, no sword)
+  // Additional services (strictly unban, unmute, donate - no duplicates, no sword, no crate)
   const additionalProducts = products.filter(
     (p) =>
       !p.hidden &&
       p.id !== 'sub' &&
       p.id !== 'sub-plus' &&
+      p.id !== 'hat-box' &&
       p.id !== 'diamond-sword' &&
       !p.id.includes('-1m') &&
       !p.name.toLowerCase().includes('sub') &&
+      !p.name.toLowerCase().includes('коробка') &&
       !p.name.toLowerCase().includes('меч')
   );
+
+  const [isHatBoxModalOpen, setIsHatBoxModalOpen] = useState(false);
+  const hatBoxProduct = products.find((p) => p.id === 'hat-box');
+  const hatBoxPrice = hatBoxProduct?.price || 89;
 
   const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
@@ -195,6 +202,109 @@ export const Store: React.FC = () => {
         })}
       </div>
 
+      {/* Hat Box / Crate Showcase Section */}
+      <div className="mb-16 sm:mb-20">
+        <div className="rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-[#181512] via-[#11131a] to-[#0c0d12] border border-amber-500/20 relative overflow-hidden shadow-2xl">
+          {/* Ambient Glows */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left: Box Image with Interactive Hover */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center text-center">
+              <div
+                onClick={() => setIsHatBoxModalOpen(true)}
+                className="relative group cursor-pointer"
+                title="Нажмите, чтобы открыть кейс!"
+              >
+                <div className="absolute -inset-6 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/35 transition-all opacity-70 group-hover:scale-110" />
+                <img
+                  src="/box.png"
+                  alt="Коробка со шляпой"
+                  className="relative w-64 sm:w-72 h-auto drop-shadow-[0_16px_32px_rgba(0,0,0,0.9)] group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300"
+                />
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/70 border border-amber-500/30 text-amber-300 text-xs font-semibold backdrop-blur-sm shadow-md mt-2 group-hover:border-amber-400 transition-colors">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Открыть рулетку</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Info, Drop Rates, Action Buttons */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
+                  <Package className="w-3.5 h-3.5" />
+                  <span>Кейс с аксессуарами</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                  Коробка со шляпой
+                </h2>
+                <p className="text-sm text-neutral-300 leading-relaxed max-w-xl">
+                  В коробке спрятаны 17 уникальных головных уборов и аксессуаров. Испытай удачу и получи крутую шляпу с красивой анимацией открытия!
+                </p>
+              </div>
+
+              {/* Rarity Chances Progress & Badges */}
+              <div className="space-y-2 pt-1">
+                <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+                  Шансы выпадения:
+                </span>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-center">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-sky-400 block">Базовая</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">60%</span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">7 шляп</span>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/25 text-center">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-purple-400 block">Редкая</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">32%</span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">7 шляп</span>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/35 text-center">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-amber-400 block">Легендарная</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">8%</span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">Нимб, Сигарета, Алтын</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Price and Buttons */}
+              <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-4xl font-black text-white font-mono">
+                    {hatBoxPrice} ₽
+                  </span>
+                  <span className="text-sm text-neutral-400">/ 1 открытие</span>
+                </div>
+
+                <div className="flex items-center gap-3 flex-1 min-w-[280px]">
+                  <button
+                    onClick={() => setIsHatBoxModalOpen(true)}
+                    className="flex-1 py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all shadow-glow-white hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>Открыть коробку</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (hatBoxProduct) {
+                        handleBuy(hatBoxProduct);
+                      }
+                    }}
+                    className="py-3.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>Купить</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Additional Services Section matching screenshot 3 */}
       <div className="mb-14">
         <div className="mb-8">
@@ -329,6 +439,18 @@ export const Store: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Hat Box Crate Opening Modal */}
+      <HatBoxModal
+        isOpen={isHatBoxModalOpen}
+        onClose={() => setIsHatBoxModalOpen(false)}
+        price={hatBoxPrice}
+        onBuy={() => {
+          if (hatBoxProduct) {
+            handleBuy(hatBoxProduct);
+          }
+        }}
+      />
 
       {/* Checkout Modal */}
       <CheckoutModal

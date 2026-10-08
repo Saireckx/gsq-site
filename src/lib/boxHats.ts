@@ -56,16 +56,16 @@ export const HATS_LIST: HatItem[] = [
 
   // Редкая редкость (32%)
   { id: 'altyn_helmet', name: 'шлем «Алтын»', rarity: 'rare', emoji: '🪖', subtitle: 'боевой шлем', image: `${baseUrl}hats/altyn_helmet.png` },
-  { id: 'fire_red', name: 'Огонь на голове (красный)', rarity: 'rare', emoji: '🔥', image: `${baseUrl}hats/fire_red.png` },
-  { id: 'fire_blue', name: 'Огонь на голове (синий)', rarity: 'rare', emoji: '💠', image: `${baseUrl}hats/fire_blue.png` },
+  { id: 'fire_red', name: 'Огонь на голове (красный)', rarity: 'rare', emoji: '🔥', subtitle: '(анимировано)', image: `${baseUrl}hats/fire_red.png` },
+  { id: 'fire_blue', name: 'Огонь на голове (синий)', rarity: 'rare', emoji: '💠', subtitle: '(анимировано)', image: `${baseUrl}hats/fire_blue.png` },
   { id: 'bear_hat', name: 'Медвежья шапка', rarity: 'rare', emoji: '🐻', subtitle: 'теплая', image: `${baseUrl}hats/bear_hat.png` },
   { id: 'fox_hat', name: 'Лисья шапка', rarity: 'rare', emoji: '🦊', subtitle: 'пушистая', image: `${baseUrl}hats/fox_hat.png` },
-  { id: 'propeller_cap', name: 'Кепка с пропеллером', rarity: 'rare', emoji: '🧢', image: `${baseUrl}hats/propeller_cap.png` },
+  { id: 'propeller_cap', name: 'Кепка с пропеллером', rarity: 'rare', emoji: '🧢', subtitle: '(анимировано)', image: `${baseUrl}hats/propeller_cap.png` },
   { id: 'kabuto_helmet', name: 'Шлем «кабуто»', rarity: 'rare', emoji: '🥷', image: `${baseUrl}hats/kabuto_helmet.png` },
 
   // Легендарная редкость (8%)
   { id: 'halo', name: 'нимб', rarity: 'legendary', emoji: '😇', subtitle: 'священный ореол', image: `${baseUrl}hats/halo.png` },
-  { id: 'cigarette', name: 'сигарета', rarity: 'legendary', emoji: '🚬', subtitle: 'культовый стиль', image: `${baseUrl}hats/cigarette.png` },
+  { id: 'cigarette', name: 'сигарета', rarity: 'legendary', emoji: '🚬', subtitle: '(анимировано)', image: `${baseUrl}hats/cigarette.png` },
   { id: 'mlg_glasses', name: 'MLG очки', rarity: 'legendary', emoji: '🕶️', subtitle: 'легендарный стиль', image: `${baseUrl}hats/mlg_glasses.png` },
 ];
 

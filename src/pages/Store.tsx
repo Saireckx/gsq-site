@@ -30,7 +30,7 @@ export const Store: React.FC = () => {
 
   const [isHatBoxModalOpen, setIsHatBoxModalOpen] = useState(false);
   const hatBoxProduct = products.find((p) => p.id === 'hat-box');
-  const hatBoxPrice = hatBoxProduct?.price || 89;
+  const hatBoxPrice = hatBoxProduct?.price || 49;
 
   const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
@@ -264,7 +264,7 @@ export const Store: React.FC = () => {
                   <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/35 text-center">
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-amber-400 block">Легендарная</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">8%</span>
-                    <span className="text-[10px] text-neutral-400 block mt-0.5">Нимб, Сигарета, Алтын</span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">Нимб, Сигарета, MLG</span>
                   </div>
                 </div>
               </div>

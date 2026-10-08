@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "cp index.source.html index.html && vite",
+    "server": "node server/index.js",
+    "start": "node server/index.js",
     "build": "cp index.source.html index.html && tsc && vite build && cp -r dist/* . && rm -rf docs && mkdir -p docs && cp -r dist/* docs/ && cp 404.html docs/ && touch .nojekyll docs/.nojekyll dist/.nojekyll",
     "preview": "vite preview",
     "predeploy": "npm run build",

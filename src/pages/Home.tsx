@@ -19,9 +19,9 @@ import {
   ChevronRight,
   Copy,
   Check,
-  Disc as DiscordIcon,
   Wifi
 } from 'lucide-react';
+import { DiscordIcon } from '../components/DiscordIcon';
 
 export const Home: React.FC = () => {
   const { serverSettings } = useStore();
@@ -222,7 +222,7 @@ export const Home: React.FC = () => {
                     <div>
                       <strong className="text-white">Вступите в Discord и оставьте тикет:</strong>
                       <p className="text-xs text-neutral-400 mt-0.5">
-                        Перейдите по ссылке <a href="https://discord.gg/GbgNVXDdtf" target="_blank" rel="noopener noreferrer" className="text-sky-400 underline font-medium">discord.gg/GbgNVXDdtf</a> и откройте тикет на регистрацию (заявку на вайтлист).
+                        Перейдите по ссылке <a href="https://discord.gg/GbgNVXDdtf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 underline font-medium"><DiscordIcon className="w-3.5 h-3.5 inline-block" />discord.gg/GbgNVXDdtf</a> и откройте тикет на регистрацию (заявку на вайтлист).
                       </p>
                     </div>
                   </div>

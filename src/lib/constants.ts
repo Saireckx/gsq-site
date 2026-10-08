@@ -306,7 +306,7 @@ export const RULES_DATA: RuleCategory[] = [
 
 export const SERVER_FEATURES = [
   {
-    title: 'Ванилла 26.1.2',
+    title: 'Ванильное выживание',
     description: 'Оригинальный геймплей без лишних плагинов и модов. Чистое честное выживание с друзьями в просторном мире.',
     icon: 'Pickaxe',
   },
@@ -327,7 +327,7 @@ export const SERVER_FEATURES = [
   },
   {
     title: 'Защита построек',
-    description: 'Все постройки быстро откатываются модерацией.',
+    description: 'Все постройки быстро откатываются модерацией, так же есть CoreProtect.',
     icon: 'ShieldCheck',
   },
   {

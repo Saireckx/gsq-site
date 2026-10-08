@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CubeColor } from '../components/admin/CubeIcon';
 import { SERVER_INFO as DEFAULT_SERVER_INFO, MAP_URL as DEFAULT_MAP_URL } from '../lib/constants';
+import { api } from '../lib/api';
 
 export interface ProductItem {
   id: string;
@@ -379,6 +380,42 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return false;
   });
 
+  // Initial backend fetch with graceful local cache fallback
+  useEffect(() => {
+    let active = true;
+    const fetchBackend = async () => {
+      try {
+        const [prods, cps, ords, settings] = await Promise.all([
+          api.getProducts().catch(() => null),
+          api.getCoupons().catch(() => null),
+          api.getOrders().catch(() => null),
+          api.getSettings().catch(() => null),
+        ]);
+
+        if (!active) return;
+
+        if (Array.isArray(prods) && prods.length > 0) {
+          setProducts(prods);
+        }
+        if (Array.isArray(cps) && cps.length > 0) {
+          setCoupons(cps);
+        }
+        if (Array.isArray(ords) && ords.length > 0) {
+          setOrders(ords);
+        }
+        if (settings && settings.ip) {
+          setServerSettings((prev) => ({ ...prev, ...settings }));
+        }
+      } catch (err) {
+        // Backend offline, keep local cache
+      }
+    };
+    fetchBackend();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // Sync to localStorage
   useEffect(() => {
     try {
@@ -412,9 +449,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Product actions
   const updateProduct = (id: string, updates: Partial<ProductItem>) => {
-    setProducts((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+    const updated = products.map((item) => (item.id === id ? { ...item, ...updates } : item));
+    setProducts(updated);
+    const target = updated.find((p) => p.id === id);
+    if (target) {
+      api.updateProduct(id, target).catch(() => {});
+    }
   };
 
   const addProduct = (product: Omit<ProductItem, 'id' | 'numericId'>): ProductItem => {
@@ -426,11 +466,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       numericId: newNumericId,
     };
     setProducts((prev) => [newProd, ...prev]);
+    api.addProduct(newProd).catch(() => {});
     return newProd;
   };
 
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((item) => item.id !== id));
+    api.deleteProduct(id).catch(() => {});
   };
 
   // Coupon actions
@@ -442,11 +484,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       code: coupon.code.toUpperCase().trim(),
     };
     setCoupons((prev) => [newCoupon, ...prev]);
+    api.addCoupon(newCoupon).catch(() => {});
   };
 
   const updateCoupon = (id: string, updates: Partial<CouponItem>) => {
-    setCoupons((prev) =>
-      prev.map((item) =>
+    setCoupons((prev) => {
+      const updated = prev.map((item) =>
         item.id === id
           ? {
               ...item,
@@ -454,12 +497,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               code: updates.code ? updates.code.toUpperCase().trim() : item.code,
             }
           : item
-      )
-    );
+      );
+      const target = updated.find((c) => c.id === id);
+      if (target) {
+        api.updateCoupon(id, target).catch(() => {});
+      }
+      return updated;
+    });
   };
 
   const deleteCoupon = (id: string) => {
     setCoupons((prev) => prev.filter((item) => item.id !== id));
+    api.deleteCoupon(id).catch(() => {});
   };
 
   const validateCoupon = (code: string, productId?: string) => {
@@ -539,6 +588,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       );
     }
 
+    api.createOrder(newOrder).catch(() => {});
+
     return newOrder;
   };
 
@@ -560,10 +611,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const clearOrders = () => {
     setOrders([]);
+    api.clearOrders().catch(() => {});
   };
 
   const updateServerSettings = (updates: Partial<ServerSettings>) => {
-    setServerSettings((prev) => ({ ...prev, ...updates }));
+    setServerSettings((prev) => {
+      const updated = { ...prev, ...updates };
+      api.updateSettings(updated).catch(() => {});
+      return updated;
+    });
   };
 
   // Analytics calculation

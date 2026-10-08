@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SERVER_INFO, NAV_LINKS } from '../lib/constants';
-import { ArrowUp, Disc as DiscordIcon, Shield } from 'lucide-react';
+import { ArrowUp, Shield } from 'lucide-react';
+import { DiscordIcon } from './DiscordIcon';
 import { CopyIpButton } from './CopyIpButton';
 
 export const Footer: React.FC = () => {

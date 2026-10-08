@@ -17,32 +17,51 @@ import {
   ExternalLink,
   ShieldCheck
 } from 'lucide-react';
+import { api, getAuthToken } from '../lib/api';
 
 type AdminTab = 'dashboard' | 'products' | 'coupons' | 'orders' | 'settings';
 
 export const Admin: React.FC = () => {
   // Simple PIN protection (default PIN: 1234)
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('gsq_admin_auth') === 'true';
+    return sessionStorage.getItem('gsq_admin_auth') === 'true' || !!getAuthToken();
   });
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pinInput === '1234' || pinInput === 'admin' || pinInput === 'gsq') {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('gsq_admin_auth', 'true');
-      setPinError(false);
-    } else {
-      setPinError(true);
+    setIsLoading(true);
+    setPinError(false);
+
+    try {
+      const res = await api.login(pinInput);
+      if (res && res.success) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('gsq_admin_auth', 'true');
+        setIsLoading(false);
+        return;
+      }
+    } catch {
+      // Backend offline fallback check
+      if (pinInput === '1234' || pinInput === 'admin' || pinInput === 'gsq') {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('gsq_admin_auth', 'true');
+        setIsLoading(false);
+        return;
+      }
     }
+
+    setIsLoading(false);
+    setPinError(true);
   };
 
   const handleLogout = () => {
+    api.logout().catch(() => {});
     setIsAuthenticated(false);
     sessionStorage.removeItem('gsq_admin_auth');
   };

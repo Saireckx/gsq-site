@@ -1,0 +1,235 @@
+{
+  "products": [
+    {
+      "id": "sub",
+      "numericId": 1060509,
+      "name": "Подписка SUB",
+      "price": 199,
+      "oldPrice": 249,
+      "period": "навсегда",
+      "type": "Привилегия",
+      "command": "lp user {user} parent add sub",
+      "description": "Базовая подписка с доступом к приватам, домам и уникальному префиксу.",
+      "category": "Подписки",
+      "iconColor": "magenta",
+      "hidden": false,
+      "offlineAllowed": true,
+      "popular": false,
+      "features": [
+        "Доступ к приватам",
+        "Доступ к /sethome (до 3 точек дома)",
+        "Уникальный белый префикс в чате и табе",
+        "Возможность писать цветным текстом",
+        "Поддержка любимого сервера"
+      ]
+    },
+    {
+      "id": "sub-plus",
+      "numericId": 1060508,
+      "name": "Подписка SUB+",
+      "price": 399,
+      "oldPrice": 499,
+      "period": "навсегда",
+      "type": "Привилегия",
+      "command": "lp user {user} parent add sub+",
+      "description": "Максимальные возможности: полёт /fly, приоритет в очереди и светящийся префикс.",
+      "category": "Подписки",
+      "iconColor": "red",
+      "hidden": false,
+      "offlineAllowed": true,
+      "popular": true,
+      "features": [
+        "Все возможности подписки SUB",
+        "Доступ к /fly в приватах и строительных зонах",
+        "Эксклюзивный сияющий префикс [SUB+]",
+        "Приоритет в очереди при полном сервере",
+        "До 10 точек /sethome и доступ к /workbench",
+        "Личный значок в Discord и Telegram сообществах"
+      ]
+    },
+    {
+      "id": "unban",
+      "numericId": 1060511,
+      "name": "Разбан",
+      "price": 299,
+      "period": "1 шт.",
+      "type": "Другое",
+      "command": "unban {user}",
+      "description": "Снятие блокировки с аккаунта (если это возможно).",
+      "category": "Услуги",
+      "iconColor": "green",
+      "hidden": false,
+      "offlineAllowed": true,
+      "features": [
+        "Полное снятие блокировки с аккаунта"
+      ]
+    },
+    {
+      "id": "unmute",
+      "numericId": 1060510,
+      "name": "Размут",
+      "price": 199,
+      "period": "1 шт.",
+      "type": "Другое",
+      "command": "unmute {user}",
+      "description": "Снятие мута с чата.",
+      "category": "Услуги",
+      "iconColor": "white",
+      "hidden": false,
+      "offlineAllowed": true,
+      "features": [
+        "Снятие ограничений на отправку сообщений в чат"
+      ]
+    },
+    {
+      "id": "donate",
+      "numericId": 1060512,
+      "name": "Пожертвование",
+      "price": 50,
+      "period": "навсегда",
+      "type": "Другое",
+      "command": "broadcast Спасибо игроку {user} за поддержку сервера!",
+      "description": "Поддержи сервер и получи благодарность всего сообщества!",
+      "category": "Поддержка",
+      "iconColor": "gold",
+      "hidden": false,
+      "offlineAllowed": true,
+      "features": [
+        "Благодарность в чате и значок мецената в Discord"
+      ]
+    }
+  ],
+  "coupons": [
+    {
+      "id": "c1",
+      "code": "TECH10",
+      "discount": 10,
+      "description": "tech",
+      "usesCount": 14,
+      "applicableProductIds": ["all"],
+      "active": true
+    },
+    {
+      "id": "c2",
+      "code": "KOT10",
+      "discount": 10,
+      "description": "новости",
+      "usesCount": 8,
+      "applicableProductIds": ["all"],
+      "active": true
+    },
+    {
+      "id": "c3",
+      "code": "CODE20",
+      "discount": 20,
+      "description": "Скидка",
+      "usesCount": 22,
+      "applicableProductIds": ["unban", "sub", "sub-plus"],
+      "active": true
+    },
+    {
+      "id": "c4",
+      "code": "END10",
+      "discount": 10,
+      "description": "end10",
+      "usesCount": 5,
+      "applicableProductIds": ["all"],
+      "active": true
+    },
+    {
+      "id": "c5",
+      "code": "GSQ",
+      "discount": 15,
+      "description": "Фирменный промокод GSQ",
+      "usesCount": 33,
+      "applicableProductIds": ["all"],
+      "active": true
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-1",
+      "orderNumber": "GSQ-882194",
+      "nickname": "Armor_ykon",
+      "productId": "unban",
+      "productName": "Разбан",
+      "amount": 372.67,
+      "paymentMethod": "СБП",
+      "status": "completed",
+      "createdAt": "Сегодня, 18:04",
+      "iconColor": "green"
+    },
+    {
+      "id": "ord-2",
+      "orderNumber": "GSQ-774912",
+      "nickname": "sicttik",
+      "productId": "sub",
+      "productName": "Подписка SUB",
+      "amount": 279.27,
+      "paymentMethod": "Банковская карта",
+      "status": "completed",
+      "createdAt": "Сегодня, 16:32",
+      "iconColor": "magenta"
+    },
+    {
+      "id": "ord-3",
+      "orderNumber": "GSQ-663810",
+      "nickname": "Zaqul2912",
+      "productId": "sub-1m",
+      "productName": "Подписка SUB (1 месяц)",
+      "amount": 116.84,
+      "promoCode": "KOT10",
+      "paymentMethod": "Т-Банк",
+      "status": "completed",
+      "createdAt": "Сегодня, 14:15",
+      "iconColor": "magenta"
+    },
+    {
+      "id": "ord-4",
+      "orderNumber": "GSQ-552901",
+      "nickname": "RockyHydra45115",
+      "productId": "sub",
+      "productName": "Подписка SUB",
+      "amount": 279.27,
+      "paymentMethod": "СБП",
+      "status": "completed",
+      "createdAt": "Вчера, 21:50",
+      "iconColor": "magenta"
+    },
+    {
+      "id": "ord-5",
+      "orderNumber": "GSQ-441829",
+      "nickname": "Notch_Fan",
+      "productId": "sub-plus",
+      "productName": "Подписка SUB+",
+      "amount": 399.0,
+      "paymentMethod": "СБП",
+      "status": "completed",
+      "createdAt": "Вчера, 19:12",
+      "iconColor": "red"
+    },
+    {
+      "id": "ord-6",
+      "orderNumber": "GSQ-330718",
+      "nickname": "VoxelCrafter",
+      "productId": "unmute",
+      "productName": "Размут",
+      "amount": 199.0,
+      "paymentMethod": "Банковская карта",
+      "status": "completed",
+      "createdAt": "2 дня назад",
+      "iconColor": "white"
+    }
+  ],
+  "serverSettings": {
+    "ip": "play.mygsq.fun",
+    "version": "26.1.2",
+    "onlinePlayers": 0,
+    "maxPlayers": 100,
+    "mapUrl": "https://map.mygsq.fun/"
+  },
+  "admin": {
+    "pin": "1234",
+    "password": "admin"
+  }
+}

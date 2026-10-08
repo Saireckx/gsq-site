@@ -495,7 +495,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                     {hatsOfRarity.map((hat) => {
                       const isAnimated =
                         hat.id === 'fire_red' ||
@@ -507,25 +507,32 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                       return (
                         <div
                           key={hat.id}
-                          className={`p-3 rounded-2xl bg-neutral-900/60 border ${config.borderColor} flex items-center gap-3 hover:bg-neutral-900/90 transition-colors`}
+                          className={`p-3 sm:p-3.5 rounded-2xl bg-neutral-900/70 border ${config.borderColor} flex flex-col items-center justify-between text-center hover:bg-neutral-900/95 transition-all duration-200 hover:scale-[1.02] group`}
                         >
-                          <div className="w-9 h-9 flex-shrink-0 flex items-center justify-center">
+                          {/* Hat 3D Icon with Rarity Halo */}
+                          <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center my-1 flex-shrink-0">
+                            <div
+                              className="absolute inset-0 rounded-full blur-md opacity-25 group-hover:opacity-45 transition-opacity pointer-events-none"
+                              style={{ backgroundColor: config.accentColor }}
+                            />
                             {hat.image ? (
                               <img
                                 src={hat.image}
                                 alt={hat.name}
-                                className="max-w-full max-h-full object-contain filter drop-shadow"
+                                className="max-w-full max-h-full object-contain filter drop-shadow group-hover:scale-110 transition-transform duration-200"
                               />
                             ) : (
-                              <span className="text-2xl">{hat.emoji}</span>
+                              <span className="text-3xl">{hat.emoji}</span>
                             )}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-white leading-snug">
+
+                          {/* Hat Title & Animated Label */}
+                          <div className="w-full mt-2 flex flex-col items-center justify-center text-center">
+                            <p className="text-xs sm:text-sm font-bold text-white text-center leading-snug">
                               {hat.name}
                             </p>
                             {isAnimated && (
-                              <span className="inline-block text-[10px] font-semibold text-emerald-400 mt-0.5 whitespace-nowrap">
+                              <span className="inline-block text-[10px] sm:text-[11px] font-semibold text-emerald-400 mt-1 whitespace-nowrap">
                                 (анимировано)
                               </span>
                             )}

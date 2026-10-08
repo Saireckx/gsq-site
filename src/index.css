@@ -81,3 +81,31 @@ body {
 .text-glow {
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 }
+
+/* Atmospheric Particle & Aurora Background Animations */
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-38px) translateX(12px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-75px) translateX(-8px);
+    opacity: 0.1;
+  }
+}
+
+@keyframes breatheAurora {
+  0%, 100% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+

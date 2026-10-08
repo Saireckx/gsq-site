@@ -22,6 +22,7 @@ import {
   Wifi
 } from 'lucide-react';
 import { DiscordIcon } from '../components/DiscordIcon';
+import { HeroParticles } from '../components/HeroParticles';
 
 export const Home: React.FC = () => {
   const { serverSettings } = useStore();
@@ -46,7 +47,7 @@ export const Home: React.FC = () => {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Background Hero with Dark Minecraft Aesthetic */}
+      {/* Background Hero with Dark Minecraft Aesthetic & Particle Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
         {/* Top Hero Background Image (Atmospheric Minecraft Fog Forest with downward fade) */}
         <div className="absolute top-0 left-0 right-0 h-[700px] sm:h-[860px] w-full overflow-hidden">
@@ -60,6 +61,9 @@ export const Home: React.FC = () => {
           {/* Deep bottom fade for flawless blending */}
           <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-[#070709] to-transparent" />
         </div>
+
+        {/* Ambient Floating Fireflies & Forest Particles */}
+        <HeroParticles />
 
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-white/[0.04] blur-[140px] rounded-full" />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[300px] bg-white/[0.02] blur-[120px] rounded-full" />

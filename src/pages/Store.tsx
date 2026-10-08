@@ -253,17 +253,17 @@ export const Store: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2.5">
                   <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-center">
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-sky-400 block">Базовая</span>
-                    <span className="text-lg sm:text-xl font-black text-white font-mono">60%</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">70%</span>
                     <span className="text-[10px] text-neutral-400 block mt-0.5">7 шляп</span>
                   </div>
                   <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/25 text-center">
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-purple-400 block">Редкая</span>
-                    <span className="text-lg sm:text-xl font-black text-white font-mono">32%</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">25%</span>
                     <span className="text-[10px] text-neutral-400 block mt-0.5">7 шляп</span>
                   </div>
                   <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/35 text-center">
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-amber-400 block">Легендарная</span>
-                    <span className="text-lg sm:text-xl font-black text-white font-mono">8%</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">5%</span>
                     <span className="text-[10px] text-neutral-400 block mt-0.5">Нимб, Сигарета, MLG</span>
                   </div>
                 </div>

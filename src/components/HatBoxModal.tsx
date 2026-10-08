@@ -502,36 +502,33 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                         hat.id === 'fire_blue' ||
                         hat.id === 'propeller_cap' ||
                         hat.id === 'cigarette' ||
-                        hat.subtitle?.includes('анимировано');
+                        Boolean(hat.subtitle?.includes('анимировано'));
 
                       return (
                         <div
                           key={hat.id}
-                          className={`p-3 rounded-2xl bg-neutral-900/60 border ${config.borderColor} flex items-center gap-2.5 hover:bg-neutral-900/90 transition-colors`}
+                          className={`p-3 rounded-2xl bg-neutral-900/60 border ${config.borderColor} flex items-center gap-3 hover:bg-neutral-900/90 transition-colors`}
                         >
-                          {hat.image ? (
-                            <img
-                              src={hat.image}
-                              alt={hat.name}
-                              className="w-8 h-8 object-contain flex-shrink-0 filter drop-shadow"
-                            />
-                          ) : (
-                            <span className="text-2xl">{hat.emoji}</span>
-                          )}
+                          <div className="w-9 h-9 flex-shrink-0 flex items-center justify-center">
+                            {hat.image ? (
+                              <img
+                                src={hat.image}
+                                alt={hat.name}
+                                className="max-w-full max-h-full object-contain filter drop-shadow"
+                              />
+                            ) : (
+                              <span className="text-2xl">{hat.emoji}</span>
+                            )}
+                          </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-white leading-tight">
+                            <p className="text-xs font-bold text-white leading-snug">
                               {hat.name}
                             </p>
-                            {isAnimated ? (
-                              <p className="text-[10px] font-semibold text-emerald-400 mt-0.5 truncate flex items-center gap-1">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                <span>(анимировано)</span>
-                              </p>
-                            ) : hat.subtitle ? (
-                              <p className="text-[10px] text-neutral-400 truncate mt-0.5">
-                                {hat.subtitle.startsWith('(') ? hat.subtitle : `(${hat.subtitle})`}
-                              </p>
-                            ) : null}
+                            {isAnimated && (
+                              <span className="inline-block text-[10px] font-semibold text-emerald-400 mt-0.5 whitespace-nowrap">
+                                (анимировано)
+                              </span>
+                            )}
                           </div>
                         </div>
                       );

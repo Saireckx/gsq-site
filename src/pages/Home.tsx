@@ -48,21 +48,22 @@ export const Home: React.FC = () => {
     <div className="relative overflow-hidden">
       {/* Background Hero with Dark Minecraft Aesthetic */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
-        {/* Top Hero Background Image (Atmospheric Minecraft Fog Forest) */}
-        <div className="absolute top-0 left-0 right-0 h-[640px] sm:h-[780px] w-full overflow-hidden">
+        {/* Top Hero Background Image (Atmospheric Minecraft Fog Forest with downward fade) */}
+        <div className="absolute top-0 left-0 right-0 h-[700px] sm:h-[860px] w-full overflow-hidden">
           <img
             src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/hero-bg.png`}
             alt="GSQ Minecraft Hero Background"
-            className="w-full h-full object-cover object-top opacity-35 scale-105"
+            className="w-full h-full object-cover object-[center_25%] opacity-70 sm:opacity-80"
           />
-          {/* Smooth overlay gradient fading to page background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#070709]/30 via-[#070709]/75 to-[#070709]" />
+          {/* Smooth overlay gradient with fade into page background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#070709]/25 via-[#070709]/55 via-50% to-[#070709]" />
+          {/* Deep bottom fade for flawless blending */}
+          <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-[#070709] to-transparent" />
         </div>
 
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-white/[0.04] blur-[140px] rounded-full" />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[300px] bg-white/[0.02] blur-[120px] rounded-full" />
-        <div className="absolute inset-0 bg-grid-pattern opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070709]/50 via-[#070709]/80 to-[#070709]" />
+        <div className="absolute inset-0 bg-grid-pattern opacity-25" />
       </div>
 
       {/* Slide 1: Main Hero Section */}

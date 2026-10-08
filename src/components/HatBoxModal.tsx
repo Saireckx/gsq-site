@@ -22,7 +22,7 @@ function generateReel(targetHat: HatItem): HatItem[] {
   return reel;
 }
 
-// Web Audio API tick generator
+// Web Audio API: tactile mechanical roulette tick (soft, satisfying, zero double-strike)
 function playTickSound(audioContextRef: React.MutableRefObject<AudioContext | null>, soundEnabled: boolean) {
   if (!soundEnabled) return;
   try {
@@ -33,21 +33,44 @@ function playTickSound(audioContextRef: React.MutableRefObject<AudioContext | nu
     if (ctx.state === 'suspended') {
       ctx.resume();
     }
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(420, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.04);
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.04);
+
+    const now = ctx.currentTime;
+
+    // Component 1: Warm tactile "thud" body (soft wooden ratchet click)
+    const bodyOsc = ctx.createOscillator();
+    const bodyGain = ctx.createGain();
+    bodyOsc.type = 'sine';
+    bodyOsc.frequency.setValueAtTime(480, now);
+    bodyOsc.frequency.exponentialRampToValueAtTime(140, now + 0.022);
+
+    bodyGain.gain.setValueAtTime(0.045, now);
+    bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+
+    bodyOsc.connect(bodyGain);
+    bodyGain.connect(ctx.destination);
+
+    bodyOsc.start(now);
+    bodyOsc.stop(now + 0.022);
+
+    // Component 2: Subtle micro-click attack
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    clickOsc.type = 'triangle';
+    clickOsc.frequency.setValueAtTime(1100, now);
+    clickOsc.frequency.exponentialRampToValueAtTime(500, now + 0.007);
+
+    clickGain.gain.setValueAtTime(0.02, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.007);
+
+    clickOsc.connect(clickGain);
+    clickGain.connect(ctx.destination);
+
+    clickOsc.start(now);
+    clickOsc.stop(now + 0.007);
   } catch {}
 }
 
-// Win celebration sound
+// Web Audio API: Melodic win chime (gentle bell notes)
 function playWinSound(audioContextRef: React.MutableRefObject<AudioContext | null>, rarity: HatRarity, soundEnabled: boolean) {
   if (!soundEnabled) return;
   try {
@@ -58,23 +81,38 @@ function playWinSound(audioContextRef: React.MutableRefObject<AudioContext | nul
     if (ctx.state === 'suspended') {
       ctx.resume();
     }
-    const chords = rarity === 'legendary' 
-      ? [523.25, 659.25, 783.99, 1046.50] // C Major fanfare
-      : rarity === 'rare'
-      ? [440.00, 554.37, 659.25] // A Major
-      : [392.00, 493.88]; // G
 
-    chords.forEach((freq, idx) => {
+    const now = ctx.currentTime;
+
+    // Pure harmonic chords:
+    // Legendary: Majestic golden chime (C5, E5, G5, B5, C6)
+    // Rare: Sparkling crystal arpeggio (D5, F#5, A5, D6)
+    // Common: Sweet warm bell (C5, G5)
+    const notes = rarity === 'legendary' 
+      ? [523.25, 659.25, 783.99, 987.77, 1046.50]
+      : rarity === 'rare'
+      ? [587.33, 739.99, 880.00, 1174.66]
+      : [523.25, 783.99];
+
+    notes.forEach((freq, idx) => {
+      const startTime = now + idx * 0.09;
+      const duration = rarity === 'legendary' ? 0.9 : rarity === 'rare' ? 0.7 : 0.45;
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = rarity === 'legendary' ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.5);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.linearRampToValueAtTime(0.065, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + idx * 0.08);
-      osc.stop(ctx.currentTime + idx * 0.08 + 0.5);
+
+      osc.start(startTime);
+      osc.stop(startTime + duration);
     });
   } catch {}
 }
@@ -115,6 +153,11 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
 
   const handleStartOpening = () => {
     if (isOpening) return;
+
+    // 1. Clear any running timers immediately to prevent double sounds or overlapping loops
+    timerRef.current.forEach(clearTimeout);
+    timerRef.current = [];
+
     setIsOpening(true);
     setWonHat(null);
 
@@ -128,26 +171,31 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
     const randomOffset = Math.floor(Math.random() * 40) - 20;
     const finalDistance = TARGET_INDEX * ITEM_WIDTH - 240 + randomOffset;
 
+    // Sequential tick intervals perfectly matching the 4.8s cubic-bezier deceleration
+    const tickIntervals = [
+      65, 65, 65, 70, 70, 75, 80, 85, 95, 105,
+      120, 135, 155, 180, 210, 250, 300, 360, 430, 520, 630, 760
+    ];
+
     // Trigger roulette spin on next animation frame
     const t1 = setTimeout(() => {
       setTranslateX(finalDistance);
 
-      // Play tick sounds at decreasing intervals as reel decelerates
-      let tickCount = 0;
-      const totalTicks = 28;
-      const runTicks = () => {
-        if (tickCount >= totalTicks) return;
+      // Play tick sounds along the deceleration curve without any overlapping or doubling
+      let tickIdx = 0;
+      const playNextTick = () => {
+        if (tickIdx >= tickIntervals.length) return;
         playTickSound(audioContextRef, soundEnabled);
-        tickCount++;
-        // Slower interval as ticks progress
-        const delay = 40 + Math.pow(tickCount, 2.1) * 3;
-        const tickTimer = setTimeout(runTicks, delay);
-        timerRef.current.push(tickTimer);
+        const delay = tickIntervals[tickIdx];
+        tickIdx++;
+        const nextTimer = setTimeout(playNextTick, delay);
+        timerRef.current.push(nextTimer);
       };
-      runTicks();
+
+      playNextTick();
     }, 50);
 
-    // Stop and display win after 4.8 seconds
+    // Stop and display win after 4.85 seconds
     const t2 = setTimeout(() => {
       setWonHat(target);
       setIsOpening(false);
@@ -158,6 +206,8 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
   };
 
   const handleReset = () => {
+    timerRef.current.forEach(clearTimeout);
+    timerRef.current = [];
     setIsOpening(false);
     setWonHat(null);
     setTranslateX(0);

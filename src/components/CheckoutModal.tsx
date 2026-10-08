@@ -6,9 +6,12 @@ export interface CheckoutItem {
   id: string;
   name: string;
   price: number;
+  monthlyPrice?: number;
+  foreverPrice?: number;
   period?: string;
   description?: string;
   isCustomAmount?: boolean;
+  isSubscription?: boolean;
 }
 
 interface CheckoutModalProps {
@@ -19,6 +22,7 @@ interface CheckoutModalProps {
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) => {
   const { validateCoupon, createOrder } = useStore();
 
+  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'forever'>('forever');
   const [nickname, setNickname] = useState('');
   const [customPrice, setCustomPrice] = useState('100');
   const [promoCode, setPromoCode] = useState('');
@@ -37,8 +41,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
       setPromoCode('');
       setPromoDiscount(0);
       setPromoMessage(null);
+      if (item.period?.includes('месяц')) {
+        setSelectedPeriod('month');
+      } else {
+        setSelectedPeriod('forever');
+      }
     }
-  }, [item?.id]);
+  }, [item?.id, item?.period]);
 
   const handleModalClose = () => {
     setOrderComplete(false);
@@ -51,7 +60,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
 
   if (!item) return null;
 
-  const basePrice = item.isCustomAmount ? Math.max(50, Number(customPrice) || 50) : item.price;
+  const currentSubPrice = selectedPeriod === 'month' 
+    ? (item.monthlyPrice || (item.id === 'sub' ? 139 : 289))
+    : (item.foreverPrice || item.price);
+
+  const basePrice = item.isCustomAmount
+    ? Math.max(50, Number(customPrice) || 50)
+    : (item.isSubscription ? currentSubPrice : item.price);
+
+  const currentPeriodLabel = item.isSubscription
+    ? (selectedPeriod === 'month' ? '1 месяц' : 'навсегда')
+    : item.period;
+
   const finalPrice = Math.max(1, Math.round(basePrice * (1 - promoDiscount / 100)));
 
   const handleApplyPromo = () => {
@@ -83,7 +103,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
       const created = createOrder({
         nickname: nickname.trim(),
         productId: item.id,
-        productName: item.name,
+        productName: `${item.name}${item.isSubscription ? ` (${currentPeriodLabel})` : ''}`,
         amount: finalPrice,
         paymentMethod,
         promoCode: promoDiscount > 0 ? promoCode.trim().toUpperCase() : undefined,
@@ -115,16 +135,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
         {!orderComplete ? (
           <div>
             {/* Modal Title & Item Info */}
-            <div className="mb-6">
+            <div className="mb-5">
               <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Оформление заказа
               </span>
               <div className="flex items-center justify-between mt-1">
                 <h3 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
                   <span>{item.name}</span>
-                  {item.period && (
-                    <span className="text-xs font-normal text-neutral-400 px-2 py-0.5 rounded-full bg-white/10">
-                      {item.period}
+                  {currentPeriodLabel && (
+                    <span className="text-xs font-normal text-neutral-400 px-2.5 py-0.5 rounded-full bg-white/10">
+                      {currentPeriodLabel}
                     </span>
                   )}
                 </h3>
@@ -133,6 +153,34 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                 </span>
               </div>
             </div>
+
+            {/* If subscription, allow toggling period inside modal */}
+            {item.isSubscription && (
+              <div className="mb-5 p-1 rounded-xl bg-white/[0.04] border border-white/10 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPeriod('month')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+                    selectedPeriod === 'month'
+                      ? 'bg-white text-black font-bold shadow-sm'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  1 месяц ({item.monthlyPrice || (item.id === 'sub' ? 139 : 289)} ₽)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPeriod('forever')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                    selectedPeriod === 'forever'
+                      ? 'bg-white text-black font-bold shadow-sm'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  <span>Навсегда ({item.foreverPrice || item.price} ₽)</span>
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Custom amount for donations */}

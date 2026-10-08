@@ -159,25 +159,40 @@ export const ProductsTab: React.FC = () => {
                 </div>
               </div>
 
-              {/* Price inputs: [ 289 ] ₽ / [ 1 шт. ] */}
-              <div className="w-full pt-4 border-t border-slate-800/80 flex items-center justify-center gap-2 text-sm font-mono">
-                <input
-                  type="number"
-                  min="1"
-                  max="100000"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) || 0 })}
-                  className="w-24 px-3 py-1.5 rounded-lg bg-[#141b2a] border border-slate-700 text-white text-center font-bold focus:border-amber-400 focus:outline-none"
-                  required
-                />
-                <span className="text-slate-400 font-sans">₽ /</span>
-                <input
-                  type="text"
-                  value={formData.period}
-                  onChange={(e) => setFormData({ ...formData, period: e.target.value })}
-                  placeholder="навсегда / 1 шт."
-                  className="w-28 px-2 py-1.5 rounded-lg bg-[#141b2a] border border-slate-700 text-slate-300 text-center text-xs focus:border-amber-400 focus:outline-none font-sans"
-                />
+              {/* Price inputs: Forever and Monthly */}
+              <div className="w-full pt-4 border-t border-slate-800/80 space-y-2.5">
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Цена навсегда:</span>
+                  <div className="flex items-center gap-1.5 font-mono">
+                    <input
+                      type="number"
+                      min="1"
+                      max="100000"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) || 0 })}
+                      className="w-20 px-2 py-1 rounded-lg bg-[#141b2a] border border-slate-700 text-white text-center font-bold focus:border-amber-400 focus:outline-none text-xs"
+                      required
+                    />
+                    <span>₽</span>
+                  </div>
+                </div>
+
+                {(formData.id === 'sub' || formData.id === 'sub-plus' || formData.monthlyPrice !== undefined) && (
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <span>Цена на месяц:</span>
+                    <div className="flex items-center gap-1.5 font-mono">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100000"
+                        value={formData.monthlyPrice || (formData.id === 'sub' ? 139 : 289)}
+                        onChange={(e) => setFormData({ ...formData, monthlyPrice: Number(e.target.value) || 0 })}
+                        className="w-20 px-2 py-1 rounded-lg bg-[#141b2a] border border-slate-700 text-white text-center font-bold focus:border-amber-400 focus:outline-none text-xs"
+                      />
+                      <span>₽</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -394,8 +409,13 @@ export const ProductsTab: React.FC = () => {
 
                 {/* Footer: Price tag & quick edit */}
                 <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
-                  <div className="font-mono font-bold text-white">
-                    {product.price} ₽ <span className="text-slate-500 font-normal">/ {product.period}</span>
+                  <div className="font-mono font-bold text-white flex flex-col">
+                    <span>{product.price} ₽ <span className="text-slate-500 font-normal">/ {product.period}</span></span>
+                    {product.monthlyPrice && (
+                      <span className="text-[10px] text-amber-400 font-normal">
+                        или {product.monthlyPrice} ₽ / 1 мес.
+                      </span>
+                    )}
                   </div>
 
                   {product.hidden ? (

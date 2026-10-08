@@ -32,14 +32,34 @@ export const Store: React.FC = () => {
     return <Sparkles className="w-5 h-5 text-neutral-300" />;
   };
 
+  const [selectedPeriods, setSelectedPeriods] = useState<Record<string, 'month' | 'forever'>>({
+    sub: 'forever',
+    'sub-plus': 'forever',
+  });
+
+  const togglePeriod = (productId: string, period: 'month' | 'forever') => {
+    setSelectedPeriods((prev) => ({ ...prev, [productId]: period }));
+  };
+
   const handleBuy = (product: ProductItem) => {
+    const isSub = product.id === 'sub' || product.id === 'sub-plus';
+    const period = selectedPeriods[product.id] || 'forever';
+    const monthly = product.monthlyPrice || (product.id === 'sub' ? 139 : 289);
+    const forever = product.price;
+
+    const currentPrice = isSub ? (period === 'month' ? monthly : forever) : product.price;
+    const currentPeriod = isSub ? (period === 'month' ? '1 месяц' : 'навсегда') : product.period;
+
     setSelectedItem({
       id: product.id,
       name: product.name,
-      price: product.price,
-      period: product.period,
+      price: currentPrice,
+      monthlyPrice: monthly,
+      foreverPrice: forever,
+      period: currentPeriod,
       description: product.description,
       isCustomAmount: product.id === 'donate',
+      isSubscription: isSub,
     });
   };
 
@@ -59,6 +79,11 @@ export const Store: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-16 sm:mb-20">
         {subscriptionProducts.map((sub) => {
           const isPopular = sub.popular;
+          const period = selectedPeriods[sub.id] || 'forever';
+          const monthlyPrice = sub.monthlyPrice || (sub.id === 'sub' ? 139 : 289);
+          const foreverPrice = sub.price;
+          const currentPrice = period === 'month' ? monthlyPrice : foreverPrice;
+          const currentPeriodText = period === 'month' ? '1 месяц' : 'навсегда';
 
           return (
             <div
@@ -116,16 +141,42 @@ export const Store: React.FC = () => {
 
               {/* Price & Action Button */}
               <div className="pt-6 border-t border-white/[0.08] space-y-4">
+                {/* Period Selector (1 месяц / Навсегда) */}
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.05] border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => togglePeriod(sub.id, 'month')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+                      period === 'month'
+                        ? 'bg-white text-black font-bold shadow-sm'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    1 месяц ({monthlyPrice} ₽)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => togglePeriod(sub.id, 'forever')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
+                      period === 'forever'
+                        ? 'bg-white text-black font-bold shadow-sm'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <span>Навсегда ({foreverPrice} ₽)</span>
+                  </button>
+                </div>
+
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono">
-                    {sub.price} ₽
+                    {currentPrice} ₽
                   </span>
-                  {sub.oldPrice && sub.oldPrice > sub.price && (
+                  {sub.oldPrice && sub.oldPrice > currentPrice && period === 'forever' && (
                     <span className="text-base text-neutral-500 line-through font-mono">
                       {sub.oldPrice} ₽
                     </span>
                   )}
-                  <span className="text-sm text-neutral-400">/ {sub.period}</span>
+                  <span className="text-sm text-neutral-400">/ {currentPeriodText}</span>
                 </div>
 
                 <button

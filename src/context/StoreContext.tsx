@@ -8,6 +8,7 @@ export interface ProductItem {
   numericId: number;
   name: string;
   price: number;
+  monthlyPrice?: number;
   oldPrice?: number;
   period: string; // 'навсегда', '1 месяц', '1 шт.'
   type: 'Предмет' | 'Привилегия' | 'Валюта' | 'Рулетка' | 'Другое';
@@ -96,48 +97,54 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
   {
     id: 'sub',
     numericId: 1060509,
-    name: 'Подписка SUB',
-    price: 199,
-    oldPrice: 249,
+    name: 'Подписка SUB 🍇',
+    price: 299,
+    monthlyPrice: 139,
+    oldPrice: 349,
     period: 'навсегда',
     type: 'Привилегия',
     command: 'lp user {user} parent add sub',
-    description: 'Базовая подписка с доступом к приватам, домам и уникальному префиксу.',
+    description: 'Базовая подписка: кастомная музыка, /rename, /relore, /hat, /crawl и поддержка проекта.',
     category: 'Подписки',
     iconColor: 'magenta',
     hidden: false,
     offlineAllowed: true,
     popular: false,
     features: [
-      'Доступ к приватам',
-      'Доступ к /sethome (до 3 точек дома)',
-      'Уникальный белый префикс в чате и табе',
-      'Возможность писать цветным текстом',
-      'Поддержка любимого сервера',
+      'Уникальный префикс в Табе',
+      'Возможность ставить кастомную музыку на пластинках (/disc burn)',
+      'Изменить название предмета и его лор (/rename и /relore)',
+      'Поставить блок на голову (/hat)',
+      'Возможность ползать (/crawl)',
+      'Поддержка нашего сервера для дальнейшей работы',
     ],
   },
   {
     id: 'sub-plus',
     numericId: 1060508,
-    name: 'Подписка SUB+',
-    price: 399,
-    oldPrice: 499,
+    name: 'Подписка SUB+ 🍎',
+    price: 749,
+    monthlyPrice: 289,
+    oldPrice: 899,
     period: 'навсегда',
     type: 'Привилегия',
     command: 'lp user {user} parent add sub+',
-    description: 'Максимальные возможности: полёт /fly, приоритет в очереди и светящийся префикс.',
+    description: 'Максимальные возможности: /resize, /co near, /squaremap hide, кастомная музыка и светящийся префикс.',
     category: 'Подписки',
     iconColor: 'red',
     hidden: false,
     offlineAllowed: true,
     popular: true,
     features: [
-      'Все возможности подписки SUB',
-      'Доступ к /fly в приватах и строительных зонах',
-      'Эксклюзивный сияющий префикс [SUB+]',
-      'Приоритет в очереди при полном сервере',
-      'До 10 точек /sethome и доступ к /workbench',
-      'Личный значок в Discord и Telegram сообществах',
+      'Уникальный префикс в табе',
+      'Возможность ставить кастомную музыку на пластинках (/disc burn)',
+      'Изменение размера персонажа (/resize 0.8-1.15)',
+      'Изменить название предмета и его лор (/rename и /relore)',
+      'Поставить блок на голову (/hat)',
+      'Просмотр недавных взаимодействий вокруг (/co near)',
+      'Возможность ползать (/crawl)',
+      'Скрыть себя с онлайн карты (/squaremap hide /squaremap show)',
+      'Поддержка нашего сервера для дальнейшей работы',
     ],
   },
   {
@@ -320,7 +327,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem('gsq_products');
       if (saved) {
         const parsed: ProductItem[] = JSON.parse(saved);
-        const cleaned = parsed.filter(
+        const cleaned = parsed.map((p) => {
+          if (p.id === 'sub' && (p.price === 199 || !p.monthlyPrice)) {
+            return {
+              ...p,
+              name: 'Подписка SUB 🍇',
+              price: 299,
+              monthlyPrice: 139,
+              features: DEFAULT_PRODUCTS[0].features,
+            };
+          }
+          if (p.id === 'sub-plus' && (p.price === 399 || !p.monthlyPrice)) {
+            return {
+              ...p,
+              name: 'Подписка SUB+ 🍎',
+              price: 749,
+              monthlyPrice: 289,
+              features: DEFAULT_PRODUCTS[1].features,
+            };
+          }
+          return p;
+        }).filter(
           (p) => p.id !== 'diamond-sword' && !p.id.includes('-1m')
         );
         if (cleaned.length > 0) return cleaned;

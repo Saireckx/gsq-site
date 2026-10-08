@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { CubeIcon } from '../../components/admin/CubeIcon';
+import { ProductIcon } from '../../components/admin/ProductIcon';
 import { Search, PlusCircle, Trash2, Download, CheckCircle2, Clock } from 'lucide-react';
 
 export const OrdersTab: React.FC = () => {
@@ -139,7 +139,7 @@ export const OrdersTab: React.FC = () => {
                     {/* Product */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        <CubeIcon color={order.iconColor} size="sm" />
+                        <ProductIcon productId={order.productId} name={order.productName} size="sm" />
                         <span className="text-slate-200 font-medium">
                           {order.productName}
                         </span>

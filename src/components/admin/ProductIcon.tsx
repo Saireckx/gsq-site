@@ -1,22 +1,22 @@
 import React from 'react';
-import { Crown, Package, ShieldCheck, VolumeX, Heart, Tag } from 'lucide-react';
+import { Crown, Package, ShieldCheck, VolumeX, Heart, Tag, Coins } from 'lucide-react';
 
-export type CubeColor = 'magenta' | 'red' | 'green' | 'white' | 'gold' | 'sword';
-
-interface CubeIconProps {
-  color?: CubeColor;
+export interface ProductIconProps {
+  productId?: string;
+  category?: string;
+  type?: string;
+  name?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  name?: string;
-  productId?: string;
 }
 
-export const CubeIcon: React.FC<CubeIconProps> = ({
-  color = 'magenta',
+export const ProductIcon: React.FC<ProductIconProps> = ({
+  productId = '',
+  category = '',
+  type = '',
+  name = '',
   size = 'md',
   className = '',
-  productId = '',
-  name = '',
 }) => {
   const sizeClasses = {
     sm: 'w-7 h-7 rounded-lg',
@@ -32,7 +32,13 @@ export const CubeIcon: React.FC<CubeIconProps> = ({
     xl: 'w-10 h-10',
   };
 
-  if (color === 'gold' || productId.includes('box') || name.includes('Коробка') || name.includes('шляп')) {
+  const id = productId.toLowerCase();
+  const cat = category.toLowerCase();
+  const t = type.toLowerCase();
+  const n = name.toLowerCase();
+
+  // 1. Hat Box / Crate (Case with actual 3D box texture or Package)
+  if (id.includes('box') || id.includes('hat') || id.includes('case') || cat.includes('кейс') || t.includes('рулет')) {
     return (
       <div className={`relative flex items-center justify-center bg-gradient-to-br from-amber-500/20 to-amber-950/40 border border-amber-500/30 shadow-md ${sizeClasses[size]} ${className}`}>
         <img
@@ -48,7 +54,8 @@ export const CubeIcon: React.FC<CubeIconProps> = ({
     );
   }
 
-  if (color === 'red') {
+  // 2. Subscriptions (SUB & SUB+)
+  if (id === 'sub-plus' || n.includes('sub+') || n.includes('sub +') || n.includes('🍎')) {
     return (
       <div className={`flex items-center justify-center bg-gradient-to-br from-rose-500/20 to-rose-950/40 border border-rose-500/30 text-rose-400 shadow-md ${sizeClasses[size]} ${className}`}>
         <Crown className={iconSizes[size]} />
@@ -56,7 +63,7 @@ export const CubeIcon: React.FC<CubeIconProps> = ({
     );
   }
 
-  if (color === 'magenta') {
+  if (id === 'sub' || n.includes('sub') || n.includes('🍇')) {
     return (
       <div className={`flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-purple-950/40 border border-purple-500/30 text-purple-400 shadow-md ${sizeClasses[size]} ${className}`}>
         <Crown className={iconSizes[size]} />
@@ -64,7 +71,8 @@ export const CubeIcon: React.FC<CubeIconProps> = ({
     );
   }
 
-  if (color === 'green') {
+  // 3. Unban
+  if (id.includes('unban') || n.includes('разбан')) {
     return (
       <div className={`flex items-center justify-center bg-gradient-to-br from-emerald-500/20 to-emerald-950/40 border border-emerald-500/30 text-emerald-400 shadow-md ${sizeClasses[size]} ${className}`}>
         <ShieldCheck className={iconSizes[size]} />
@@ -72,7 +80,8 @@ export const CubeIcon: React.FC<CubeIconProps> = ({
     );
   }
 
-  if (color === 'white') {
+  // 4. Unmute
+  if (id.includes('unmute') || n.includes('размут')) {
     return (
       <div className={`flex items-center justify-center bg-gradient-to-br from-sky-500/20 to-sky-950/40 border border-sky-500/30 text-sky-400 shadow-md ${sizeClasses[size]} ${className}`}>
         <VolumeX className={iconSizes[size]} />
@@ -80,6 +89,33 @@ export const CubeIcon: React.FC<CubeIconProps> = ({
     );
   }
 
+  // 5. Donate / Support
+  if (id.includes('donate') || cat.includes('поддерж') || n.includes('пожертв')) {
+    return (
+      <div className={`flex items-center justify-center bg-gradient-to-br from-amber-500/20 to-amber-950/40 border border-amber-500/30 text-amber-400 shadow-md ${sizeClasses[size]} ${className}`}>
+        <Heart className={iconSizes[size]} />
+      </div>
+    );
+  }
+
+  // 6. Generic Category / Type Matching
+  if (t.includes('привил')) {
+    return (
+      <div className={`flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-purple-950/40 border border-purple-500/30 text-purple-400 shadow-md ${sizeClasses[size]} ${className}`}>
+        <Crown className={iconSizes[size]} />
+      </div>
+    );
+  }
+
+  if (t.includes('валют') || cat.includes('валют')) {
+    return (
+      <div className={`flex items-center justify-center bg-gradient-to-br from-amber-500/20 to-amber-950/40 border border-amber-500/30 text-amber-400 shadow-md ${sizeClasses[size]} ${className}`}>
+        <Coins className={iconSizes[size]} />
+      </div>
+    );
+  }
+
+  // Fallback icon
   return (
     <div className={`flex items-center justify-center bg-gradient-to-br from-slate-700/20 to-slate-900/40 border border-slate-700/50 text-slate-300 shadow-md ${sizeClasses[size]} ${className}`}>
       <Tag className={iconSizes[size]} />

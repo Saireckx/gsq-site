@@ -222,7 +222,7 @@ const DEFAULT_COUPONS: CouponItem[] = [
     code: 'TECH10',
     discount: 10,
     description: 'tech',
-    usesCount: 14,
+    usesCount: 0,
     applicableProductIds: ['all'],
     active: true,
   },
@@ -231,7 +231,7 @@ const DEFAULT_COUPONS: CouponItem[] = [
     code: 'KOT10',
     discount: 10,
     description: 'новости',
-    usesCount: 8,
+    usesCount: 0,
     applicableProductIds: ['all'],
     active: true,
   },
@@ -240,7 +240,7 @@ const DEFAULT_COUPONS: CouponItem[] = [
     code: 'CODE20',
     discount: 20,
     description: 'Скидка',
-    usesCount: 22,
+    usesCount: 0,
     applicableProductIds: ['unban', 'sub', 'sub-plus'],
     active: true,
   },
@@ -249,7 +249,7 @@ const DEFAULT_COUPONS: CouponItem[] = [
     code: 'END10',
     discount: 10,
     description: 'end10',
-    usesCount: 5,
+    usesCount: 0,
     applicableProductIds: ['all'],
     active: true,
   },
@@ -258,87 +258,13 @@ const DEFAULT_COUPONS: CouponItem[] = [
     code: 'GSQ',
     discount: 15,
     description: 'Фирменный промокод GSQ',
-    usesCount: 33,
+    usesCount: 0,
     applicableProductIds: ['all'],
     active: true,
   },
 ];
 
-const DEFAULT_ORDERS: OrderItem[] = [
-  {
-    id: 'ord-1',
-    orderNumber: 'GSQ-882194',
-    nickname: 'Armor_ykon',
-    productId: 'unban',
-    productName: 'Разбан',
-    amount: 372.67,
-    paymentMethod: 'СБП',
-    status: 'completed',
-    createdAt: 'Сегодня, 18:04',
-    iconColor: 'green',
-  },
-  {
-    id: 'ord-2',
-    orderNumber: 'GSQ-774912',
-    nickname: 'sicttik',
-    productId: 'sub',
-    productName: 'Подписка SUB',
-    amount: 279.27,
-    paymentMethod: 'Банковская карта',
-    status: 'completed',
-    createdAt: 'Сегодня, 16:32',
-    iconColor: 'magenta',
-  },
-  {
-    id: 'ord-3',
-    orderNumber: 'GSQ-663810',
-    nickname: 'Zaqul2912',
-    productId: 'sub-1m',
-    productName: 'Подписка SUB (1 месяц)',
-    amount: 116.84,
-    promoCode: 'KOT10',
-    paymentMethod: 'Т-Банк',
-    status: 'completed',
-    createdAt: 'Сегодня, 14:15',
-    iconColor: 'magenta',
-  },
-  {
-    id: 'ord-4',
-    orderNumber: 'GSQ-552901',
-    nickname: 'RockyHydra45115',
-    productId: 'sub',
-    productName: 'Подписка SUB',
-    amount: 279.27,
-    paymentMethod: 'СБП',
-    status: 'completed',
-    createdAt: 'Вчера, 21:50',
-    iconColor: 'magenta',
-  },
-  {
-    id: 'ord-5',
-    orderNumber: 'GSQ-441829',
-    nickname: 'Notch_Fan',
-    productId: 'sub-plus',
-    productName: 'Подписка SUB+',
-    amount: 399.0,
-    paymentMethod: 'СБП',
-    status: 'completed',
-    createdAt: 'Вчера, 19:12',
-    iconColor: 'red',
-  },
-  {
-    id: 'ord-6',
-    orderNumber: 'GSQ-330718',
-    nickname: 'VoxelCrafter',
-    productId: 'unmute',
-    productName: 'Размут',
-    amount: 199.0,
-    paymentMethod: 'Банковская карта',
-    status: 'completed',
-    createdAt: '2 дня назад',
-    iconColor: 'white',
-  },
-];
+const DEFAULT_ORDERS: OrderItem[] = [];
 
 const StoreContext = createContext<StoreContextType | null>(null);
 
@@ -391,7 +317,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [orders, setOrders] = useState<OrderItem[]>(() => {
     try {
       const saved = localStorage.getItem('gsq_orders');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: OrderItem[] = JSON.parse(saved);
+        // Purge legacy mock demo orders if present
+        const nonMock = parsed.filter(
+          (o) =>
+            !['Armor_ykon', 'sicttik', 'Zaqul2912', 'RockyHydra45115', 'Notch_Fan', 'VoxelCrafter'].includes(o.nickname)
+        );
+        if (nonMock.length !== parsed.length) {
+          localStorage.setItem('gsq_orders', JSON.stringify(nonMock));
+        }
+        return nonMock;
+      }
     } catch {}
     return DEFAULT_ORDERS;
   });
@@ -671,16 +608,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
-  // Analytics calculation
+  // Analytics calculation based on real orders
   const getAnalytics = () => {
     const completedOrders = orders.filter((o) => o.status === 'completed');
     const totalRevenue = completedOrders.reduce((sum, o) => sum + o.amount, 0);
     const totalCount = completedOrders.length;
 
-    // Simulate today / week portions for live dashboard
-    const todayOrders = completedOrders.slice(0, 3);
-    const todayRevenue = todayOrders.reduce((sum, o) => sum + o.amount, 0);
+    // Filter today's real orders
+    const todayDateStr = new Date().toLocaleDateString('ru-RU');
+    const todayOrders = completedOrders.filter((o) => {
+      if (o.createdAt.includes('Сегодня')) return true;
+      try {
+        const d = new Date(o.createdAt);
+        return !isNaN(d.getTime()) && d.toLocaleDateString('ru-RU') === todayDateStr;
+      } catch {
+        return false;
+      }
+    });
 
+    const todayRevenue = todayOrders.reduce((sum, o) => sum + o.amount, 0);
     const weekOrders = completedOrders;
     const weekRevenue = totalRevenue;
 
@@ -696,8 +642,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       revenueTotal: Math.round(totalRevenue),
       avgCheckToday: avgToday,
       avgCheckWeek: avgWeek,
-      visitsToday: 1,
-      visitsWeek: 17,
+      visitsToday: 0,
+      visitsWeek: 0,
     };
   };
 

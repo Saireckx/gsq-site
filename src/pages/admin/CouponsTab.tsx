@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useStore, CouponItem } from '../../context/StoreContext';
 import { Plus, Edit2, Trash2, PieChart, Check, X, Tag, Sparkles } from 'lucide-react';
-import { CubeIcon } from '../../components/admin/CubeIcon';
 
 export const CouponsTab: React.FC = () => {
   const { coupons, products, addCoupon, updateCoupon, deleteCoupon } = useStore();

@@ -133,7 +133,7 @@
       "code": "TECH10",
       "discount": 10,
       "description": "tech",
-      "usesCount": 14,
+      "usesCount": 0,
       "applicableProductIds": ["all"],
       "active": true
     },
@@ -142,7 +142,7 @@
       "code": "KOT10",
       "discount": 10,
       "description": "новости",
-      "usesCount": 8,
+      "usesCount": 0,
       "applicableProductIds": ["all"],
       "active": true
     },
@@ -151,7 +151,7 @@
       "code": "CODE20",
       "discount": 20,
       "description": "Скидка",
-      "usesCount": 22,
+      "usesCount": 0,
       "applicableProductIds": ["unban", "sub", "sub-plus"],
       "active": true
     },
@@ -160,7 +160,7 @@
       "code": "END10",
       "discount": 10,
       "description": "end10",
-      "usesCount": 5,
+      "usesCount": 0,
       "applicableProductIds": ["all"],
       "active": true
     },
@@ -169,86 +169,12 @@
       "code": "GSQ",
       "discount": 15,
       "description": "Фирменный промокод GSQ",
-      "usesCount": 33,
+      "usesCount": 0,
       "applicableProductIds": ["all"],
       "active": true
     }
   ],
-  "orders": [
-    {
-      "id": "ord-1",
-      "orderNumber": "GSQ-882194",
-      "nickname": "Armor_ykon",
-      "productId": "unban",
-      "productName": "Разбан",
-      "amount": 372.67,
-      "paymentMethod": "СБП",
-      "status": "completed",
-      "createdAt": "Сегодня, 18:04",
-      "iconColor": "green"
-    },
-    {
-      "id": "ord-2",
-      "orderNumber": "GSQ-774912",
-      "nickname": "sicttik",
-      "productId": "sub",
-      "productName": "Подписка SUB",
-      "amount": 279.27,
-      "paymentMethod": "Банковская карта",
-      "status": "completed",
-      "createdAt": "Сегодня, 16:32",
-      "iconColor": "magenta"
-    },
-    {
-      "id": "ord-3",
-      "orderNumber": "GSQ-663810",
-      "nickname": "Zaqul2912",
-      "productId": "sub-1m",
-      "productName": "Подписка SUB (1 месяц)",
-      "amount": 116.84,
-      "promoCode": "KOT10",
-      "paymentMethod": "Т-Банк",
-      "status": "completed",
-      "createdAt": "Сегодня, 14:15",
-      "iconColor": "magenta"
-    },
-    {
-      "id": "ord-4",
-      "orderNumber": "GSQ-552901",
-      "nickname": "RockyHydra45115",
-      "productId": "sub",
-      "productName": "Подписка SUB",
-      "amount": 279.27,
-      "paymentMethod": "СБП",
-      "status": "completed",
-      "createdAt": "Вчера, 21:50",
-      "iconColor": "magenta"
-    },
-    {
-      "id": "ord-5",
-      "orderNumber": "GSQ-441829",
-      "nickname": "Notch_Fan",
-      "productId": "sub-plus",
-      "productName": "Подписка SUB+",
-      "amount": 399.0,
-      "paymentMethod": "СБП",
-      "status": "completed",
-      "createdAt": "Вчера, 19:12",
-      "iconColor": "red"
-    },
-    {
-      "id": "ord-6",
-      "orderNumber": "GSQ-330718",
-      "nickname": "VoxelCrafter",
-      "productId": "unmute",
-      "productName": "Размут",
-      "amount": 199.0,
-      "paymentMethod": "Банковская карта",
-      "status": "completed",
-      "createdAt": "2 дня назад",
-      "iconColor": "white"
-    }
-  ],
+  "orders": [],
   "serverSettings": {
     "ip": "play.mygsq.fun",
     "version": "26.1.2",

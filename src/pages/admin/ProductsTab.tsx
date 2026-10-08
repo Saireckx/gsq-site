@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore, ProductItem } from '../../context/StoreContext';
-import { CubeIcon, CubeColor } from '../../components/admin/CubeIcon';
+import { ProductIcon } from '../../components/admin/ProductIcon';
 import { 
   FolderPlus, 
   Tag, 
@@ -71,14 +71,6 @@ export const ProductsTab: React.FC = () => {
   };
 
   const productTypes: ProductItem['type'][] = ['Предмет', 'Привилегия', 'Валюта', 'Рулетка', 'Другое'];
-  const colorOptions: { id: CubeColor; label: string }[] = [
-    { id: 'magenta', label: 'Пурпурный (SUB)' },
-    { id: 'red', label: 'Красный (SUB+)' },
-    { id: 'green', label: 'Зеленый (Разбан)' },
-    { id: 'white', label: 'Белый (Размут)' },
-    { id: 'gold', label: 'Золотой (Донат)' },
-    { id: 'sword', label: 'Алмазный меч' },
-  ];
 
   return (
     <div className="space-y-8">
@@ -126,7 +118,7 @@ export const ProductsTab: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column: Preview box with 3D render & price matching Screenshot 2 */}
+            {/* Left Column: Preview box with product icon & price */}
             <div className="lg:col-span-4 rounded-xl bg-[#0e1422] border border-slate-800 p-5 flex flex-col justify-between items-center text-center">
               <div className="w-full">
                 <input
@@ -139,24 +131,12 @@ export const ProductsTab: React.FC = () => {
                 />
               </div>
 
-              {/* 3D Cube / Sword Icon Render */}
-              <div className="my-6 flex flex-col items-center gap-3">
-                <CubeIcon color={formData.iconColor} size="xl" />
-
-                <div className="flex items-center gap-1">
-                  <span className="text-[11px] text-slate-500">Цвет иконки:</span>
-                  <select
-                    value={formData.iconColor}
-                    onChange={(e) => setFormData({ ...formData, iconColor: e.target.value as CubeColor })}
-                    className="bg-[#131a29] border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 focus:outline-none"
-                  >
-                    {colorOptions.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Product Icon Preview */}
+              <div className="my-6 flex flex-col items-center gap-2">
+                <ProductIcon productId={formData.id} name={formData.name} type={formData.type} category={formData.category} size="xl" />
+                <span className="text-[11px] text-slate-400 font-medium px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60 mt-1">
+                  {formData.category || formData.type}
+                </span>
               </div>
 
               {/* Price inputs: Forever and Monthly */}
@@ -402,9 +382,9 @@ export const ProductsTab: React.FC = () => {
                   <span>{product.name}</span>
                 </h4>
 
-                {/* 3D Cube Icon */}
+                {/* Product Icon */}
                 <div className="my-2 flex justify-center py-2">
-                  <CubeIcon color={product.iconColor} size="lg" />
+                  <ProductIcon productId={product.id} name={product.name} type={product.type} category={product.category} size="lg" />
                 </div>
 
                 {/* Footer: Price tag & quick edit */}

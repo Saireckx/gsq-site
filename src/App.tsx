@@ -23,8 +23,11 @@ export const App: React.FC = () => {
             <Route path="map" element={<Map />} />
           </Route>
 
-          {/* Admin Panel (Separate Layout matching reference) */}
-          <Route path="/admin" element={<Admin />} />
+          {/* Secret Admin Panel Route */}
+          <Route path="/gsq-control-9821" element={<Admin />} />
+
+          {/* Block /admin by redirecting to home */}
+          <Route path="/admin" element={<Navigate to="/" replace />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

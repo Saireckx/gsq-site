@@ -22,7 +22,7 @@ import { api, getAuthToken } from '../lib/api';
 type AdminTab = 'dashboard' | 'products' | 'coupons' | 'orders' | 'settings';
 
 export const Admin: React.FC = () => {
-  // Simple PIN protection (default PIN: 1234)
+  // Secure password / PIN authentication
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('gsq_admin_auth') === 'true' || !!getAuthToken();
   });
@@ -48,7 +48,7 @@ export const Admin: React.FC = () => {
       }
     } catch {
       // Backend offline fallback check
-      if (pinInput === '1234' || pinInput === 'admin' || pinInput === 'gsq') {
+      if (pinInput === 'Gsq#Admin2026_9xK!' || pinInput === '982164') {
         setIsAuthenticated(true);
         sessionStorage.setItem('gsq_admin_auth', 'true');
         setIsLoading(false);
@@ -77,10 +77,10 @@ export const Admin: React.FC = () => {
 
           <div>
             <h1 className="text-2xl font-black tracking-tight text-white">
-              GSQ Admin Panel
+              GSQ Control Panel
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Панель управления сервером, товарами, промокодами и статистикой
+              Безопасный доступ к управлению сервером, товарами и статистикой
             </p>
           </div>
 
@@ -97,23 +97,24 @@ export const Admin: React.FC = () => {
                     setPinInput(e.target.value);
                     setPinError(false);
                   }}
-                  placeholder="Введите PIN-код (по умолчанию: 1234)"
+                  placeholder="Введите пароль администратора"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0a0e17] border border-slate-800 text-white placeholder-slate-500 text-sm font-mono focus:border-amber-400 focus:outline-none transition-colors text-center"
                   autoFocus
                 />
               </div>
               {pinError && (
                 <p className="text-xs text-rose-400 mt-2">
-                  Неверный PIN-код. Попробуйте 1234
+                  Неверный пароль доступа
                 </p>
               )}
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-md active:scale-95"
+              disabled={isLoading}
+              className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
             >
-              Войти в админку
+              {isLoading ? 'Проверка...' : 'Войти в панель'}
             </button>
           </form>
 
@@ -122,7 +123,10 @@ export const Admin: React.FC = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Вернуться на сайт</span>
             </Link>
-            <span className="font-mono text-[11px] text-slate-500">PIN: 1234</span>
+            <span className="text-[11px] text-slate-500 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Защищённый вход</span>
+            </span>
           </div>
         </div>
       </div>

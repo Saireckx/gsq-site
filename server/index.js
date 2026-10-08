@@ -12,8 +12,8 @@ const DB_FILE = path.join(__dirname, 'data', 'db.json');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
 const PORT = process.env.PORT || 4000;
-const ADMIN_PIN = process.env.ADMIN_PIN || '1234';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+const ADMIN_PIN = process.env.ADMIN_PIN || '982164';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Gsq#Admin2026_9xK!';
 
 // In-memory token store: token -> { expiresAt: number }
 const activeSessions = new Map();
@@ -150,8 +150,8 @@ function calculateStats(orders) {
     revenueTotal: Math.round(totalRevenue),
     avgCheckToday: avgToday,
     avgCheckWeek: avgWeek,
-    visitsToday: 1,
-    visitsWeek: 17,
+    visitsToday: 0,
+    visitsWeek: 0,
   };
 }
 
@@ -256,9 +256,6 @@ const server = http.createServer(async (req, res) => {
           ADMIN_PASSWORD,
           db.admin?.pin,
           db.admin?.password,
-          '1234',
-          'admin',
-          'gsq',
         ].filter(Boolean);
 
         if (validPins.includes(pin)) {

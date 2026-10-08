@@ -7,38 +7,42 @@ export interface HatItem {
   emoji: string;
   image?: string;
   subtitle?: string;
+  scale?: string;
 }
 
 export const RARITY_CONFIG = {
   common: {
-    label: 'Базовая редкость',
+    label: 'Обычная редкость',
     shortLabel: 'Обычная',
     percent: 70,
     textColor: 'text-sky-300',
-    borderColor: 'border-sky-500/40',
+    borderColor: 'border-sky-500/30',
     bgColor: 'bg-sky-500/10',
     glow: 'rgba(56, 189, 248, 0.4)',
     accentColor: '#38bdf8',
+    barColor: 'bg-sky-400',
   },
   rare: {
     label: 'Редкая редкость',
     shortLabel: 'Редкая',
     percent: 25,
     textColor: 'text-purple-300',
-    borderColor: 'border-purple-500/50',
-    bgColor: 'bg-purple-500/15',
+    borderColor: 'border-purple-500/40',
+    bgColor: 'bg-purple-500/10',
     glow: 'rgba(168, 85, 247, 0.5)',
     accentColor: '#a855f7',
+    barColor: 'bg-purple-500',
   },
   legendary: {
     label: 'Легендарная редкость',
     shortLabel: 'Легендарная',
     percent: 5,
     textColor: 'text-amber-300',
-    borderColor: 'border-amber-400',
-    bgColor: 'bg-amber-500/20',
+    borderColor: 'border-amber-400/50',
+    bgColor: 'bg-amber-500/15',
     glow: 'rgba(245, 158, 11, 0.7)',
     accentColor: '#f59e0b',
+    barColor: 'bg-gradient-to-r from-amber-400 to-yellow-300',
   },
 };
 
@@ -46,27 +50,27 @@ const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '') + '/';
 
 export const HATS_LIST: HatItem[] = [
   // Базовая редкость (70%)
-  { id: 'sombrero', name: 'Сомбреро', rarity: 'common', emoji: '👒', image: `${baseUrl}hats/sombrero.png` },
-  { id: 'mushroom_hat', name: 'Грибная шляпа', rarity: 'common', emoji: '🍄', image: `${baseUrl}hats/mushroom_hat.png` },
-  { id: 'toad', name: 'Жаба', rarity: 'common', emoji: '🐸', image: `${baseUrl}hats/toad.png` },
-  { id: 'beer_helmet', name: 'Пивной шлем', rarity: 'common', emoji: '🍺', image: `${baseUrl}hats/beer_helmet.png` },
-  { id: 'gold_crown', name: 'Золотая корона', rarity: 'common', emoji: '👑', image: `${baseUrl}hats/gold_crown.png` },
-  { id: 'ushanka', name: 'Шапка ушанка', rarity: 'common', emoji: '🪆', image: `${baseUrl}hats/ushanka.png` },
-  { id: 'welder_mask', name: 'Сварочная маска', rarity: 'common', emoji: '🥽', image: `${baseUrl}hats/welder_mask.png` },
+  { id: 'sombrero', name: 'Сомбреро', rarity: 'common', emoji: '👒', image: `${baseUrl}hats/sombrero.png`, scale: 'scale-105' },
+  { id: 'mushroom_hat', name: 'Грибная шляпа', rarity: 'common', emoji: '🍄', image: `${baseUrl}hats/mushroom_hat.png`, scale: 'scale-100' },
+  { id: 'toad', name: 'Жаба', rarity: 'common', emoji: '🐸', image: `${baseUrl}hats/toad.png`, scale: 'scale-100' },
+  { id: 'beer_helmet', name: 'Пивной шлем', rarity: 'common', emoji: '🍺', image: `${baseUrl}hats/beer_helmet.png`, scale: 'scale-105' },
+  { id: 'gold_crown', name: 'Золотая корона', rarity: 'common', emoji: '👑', image: `${baseUrl}hats/gold_crown.png`, scale: 'scale-100' },
+  { id: 'ushanka', name: 'Шапка-ушанка', rarity: 'common', emoji: '🪆', image: `${baseUrl}hats/ushanka.png`, scale: 'scale-95' },
+  { id: 'welder_mask', name: 'Сварочная маска', rarity: 'common', emoji: '🥽', image: `${baseUrl}hats/welder_mask.png`, scale: 'scale-100' },
 
   // Редкая редкость (25%)
-  { id: 'altyn_helmet', name: 'шлем «Алтын»', rarity: 'rare', emoji: '🪖', image: `${baseUrl}hats/altyn_helmet.png` },
-  { id: 'fire_red', name: 'Огонь на голове (красный)', rarity: 'rare', emoji: '🔥', subtitle: '(анимировано)', image: `${baseUrl}hats/fire_red.png` },
-  { id: 'fire_blue', name: 'Огонь на голове (синий)', rarity: 'rare', emoji: '💠', subtitle: '(анимировано)', image: `${baseUrl}hats/fire_blue.png` },
-  { id: 'bear_hat', name: 'Медвежья шапка', rarity: 'rare', emoji: '🐻', image: `${baseUrl}hats/bear_hat.png` },
-  { id: 'fox_hat', name: 'Лисья шапка', rarity: 'rare', emoji: '🦊', image: `${baseUrl}hats/fox_hat.png` },
-  { id: 'propeller_cap', name: 'Кепка с пропеллером', rarity: 'rare', emoji: '🧢', subtitle: '(анимировано)', image: `${baseUrl}hats/propeller_cap.png` },
-  { id: 'kabuto_helmet', name: 'Шлем «кабуто»', rarity: 'rare', emoji: '🥷', image: `${baseUrl}hats/kabuto_helmet.png` },
+  { id: 'altyn_helmet', name: 'Шлем «Алтын»', rarity: 'rare', emoji: '🪖', image: `${baseUrl}hats/altyn_helmet.png`, scale: 'scale-105' },
+  { id: 'fire_red', name: 'Огонь на голове (красный)', rarity: 'rare', emoji: '🔥', subtitle: 'Анимировано', image: `${baseUrl}hats/fire_red.png`, scale: 'scale-105' },
+  { id: 'fire_blue', name: 'Огонь на голове (синий)', rarity: 'rare', emoji: '💠', subtitle: 'Анимировано', image: `${baseUrl}hats/fire_blue.png`, scale: 'scale-105' },
+  { id: 'bear_hat', name: 'Медвежья шапка', rarity: 'rare', emoji: '🐻', image: `${baseUrl}hats/bear_hat.png`, scale: 'scale-95' },
+  { id: 'fox_hat', name: 'Лисья шапка', rarity: 'rare', emoji: '🦊', image: `${baseUrl}hats/fox_hat.png`, scale: 'scale-95' },
+  { id: 'propeller_cap', name: 'Кепка с пропеллером', rarity: 'rare', emoji: '🧢', subtitle: 'Анимировано', image: `${baseUrl}hats/propeller_cap.png`, scale: 'scale-100' },
+  { id: 'kabuto_helmet', name: 'Шлем «Кабуто»', rarity: 'rare', emoji: '🥷', image: `${baseUrl}hats/kabuto_helmet.png`, scale: 'scale-105' },
 
   // Легендарная редкость (5%)
-  { id: 'halo', name: 'нимб', rarity: 'legendary', emoji: '😇', image: `${baseUrl}hats/halo.png` },
-  { id: 'cigarette', name: 'сигарета', rarity: 'legendary', emoji: '🚬', subtitle: '(анимировано)', image: `${baseUrl}hats/cigarette.png` },
-  { id: 'mlg_glasses', name: 'MLG очки', rarity: 'legendary', emoji: '🕶️', image: `${baseUrl}hats/mlg_glasses.png` },
+  { id: 'halo', name: 'Нимб', rarity: 'legendary', emoji: '😇', image: `${baseUrl}hats/halo.png`, scale: 'scale-125' },
+  { id: 'cigarette', name: 'Сигарета', rarity: 'legendary', emoji: '🚬', subtitle: 'Анимировано', image: `${baseUrl}hats/cigarette.png`, scale: 'scale-[1.6]' },
+  { id: 'mlg_glasses', name: 'MLG очки', rarity: 'legendary', emoji: '🕶️', image: `${baseUrl}hats/mlg_glasses.png`, scale: 'scale-135' },
 ];
 
 /**

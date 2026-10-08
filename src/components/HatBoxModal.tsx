@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HATS_LIST, HatItem, RARITY_CONFIG, getRandomHat, HatRarity } from '../lib/boxHats';
-import { X, Sparkles, Volume2, VolumeX, RotateCcw, Package, HelpCircle, Check, ShoppingBag } from 'lucide-react';
+import { X, Sparkles, Volume2, VolumeX, RotateCcw, Package, HelpCircle, ShoppingBag, Crown, Gem, Shield } from 'lucide-react';
 
 interface HatBoxModalProps {
   isOpen: boolean;
@@ -9,7 +9,7 @@ interface HatBoxModalProps {
   onBuy?: () => void;
 }
 
-// Generate a random reel of 45 hats ending on targetHat at index 40
+// Generate a random reel of 45 hats ending on targetHat at index 38
 function generateReel(targetHat: HatItem): HatItem[] {
   const reel: HatItem[] = [];
   for (let i = 0; i < 45; i++) {
@@ -110,7 +110,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
 
   if (!isOpen) return null;
 
-  const ITEM_WIDTH = 130; // width of item in roulette reel (px)
+  const ITEM_WIDTH = 140; // width of item in roulette reel (px)
   const TARGET_INDEX = 38;
 
   const handleStartOpening = () => {
@@ -118,7 +118,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
     setIsOpening(true);
     setWonHat(null);
 
-    // Pick fair winner based on 60% common, 32% rare, 8% legendary
+    // Pick fair winner based on 70% common, 25% rare, 5% legendary
     const target = getRandomHat();
     const newReel = generateReel(target);
     setReel(newReel);
@@ -170,13 +170,13 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl rounded-3xl bg-[#0f1118] border border-white/15 p-5 sm:p-8 shadow-2xl text-white overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl rounded-3xl bg-[#0e111a] border border-white/15 p-5 sm:p-8 shadow-2xl text-white overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col"
       >
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-amber-500/10 blur-3xl pointer-events-none rounded-full" />
 
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 relative z-10">
+        <div className="flex items-center justify-between pb-4 border-b border-white/10 relative z-10 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
               <Package className="w-5 h-5 text-amber-400" />
@@ -191,7 +191,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-neutral-400">
-                Открой коробку и получи одну из 17 эксклюзивных шляп!
+                17 уникальных головных уборов и аксессуаров
               </p>
             </div>
           </div>
@@ -215,7 +215,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
         </div>
 
         {/* Navigation Tabs (Open / Collection) */}
-        <div className="flex items-center gap-2 mt-4 mb-6">
+        <div className="flex items-center gap-2 mt-4 mb-5 flex-shrink-0">
           <button
             onClick={() => {
               setActiveTab('open');
@@ -239,7 +239,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
             }`}
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>Все 17 шляп и шансы</span>
+            <span>Содержимое кейса (17 шт.)</span>
           </button>
         </div>
 
@@ -247,19 +247,19 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
         {/* TAB 1: ROULETTE OPENING INTERFACE                                 */}
         {/* ================================================================= */}
         {activeTab === 'open' && (
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-y-auto pr-1">
             {/* MAIN STAGE: If not won yet, show Box or Roulette Reel */}
             {!wonHat ? (
-              <div className="relative rounded-2xl bg-black/60 border border-white/10 p-6 flex flex-col items-center justify-center min-h-[260px] overflow-hidden">
+              <div className="relative rounded-2xl bg-[#080a10] border border-white/10 p-6 flex flex-col items-center justify-center min-h-[260px] overflow-hidden">
                 {!isOpening ? (
-                  /* Idle Stage: Cardboard Box with Float Animation */
+                  /* Idle Stage: Loot Crate View */
                   <div className="text-center space-y-4 animate-in fade-in duration-300">
                     <div className="relative inline-block group">
                       <div className="absolute -inset-4 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/30 transition-all opacity-60" />
                       <img
                         src={boxImg}
                         alt="Коробка со шляпой"
-                        className="relative w-48 sm:w-56 h-auto mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-300"
+                        className="relative w-48 sm:w-56 h-auto mx-auto drop-shadow-[0_16px_32px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div>
@@ -281,11 +281,11 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                     </div>
 
                     {/* Center Target Indicator Line */}
-                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[2px] bg-amber-400/60 z-10 pointer-events-none shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
+                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[2px] bg-amber-400 z-10 pointer-events-none shadow-[0_0_12px_rgba(251,191,36,0.9)]" />
 
                     {/* Edge Darkening Vignette */}
-                    <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0f1118] to-transparent z-10 pointer-events-none" />
-                    <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#0f1118] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#080a10] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#080a10] to-transparent z-10 pointer-events-none" />
 
                     {/* Roulette Track */}
                     <div
@@ -305,25 +305,29 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                             <div
                               key={idx}
                               style={{ width: `${ITEM_WIDTH - 12}px` }}
-                              className={`flex-shrink-0 p-3 rounded-2xl bg-neutral-900/90 border ${config.borderColor} flex flex-col items-center justify-center text-center shadow-md relative`}
+                              className="flex-shrink-0 rounded-2xl bg-[#141724] border border-white/10 flex flex-col items-center justify-between overflow-hidden shadow-lg relative h-36"
                             >
-                              <div className="w-14 h-14 mb-1.5 flex items-center justify-center">
+                              <div className="w-full flex-1 flex items-center justify-center p-2">
                                 {hat.image ? (
                                   <img
                                     src={hat.image}
                                     alt={hat.name}
-                                    className="w-full h-full object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
+                                    className={`w-16 h-16 object-contain filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.7)] ${hat.scale || ''}`}
                                   />
                                 ) : (
                                   <span className="text-3xl filter drop-shadow">{hat.emoji}</span>
                                 )}
                               </div>
-                              <span className="text-[11px] font-bold text-white truncate w-full">
-                                {hat.name}
-                              </span>
-                              <span className={`text-[9px] uppercase font-semibold ${config.textColor}`}>
-                                {config.shortLabel}
-                              </span>
+                              <div className="w-full py-2 px-1 bg-black/40 text-center">
+                                <span className="text-[11px] font-bold text-white truncate block px-1">
+                                  {hat.name}
+                                </span>
+                                <span className={`text-[9px] uppercase font-semibold ${config.textColor}`}>
+                                  {config.shortLabel}
+                                </span>
+                              </div>
+                              {/* Rarity Bottom Stripe */}
+                              <div className={`h-1 w-full ${config.barColor}`} />
                             </div>
                           );
                         })}
@@ -338,10 +342,10 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
               </div>
             ) : (
               /* WIN STAGE: Celebration Card */
-              <div className="relative rounded-3xl bg-neutral-900/95 border-2 border-white/20 p-8 flex flex-col items-center justify-center text-center space-y-5 overflow-hidden animate-in zoom-in-90 duration-300 shadow-2xl">
+              <div className="relative rounded-3xl bg-[#121520] border-2 border-white/20 p-8 flex flex-col items-center justify-center text-center space-y-5 overflow-hidden animate-in zoom-in-90 duration-300 shadow-2xl">
                 {/* Radial Glow matching Rarity Color */}
                 <div
-                  className="absolute inset-0 opacity-25 pointer-events-none"
+                  className="absolute inset-0 opacity-20 pointer-events-none"
                   style={{
                     background: `radial-gradient(circle at center, ${RARITY_CONFIG[wonHat.rarity].accentColor} 0%, transparent 70%)`,
                   }}
@@ -351,18 +355,18 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                   🎉 Поздравляем! Ваш выигрыш:
                 </div>
 
-                {/* Big Hat Image / Icon - strictly centered */}
+                {/* Big Hat Image / Icon */}
                 <div className="relative flex items-center justify-center py-2 my-1 w-full">
                   <div
-                    className="absolute w-36 h-36 rounded-full blur-2xl opacity-75 pointer-events-none"
+                    className="absolute w-40 h-40 rounded-full blur-2xl opacity-60 pointer-events-none"
                     style={{ backgroundColor: RARITY_CONFIG[wonHat.rarity].accentColor }}
                   />
-                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto flex items-center justify-center filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)] animate-bounce duration-1000">
+                  <div className="relative w-36 h-36 sm:w-44 sm:h-44 mx-auto flex items-center justify-center filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.9)] animate-bounce duration-1000">
                     {wonHat.image ? (
                       <img
                         src={wonHat.image}
                         alt={wonHat.name}
-                        className="max-w-full max-h-full object-contain filter drop-shadow"
+                        className={`max-w-full max-h-full object-contain filter drop-shadow ${wonHat.scale || ''}`}
                       />
                     ) : (
                       <span className="text-7xl sm:text-8xl">{wonHat.emoji}</span>
@@ -370,20 +374,22 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                   </div>
                 </div>
 
-                <div className="w-full flex flex-col items-center justify-center text-center">
+                <div className="w-full flex flex-col items-center justify-center text-center space-y-2">
                   <h4 className="text-2xl sm:text-3xl font-black text-white tracking-tight text-center">
                     {wonHat.name}
                   </h4>
                   {wonHat.subtitle && (
-                    <p className={`text-xs mt-1 text-center font-medium ${wonHat.subtitle.includes('анимировано') ? 'text-emerald-400' : 'text-neutral-400'}`}>
-                      {wonHat.subtitle.startsWith('(') ? wonHat.subtitle : `(${wonHat.subtitle})`}
-                    </p>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+                      <Sparkles className="w-3 h-3" />
+                      <span>{wonHat.subtitle}</span>
+                    </span>
                   )}
-                  <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider mx-auto"
+                  <div
+                    className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider mx-auto"
                     style={{
-                      backgroundColor: `${RARITY_CONFIG[wonHat.rarity].accentColor}25`,
+                      backgroundColor: `${RARITY_CONFIG[wonHat.rarity].accentColor}20`,
                       color: RARITY_CONFIG[wonHat.rarity].accentColor,
-                      border: `1px solid ${RARITY_CONFIG[wonHat.rarity].accentColor}50`,
+                      border: `1px solid ${RARITY_CONFIG[wonHat.rarity].accentColor}40`,
                     }}
                   >
                     <span>{RARITY_CONFIG[wonHat.rarity].label}</span>
@@ -471,72 +477,94 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
         )}
 
         {/* ================================================================= */}
-        {/* TAB 2: FULL COLLECTION OF 17 HATS                                */}
+        {/* TAB 2: FULL COLLECTION OF 17 HATS (Clean Gaming Inventory Cards)  */}
         {/* ================================================================= */}
         {activeTab === 'collection' && (
-          <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-1 scrollbar-thin">
+          <div className="space-y-6 overflow-y-auto pr-1 flex-1">
             {(['legendary', 'rare', 'common'] as HatRarity[]).map((rarityKey) => {
               const config = RARITY_CONFIG[rarityKey];
               const hatsOfRarity = HATS_LIST.filter((h) => h.rarity === rarityKey);
 
+              const RarityIcon = rarityKey === 'legendary' ? Crown : rarityKey === 'rare' ? Gem : Shield;
+
               return (
-                <div key={rarityKey} className="space-y-2.5">
-                  <div className="flex items-center justify-between">
+                <div key={rarityKey} className="space-y-3">
+                  {/* Category Header */}
+                  <div className="flex items-center justify-between pb-1 border-b border-white/5">
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-bold uppercase tracking-wider ${config.textColor}`}>
-                        {config.label}
+                      <RarityIcon className={`w-4 h-4 ${config.textColor}`} />
+                      <span className="text-xs sm:text-sm font-bold text-white tracking-wide">
+                        {rarityKey === 'legendary'
+                          ? 'Легендарные предметы'
+                          : rarityKey === 'rare'
+                          ? 'Редкие предметы'
+                          : 'Обычные предметы'}
                       </span>
-                      <span className="text-[11px] font-mono text-neutral-400">
+                      <span className="text-[11px] font-mono text-neutral-500">
                         ({hatsOfRarity.length} шт.)
                       </span>
                     </div>
-                    <span className="text-xs font-mono font-bold text-white px-2.5 py-0.5 rounded-full bg-white/10">
+
+                    <span
+                      className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: `${config.accentColor}18`,
+                        color: config.accentColor,
+                        border: `1px solid ${config.accentColor}35`,
+                      }}
+                    >
                       Шанс {config.percent}%
                     </span>
                   </div>
 
+                  {/* Cards Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                     {hatsOfRarity.map((hat) => {
-                      const isAnimated =
-                        hat.id === 'fire_red' ||
-                        hat.id === 'fire_blue' ||
-                        hat.id === 'propeller_cap' ||
-                        hat.id === 'cigarette' ||
-                        Boolean(hat.subtitle?.includes('анимировано'));
+                      const isAnimated = Boolean(hat.subtitle?.includes('Анимировано') || hat.subtitle?.includes('анимировано'));
 
                       return (
                         <div
                           key={hat.id}
-                          className={`p-3 sm:p-3.5 rounded-2xl bg-neutral-900/70 border ${config.borderColor} flex flex-col items-center justify-between text-center hover:bg-neutral-900/95 transition-all duration-200 hover:scale-[1.02] group`}
+                          className="relative rounded-2xl bg-[#131622] hover:bg-[#181c2b] border border-white/10 hover:border-white/20 transition-all duration-200 flex flex-col justify-between overflow-hidden shadow-sm group hover:-translate-y-0.5"
                         >
-                          {/* Hat 3D Icon with Rarity Halo */}
-                          <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center my-1 flex-shrink-0">
+                          {/* Animated Badge (Top Right) */}
+                          {isAnimated && (
+                            <div className="absolute top-2 right-2 z-10">
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded-md shadow-sm">
+                                <Sparkles className="w-2.5 h-2.5" />
+                                <span>Анимация</span>
+                              </span>
+                            </div>
+                          )}
+
+                          {/* 3D Hat Image Viewport */}
+                          <div className="w-full h-24 sm:h-28 flex items-center justify-center p-3 relative">
+                            {/* Subtle Radial Ambient */}
                             <div
-                              className="absolute inset-0 rounded-full blur-md opacity-25 group-hover:opacity-45 transition-opacity pointer-events-none"
+                              className="absolute inset-2 rounded-full blur-xl opacity-20 group-hover:opacity-35 transition-opacity pointer-events-none"
                               style={{ backgroundColor: config.accentColor }}
                             />
+
                             {hat.image ? (
                               <img
                                 src={hat.image}
                                 alt={hat.name}
-                                className="max-w-full max-h-full object-contain filter drop-shadow group-hover:scale-110 transition-transform duration-200"
+                                className={`w-20 h-20 sm:w-24 sm:h-24 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)] group-hover:scale-110 transition-transform duration-200 relative z-10 ${hat.scale || ''}`}
                               />
                             ) : (
-                              <span className="text-3xl">{hat.emoji}</span>
+                              <span className="text-4xl filter drop-shadow relative z-10">{hat.emoji}</span>
                             )}
                           </div>
 
-                          {/* Hat Title & Animated Label */}
-                          <div className="w-full mt-2 flex flex-col items-center justify-center text-center">
+                          {/* Hat Title Card Footer */}
+                          <div className="p-2.5 pt-0 text-center flex flex-col items-center justify-center">
                             <p className="text-xs sm:text-sm font-bold text-white text-center leading-snug">
                               {hat.name}
                             </p>
-                            {isAnimated && (
-                              <span className="inline-block text-[10px] sm:text-[11px] font-semibold text-emerald-400 mt-1 whitespace-nowrap">
-                                (анимировано)
-                              </span>
-                            )}
                           </div>
+
+                          {/* Bottom Rarity Accent Bar */}
+                          <div className={`h-1 w-full ${config.barColor}`} />
                         </div>
                       );
                     })}

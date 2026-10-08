@@ -219,7 +219,7 @@ export const Store: React.FC = () => {
               >
                 <div className="absolute -inset-6 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/35 transition-all opacity-70 group-hover:scale-110" />
                 <img
-                  src="/box.png"
+                  src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/box.png`}
                   alt="Коробка со шляпой"
                   className="relative w-64 sm:w-72 h-auto drop-shadow-[0_16px_32px_rgba(0,0,0,0.9)] group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300"
                 />

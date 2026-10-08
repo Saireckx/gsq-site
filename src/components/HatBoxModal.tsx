@@ -79,6 +79,8 @@ function playWinSound(audioContextRef: React.MutableRefObject<AudioContext | nul
   } catch {}
 }
 
+const boxImg = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '') + '/box.png';
+
 export const HatBoxModal: React.FC<HatBoxModalProps> = ({
   isOpen,
   onClose,
@@ -255,7 +257,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                     <div className="relative inline-block group">
                       <div className="absolute -inset-4 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/30 transition-all opacity-60" />
                       <img
-                        src="/box.png"
+                        src={boxImg}
                         alt="Коробка со шляпой"
                         className="relative w-48 sm:w-56 h-auto mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-300"
                       />
@@ -305,8 +307,16 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                               style={{ width: `${ITEM_WIDTH - 12}px` }}
                               className={`flex-shrink-0 p-3 rounded-2xl bg-neutral-900/90 border ${config.borderColor} flex flex-col items-center justify-center text-center shadow-md relative`}
                             >
-                              <div className="text-3xl mb-1.5 filter drop-shadow">
-                                {hat.emoji}
+                              <div className="w-14 h-14 mb-1.5 flex items-center justify-center">
+                                {hat.image ? (
+                                  <img
+                                    src={hat.image}
+                                    alt={hat.name}
+                                    className="w-full h-full object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
+                                  />
+                                ) : (
+                                  <span className="text-3xl filter drop-shadow">{hat.emoji}</span>
+                                )}
                               </div>
                               <span className="text-[11px] font-bold text-white truncate w-full">
                                 {hat.name}
@@ -341,14 +351,22 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                   🎉 Поздравляем! Ваш выигрыш:
                 </span>
 
-                {/* Big Hat Emoji / Icon */}
+                {/* Big Hat Image / Icon */}
                 <div className="relative inline-block py-2">
                   <div
                     className="absolute inset-0 rounded-full blur-2xl opacity-80"
                     style={{ backgroundColor: RARITY_CONFIG[wonHat.rarity].accentColor }}
                   />
-                  <div className="relative text-7xl sm:text-8xl filter drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] animate-bounce duration-1000">
-                    {wonHat.emoji}
+                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)] animate-bounce duration-1000 flex items-center justify-center">
+                    {wonHat.image ? (
+                      <img
+                        src={wonHat.image}
+                        alt={wonHat.name}
+                        className="w-full h-full object-contain filter drop-shadow"
+                      />
+                    ) : (
+                      <span className="text-7xl sm:text-8xl">{wonHat.emoji}</span>
+                    )}
                   </div>
                 </div>
 
@@ -481,7 +499,15 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                         key={hat.id}
                         className={`p-3 rounded-2xl bg-neutral-900/60 border ${config.borderColor} flex items-center gap-2.5 hover:bg-neutral-900/90 transition-colors`}
                       >
-                        <span className="text-2xl">{hat.emoji}</span>
+                        {hat.image ? (
+                          <img
+                            src={hat.image}
+                            alt={hat.name}
+                            className="w-8 h-8 object-contain flex-shrink-0 filter drop-shadow"
+                          />
+                        ) : (
+                          <span className="text-2xl">{hat.emoji}</span>
+                        )}
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-white truncate">{hat.name}</p>
                           {hat.subtitle && (

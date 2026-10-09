@@ -172,8 +172,8 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
     setTranslateX(0);
 
     // Random small offset within target card so it doesn't always land at dead center
-    const randomOffset = Math.floor(Math.random() * 40) - 20;
-    const finalDistance = TARGET_INDEX * ITEM_WIDTH - 240 + randomOffset;
+    // Card is 128px wide (-64 to +64 from its center). Offset between -18 and +18 stays well within card!
+    const randomOffset = Math.floor(Math.random() * 36) - 18;
 
     // Sequential tick intervals perfectly matching the 4.8s cubic-bezier deceleration
     const tickIntervals = [
@@ -183,6 +183,13 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
 
     // Trigger roulette spin on next animation frame
     const t1 = setTimeout(() => {
+      // Dynamically measure actual rendered container width
+      // This ensures target item (TARGET_INDEX = 38) lands exactly under the center indicator
+      // on mobile (320px-390px), tablets, and desktops alike.
+      const containerWidth = reelContainerRef.current?.offsetWidth || (window.innerWidth < 640 ? Math.max(window.innerWidth - 64, 280) : 560);
+      const cardCenter = TARGET_INDEX * ITEM_WIDTH + (ITEM_WIDTH - 12) / 2;
+      const finalDistance = Math.round(cardCenter - containerWidth / 2 + randomOffset);
+
       setTranslateX(finalDistance);
 
       // Play tick sounds along the deceleration curve without any overlapping or doubling
@@ -222,7 +229,9 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
 
   return (
     <div
-      onClick={onClose}
+      onClick={() => {
+        if (!isOpening) onClose();
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div
@@ -262,8 +271,13 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
               {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4" />}
             </button>
             <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
+              onClick={() => {
+                if (!isOpening) onClose();
+              }}
+              disabled={isOpening}
+              className={`p-2 rounded-xl transition-colors ${
+                isOpening ? 'opacity-30 cursor-not-allowed text-neutral-600' : 'bg-white/[0.04] hover:bg-white/10 text-neutral-400 hover:text-white'
+              }`}
               aria-label="Закрыть"
             >
               <X className="w-5 h-5" />
@@ -274,10 +288,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
         {/* Navigation Tabs (Open / Collection) */}
         <div className="flex items-center gap-2 mt-4 mb-5 flex-shrink-0">
           <button
-            onClick={() => {
-              setActiveTab('open');
-              handleReset();
-            }}
+            onClick={() => setActiveTab('open')}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeTab === 'open'
                 ? 'bg-white text-black font-bold shadow-sm'
@@ -286,6 +297,9 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Рулетка открытия</span>
+            {wonHat && (
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping ml-0.5" />
+            )}
           </button>
           <button
             onClick={() => setActiveTab('collection')}
@@ -303,24 +317,22 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
         {/* ================================================================= */}
         {/* TAB 1: ROULETTE OPENING INTERFACE                                 */}
         {/* ================================================================= */}
-        {activeTab === 'open' && (
-          <div className="space-y-6 overflow-y-auto pr-1">
-            {/* MAIN STAGE: If not won yet, show Box or Roulette Reel */}
-            {!wonHat ? (
-              <div className="relative rounded-2xl bg-[#080a10] border border-white/10 p-6 flex flex-col items-center justify-center min-h-[260px] overflow-hidden">
-                {!isOpening ? (
-                  /* Idle Stage: Loot Crate View */
-                  <div className="text-center space-y-4 animate-in fade-in duration-300">
-                    <div className="relative inline-block group">
-                      <div className="absolute -inset-4 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/30 transition-all opacity-60" />
-                      <img
-                        src={boxImg}
-                        alt="Коробка со шляпой"
-                        className="relative w-48 sm:w-56 h-auto mx-auto drop-shadow-[0_16px_32px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-xs text-neutral-400">Стоимость открытия:</span>
+        <div className={`space-y-6 overflow-y-auto pr-1 ${activeTab === 'open' ? 'block' : 'hidden'}`}>
+          {/* MAIN STAGE: If not won yet, show Box or Roulette Reel */}
+          {!wonHat ? (
+            <div className="relative rounded-2xl bg-[#080a10] border border-white/10 p-6 flex flex-col items-center justify-center min-h-[260px] overflow-hidden">
+              {!isOpening ? (
+                /* Idle Stage: Loot Crate View */
+                <div className="text-center space-y-4 animate-in fade-in duration-300">
+                  <div className="relative inline-block group">
+                    <img
+                      src={boxImg}
+                      alt="Коробка со шляпой"
+                      className="relative w-48 sm:w-56 h-auto mx-auto drop-shadow-[0_16px_32px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-xs text-neutral-400">Стоимость открытия:</span>
                       <div className="text-2xl font-black text-white font-mono">{price} ₽</div>
                     </div>
                   </div>
@@ -570,13 +582,11 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
               </div>
             )}
           </div>
-        )}
 
         {/* ================================================================= */}
         {/* TAB 2: FULL COLLECTION OF 17 HATS (Clean Gaming Inventory Cards)  */}
         {/* ================================================================= */}
-        {activeTab === 'collection' && (
-          <div className="space-y-6 overflow-y-auto pr-1 flex-1">
+        <div className={`space-y-6 overflow-y-auto pr-1 flex-1 ${activeTab === 'collection' ? 'block' : 'hidden'}`}>
             {(['legendary', 'rare', 'common'] as HatRarity[]).map((rarityKey) => {
               const config = RARITY_CONFIG[rarityKey];
               const hatsOfRarity = HATS_LIST.filter((h) => h.rarity === rarityKey);
@@ -669,7 +679,6 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
               );
             })}
           </div>
-        )}
       </div>
     </div>
   );

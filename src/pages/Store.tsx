@@ -259,7 +259,6 @@ export const Store: React.FC = () => {
                 className="relative group cursor-pointer"
                 title="Нажмите, чтобы открыть кейс!"
               >
-                <div className="absolute -inset-6 bg-amber-500/20 rounded-full blur-2xl group-hover:bg-amber-500/35 transition-all opacity-70 group-hover:scale-110" />
                 <img
                   src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/box.png`}
                   alt="Коробка со шляпой"

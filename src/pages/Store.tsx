@@ -262,7 +262,7 @@ export const Store: React.FC = () => {
                 />
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/70 border border-amber-500/30 text-amber-300 text-xs font-semibold backdrop-blur-sm shadow-md mt-2 group-hover:border-amber-400 transition-colors">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Открыть рулетку</span>
+                  <span>Открыть коробку</span>
                 </span>
               </div>
             </div>

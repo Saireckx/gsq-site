@@ -4,11 +4,11 @@ import { ProductIcon } from '../../components/admin/ProductIcon';
 import { Copy, RefreshCw, ArrowRight, PlusCircle, Check, HelpCircle, ShoppingBag } from 'lucide-react';
 
 interface DashboardTabProps {
-  onNavigateToTab: (tab: 'dashboard' | 'products' | 'coupons' | 'orders' | 'settings') => void;
+  onNavigateToTab: (tab: 'dashboard' | 'products' | 'coupons' | 'orders' | 'drops' | 'settings') => void;
 }
 
 export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigateToTab }) => {
-  const { orders, isTestMode, setIsTestMode, generateMockSale, getAnalytics } = useStore();
+  const { orders, hatDrops, isTestMode, setIsTestMode, generateMockSale, getAnalytics } = useStore();
   const analytics = getAnalytics();
   const [copiedKey, setCopiedKey] = React.useState(false);
 

@@ -5,7 +5,7 @@ import { HatBoxModal } from '../components/HatBoxModal';
 import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Clock, Package, ShoppingBag } from 'lucide-react';
 
 export const Store: React.FC = () => {
-  const { products, orders } = useStore();
+  const { products, orders, addHatDrop } = useStore();
   const [selectedItem, setSelectedItem] = useState<CheckoutItem | null>(null);
   const [visibleOrdersCount, setVisibleOrdersCount] = useState(6);
 
@@ -246,11 +246,7 @@ export const Store: React.FC = () => {
 
       {/* Hat Box / Crate Showcase Section */}
       <div className="mb-16 sm:mb-20">
-        <div className="rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-[#181512] via-[#11131a] to-[#0c0d12] border border-amber-500/20 relative overflow-hidden shadow-2xl">
-          {/* Ambient Glows */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="rounded-3xl p-6 sm:p-10 bg-neutral-900/60 border border-white/10 relative overflow-hidden shadow-2xl">
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left: Box Image with Interactive Hover */}
             <div className="lg:col-span-5 flex flex-col items-center justify-center text-center">
@@ -537,6 +533,22 @@ export const Store: React.FC = () => {
               return next;
             });
           }
+        }}
+        onDropWon={(hat, isPaid) => {
+          const lastNick = 
+            localStorage.getItem('gsq_last_nickname') || 
+            localStorage.getItem('gsq_nickname') || 
+            orders.find((o) => o.productId === 'hat-box' && o.status === 'completed')?.nickname || 
+            'Игрок';
+          addHatDrop({
+            nickname: lastNick,
+            hatId: hat.id,
+            hatName: hat.name,
+            hatImage: hat.image,
+            hatEmoji: hat.emoji,
+            rarity: hat.rarity,
+            isPaid: isPaid,
+          });
         }}
         onBuy={() => {
           setIsHatBoxModalOpen(false);

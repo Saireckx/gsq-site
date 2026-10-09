@@ -4,12 +4,13 @@ interface DiscordIconProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
 }
 
-export const DiscordIcon: React.FC<DiscordIconProps> = ({ className = 'w-4 h-4', ...props }) => {
+export const DiscordIcon: React.FC<DiscordIconProps> = ({ className = 'w-4 h-4', style, ...props }) => {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="currentColor"
       className={className}
+      style={{ color: '#5865F2', ...style }}
       aria-hidden="true"
       {...props}
     >

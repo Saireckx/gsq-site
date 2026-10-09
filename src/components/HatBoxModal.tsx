@@ -8,6 +8,7 @@ interface HatBoxModalProps {
   price?: number;
   availableBoxes?: number;
   onOpenSuccess?: () => void;
+  onDropWon?: (hat: HatItem, isPaid: boolean) => void;
   onBuy?: () => void;
 }
 
@@ -86,10 +87,6 @@ function playWinSound(audioContextRef: React.MutableRefObject<AudioContext | nul
 
     const now = ctx.currentTime;
 
-    // Pure harmonic chords:
-    // Legendary: Majestic golden chime (C5, E5, G5, B5, C6)
-    // Rare: Sparkling crystal arpeggio (D5, F#5, A5, D6)
-    // Common: Sweet warm bell (C5, G5)
     const notes = rarity === 'legendary' 
       ? [523.25, 659.25, 783.99, 987.77, 1046.50]
       : rarity === 'rare'
@@ -107,7 +104,7 @@ function playWinSound(audioContextRef: React.MutableRefObject<AudioContext | nul
       osc.frequency.setValueAtTime(freq, startTime);
 
       gain.gain.setValueAtTime(0.0001, startTime);
-      gain.gain.linearRampToValueAtTime(0.065, startTime + 0.02);
+      gain.gain.linearRampToValueAtTime(0.09, startTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
       osc.connect(gain);
@@ -127,10 +124,12 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
   price = 49,
   availableBoxes = 0,
   onOpenSuccess,
+  onDropWon,
   onBuy,
 }) => {
   const [activeTab, setActiveTab] = useState<'open' | 'collection'>('open');
   const [isOpening, setIsOpening] = useState(false);
+  const [isSpinningTransition, setIsSpinningTransition] = useState(false);
   const [wonHat, setWonHat] = useState<HatItem | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [reel, setReel] = useState<HatItem[]>([]);
@@ -163,6 +162,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
     timerRef.current = [];
 
     setIsOpening(true);
+    setIsSpinningTransition(false);
     setWonHat(null);
 
     // Pick fair winner based on 70% common, 25% rare, 5% legendary
@@ -183,6 +183,11 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
 
     // Trigger roulette spin on next animation frame
     const t1 = setTimeout(() => {
+      // Force DOM reflow so browser paints at translateX(0) before applying 4.8s transition
+      if (reelContainerRef.current) {
+        void reelContainerRef.current.offsetHeight;
+      }
+
       // Dynamically measure actual rendered container width
       // This ensures target item (TARGET_INDEX = 38) lands exactly under the center indicator
       // on mobile (320px-390px), tablets, and desktops alike.
@@ -190,6 +195,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
       const cardCenter = TARGET_INDEX * ITEM_WIDTH + (ITEM_WIDTH - 12) / 2;
       const finalDistance = Math.round(cardCenter - containerWidth / 2 + randomOffset);
 
+      setIsSpinningTransition(true);
       setTranslateX(finalDistance);
 
       // Play tick sounds along the deceleration curve without any overlapping or doubling
@@ -210,9 +216,13 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
     const t2 = setTimeout(() => {
       setWonHat(target);
       setIsOpening(false);
+      setIsSpinningTransition(false);
       playWinSound(audioContextRef, target.rarity, soundEnabled);
       if (onOpenSuccess) {
         onOpenSuccess();
+      }
+      if (onDropWon) {
+        onDropWon(target, (availableBoxes || 0) > 0);
       }
     }, 4900);
 
@@ -289,25 +299,28 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
         <div className="flex items-center gap-2 mt-4 mb-5 flex-shrink-0">
           <button
             onClick={() => setActiveTab('open')}
+            disabled={isOpening}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeTab === 'open'
                 ? 'bg-white text-black font-bold shadow-sm'
                 : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
-            }`}
+            } ${isOpening ? 'opacity-80' : ''}`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Рулетка открытия</span>
-            {wonHat && (
+            <Sparkles className={`w-3.5 h-3.5 ${isOpening ? 'animate-spin text-amber-500' : ''}`} />
+            <span>{isOpening ? 'Крутится рулетка...' : 'Рулетка открытия'}</span>
+            {wonHat && !isOpening && (
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping ml-0.5" />
             )}
           </button>
           <button
             onClick={() => setActiveTab('collection')}
+            disabled={isOpening}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeTab === 'collection'
                 ? 'bg-white text-black font-bold shadow-sm'
                 : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
-            }`}
+            } ${isOpening ? 'opacity-40 cursor-not-allowed' : ''}`}
+            title={isOpening ? 'Дождитесь завершения открытия' : 'Содержимое кейса'}
           >
             <HelpCircle className="w-3.5 h-3.5" />
             <span>Содержимое кейса (17 шт.)</span>
@@ -365,7 +378,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                         className="flex items-center gap-3"
                         style={{
                           transform: `translateX(-${translateX}px)`,
-                          transition: translateX > 0 ? 'transform 4.8s cubic-bezier(0.12, 0.8, 0.33, 1)' : 'none',
+                          transition: isSpinningTransition ? 'transform 4.8s cubic-bezier(0.12, 0.8, 0.33, 1)' : 'none',
                         }}
                       >
                         {reel.map((hat, idx) => {

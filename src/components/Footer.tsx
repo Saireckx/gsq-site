@@ -61,7 +61,7 @@ export const Footer: React.FC = () => {
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors flex items-center gap-2.5 group"
                 >
-                  <DiscordIcon className="w-4 h-4 text-sky-400 group-hover:text-white transition-colors" />
+                  <DiscordIcon className="w-4 h-4 group-hover:brightness-125 transition-all" />
                   <span>Discord Сервер</span>
                 </a>
               </li>

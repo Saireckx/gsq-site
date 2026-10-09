@@ -113,6 +113,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
 
     setLoading(true);
     setErrorMessage(null);
+    try {
+      localStorage.setItem('gsq_last_nickname', cleanNick);
+      localStorage.setItem('gsq_nickname', cleanNick);
+    } catch {}
 
     try {
       const fullProductName = `${item.name}${item.isSubscription ? ` (${currentPeriodLabel})` : ''}`;
@@ -335,40 +339,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                     {promoMessage}
                   </p>
                 )}
-              </div>
-
-              {/* Official YooKassa Payment Gateway Info Box */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                      <CreditCard className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="text-xs font-bold text-white">Платёжный шлюз ЮKassa</span>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                    0% комиссия
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-1.5 pt-1 text-[11px] text-neutral-300 font-medium">
-                  <div className="p-2 rounded-xl bg-black/30 border border-white/5 flex items-center gap-1.5">
-                    <span>⚡</span>
-                    <span>СБП</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-black/30 border border-white/5 flex items-center gap-1.5">
-                    <span>💳</span>
-                    <span>МИР / Visa / MC</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-black/30 border border-white/5 flex items-center gap-1.5">
-                    <span>🏦</span>
-                    <span>SberPay / T-Pay</span>
-                  </div>
-                </div>
-
-                <p className="text-[10px] text-neutral-400 leading-tight">
-                  Выбор конкретного способа оплаты откроется на защищённой странице ЮKassa.
-                </p>
               </div>
 
               {/* Price Calculation Summary */}

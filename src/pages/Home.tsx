@@ -260,7 +260,7 @@ export const Home: React.FC = () => {
                     <div>
                       <strong className="text-white">Вступите в Discord и оставьте тикет:</strong>
                       <p className="text-xs text-neutral-400 mt-0.5">
-                        Перейдите по ссылке <a href="https://discord.gg/GbgNVXDdtf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 underline font-medium"><DiscordIcon className="w-3.5 h-3.5 inline-block" />discord.gg/GbgNVXDdtf</a> и откройте тикет на регистрацию (заявку на вайтлист).
+                        Перейдите по ссылке <a href="https://discord.gg/GbgNVXDdtf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#5865F2] hover:brightness-125 underline font-medium"><DiscordIcon className="w-3.5 h-3.5 inline-block" />discord.gg/GbgNVXDdtf</a> и откройте тикет на регистрацию (заявку на вайтлист).
                       </p>
                     </div>
                   </div>
@@ -377,7 +377,7 @@ export const Home: React.FC = () => {
                   rel="noopener noreferrer"
                   className="p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition-colors text-center block"
                 >
-                  <DiscordIcon className="w-4 h-4 text-sky-400" />
+                  <DiscordIcon className="w-4 h-4" />
                   <span>Discord сервера: discord.gg/GbgNVXDdtf</span>
                 </a>
               </div>

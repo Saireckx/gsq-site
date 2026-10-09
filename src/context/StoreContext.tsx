@@ -49,6 +49,18 @@ export interface OrderItem {
   paymentUrl?: string;
 }
 
+export interface HatDropItem {
+  id: string;
+  nickname: string;
+  hatId: string;
+  hatName: string;
+  hatImage?: string;
+  hatEmoji?: string;
+  rarity: 'common' | 'rare' | 'legendary';
+  isPaid: boolean;
+  createdAt: string;
+}
+
 interface ServerSettings {
   ip: string;
   version: string;
@@ -61,9 +73,13 @@ interface StoreContextType {
   products: ProductItem[];
   coupons: CouponItem[];
   orders: OrderItem[];
+  hatDrops: HatDropItem[];
   serverSettings: ServerSettings;
   isTestMode: boolean;
   setIsTestMode: (val: boolean) => void;
+  // Hat Drops
+  addHatDrop: (drop: Omit<HatDropItem, 'id' | 'createdAt'>) => void;
+  clearHatDrops: () => void;
   // Product management
   updateProduct: (id: string, updates: Partial<ProductItem>) => void;
   addProduct: (product: Omit<ProductItem, 'id' | 'numericId'>) => ProductItem;
@@ -392,6 +408,37 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch {}
     return false;
   });
+
+  // Hat drops history
+  const [hatDrops, setHatDrops] = useState<HatDropItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('gsq_hat_drops');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  const addHatDrop = (drop: Omit<HatDropItem, 'id' | 'createdAt'>) => {
+    const newDrop: HatDropItem = {
+      ...drop,
+      id: 'drop-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
+      createdAt: new Date().toISOString(),
+    };
+    setHatDrops((prev) => {
+      const next = [newDrop, ...prev];
+      try {
+        localStorage.setItem('gsq_hat_drops', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const clearHatDrops = () => {
+    setHatDrops([]);
+    try {
+      localStorage.removeItem('gsq_hat_drops');
+    } catch {}
+  };
 
   // Initial backend fetch with graceful local cache fallback
   useEffect(() => {
@@ -776,9 +823,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         products,
         coupons,
         orders,
+        hatDrops,
         serverSettings,
         isTestMode,
         setIsTestMode,
+        addHatDrop,
+        clearHatDrops,
         updateProduct,
         addProduct,
         deleteProduct,

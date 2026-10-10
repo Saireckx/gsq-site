@@ -78,6 +78,10 @@ interface StoreContextType {
   serverSettings: ServerSettings;
   isTestMode: boolean;
   setIsTestMode: (val: boolean) => void;
+  // Box inventory
+  availableBoxes: number;
+  addBoxes: (count: number) => void;
+  consumeBox: () => boolean;
   // Hat Drops
   addHatDrop: (drop: Omit<HatDropItem, 'id' | 'createdAt'>) => void;
   clearHatDrops: () => void;
@@ -442,6 +446,58 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch {}
   };
 
+  // Player openable box balance (single source of truth for the entire app)
+  const [availableBoxes, setAvailableBoxes] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('gsq_available_boxes');
+      if (saved !== null && !isNaN(Number(saved))) {
+        return Math.max(0, Number(saved));
+      }
+      const savedOrdersRaw = localStorage.getItem('gsq_orders');
+      const savedOrders: OrderItem[] = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : [];
+      const completedBoxes = savedOrders
+        .filter(
+          (o) =>
+            (o.productId === 'hat-box' || o.productName?.toLowerCase().includes('шляп')) &&
+            o.status === 'completed'
+        )
+        .reduce((sum, o) => sum + (o.quantity || 1), 0);
+      const opened = Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
+      const calc = Math.max(0, completedBoxes - opened);
+      localStorage.setItem('gsq_available_boxes', String(calc));
+      return calc;
+    } catch {
+      return 0;
+    }
+  });
+
+  const addBoxes = (count: number) => {
+    if (count <= 0) return;
+    setAvailableBoxes((prev) => {
+      const next = prev + count;
+      try {
+        localStorage.setItem('gsq_available_boxes', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const consumeBox = (): boolean => {
+    let success = false;
+    setAvailableBoxes((prev) => {
+      if (prev <= 0) return 0;
+      success = true;
+      const next = prev - 1;
+      try {
+        localStorage.setItem('gsq_available_boxes', String(next));
+        const opened = Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
+        localStorage.setItem('gsq_opened_boxes_count', String(opened + 1));
+      } catch {}
+      return next;
+    });
+    return success;
+  };
+
   // Initial backend fetch with graceful local cache fallback
   useEffect(() => {
     let active = true;
@@ -518,6 +574,38 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       localStorage.setItem('gsq_orders', JSON.stringify(orders));
     } catch {}
+  }, [orders]);
+
+  // Synchronize box balance with any uncredited completed box orders
+  useEffect(() => {
+    let credited: string[] = [];
+    try {
+      credited = JSON.parse(localStorage.getItem('gsq_credited_box_orders') || '[]');
+    } catch {}
+
+    const completedBoxOrders = orders.filter(
+      (o) =>
+        (o.productId === 'hat-box' || o.productName?.toLowerCase().includes('шляп')) &&
+        o.status === 'completed'
+    );
+
+    let newBoxes = 0;
+    let hasNew = false;
+
+    for (const o of completedBoxOrders) {
+      if (!credited.includes(o.orderNumber)) {
+        credited.push(o.orderNumber);
+        newBoxes += o.quantity || 1;
+        hasNew = true;
+      }
+    }
+
+    if (hasNew) {
+      try {
+        localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
+      } catch {}
+      addBoxes(newBoxes);
+    }
   }, [orders]);
 
   useEffect(() => {
@@ -711,6 +799,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
 
       if (res && res.orderNumber) {
+        const isCompleted = res.isDemo || res.status === 'completed';
         const matchingProduct = products.find((p) => p.id === productId);
         const newOrder: OrderItem = {
           id: 'ord-' + Date.now(),
@@ -722,12 +811,26 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           quantity: quantity || 1,
           promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
           paymentMethod: 'ЮKassa',
-          status: 'pending',
+          status: isCompleted ? 'completed' : 'pending',
           createdAt: 'Только что',
           iconColor: matchingProduct?.iconColor || 'gold',
           paymentUrl: res.paymentUrl,
         };
         setOrders((prev) => [newOrder, ...prev.filter((o) => o.orderNumber !== res.orderNumber)]);
+
+        if (isCompleted && (productId === 'hat-box' || productName?.toLowerCase().includes('шляп'))) {
+          const qty = quantity || 1;
+          try {
+            const credited: string[] = JSON.parse(
+              localStorage.getItem('gsq_credited_box_orders') || '[]'
+            );
+            if (!credited.includes(res.orderNumber)) {
+              credited.push(res.orderNumber);
+              localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
+            }
+          } catch {}
+          addBoxes(qty);
+        }
       }
 
       return res;
@@ -745,19 +848,34 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         quantity: quantity || 1,
         promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
         paymentMethod: 'ЮKassa',
-        status: 'pending',
+        status: 'completed',
         createdAt: 'Только что',
         iconColor: matchingProduct?.iconColor || 'gold',
         paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
       };
       setOrders((prev) => [newOrder, ...prev]);
 
+      if (productId === 'hat-box' || productName?.toLowerCase().includes('шляп')) {
+        const qty = quantity || 1;
+        try {
+          const credited: string[] = JSON.parse(
+            localStorage.getItem('gsq_credited_box_orders') || '[]'
+          );
+          if (!credited.includes(orderNumber)) {
+            credited.push(orderNumber);
+            localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
+          }
+        } catch {}
+        addBoxes(qty);
+      }
+
       return {
         success: true,
         orderNumber,
         isDemo: true,
+        status: 'completed',
         paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
-        message: 'ЮKassa готова к приёму платежей! Укажите ключи в панели управления.',
+        message: 'Тестовый платёж успешно проведён!',
       };
     }
   };
@@ -767,6 +885,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     api.completeOrder(orderNumber).catch(() => {});
 
     setOrders((prev) => {
+      const targetOrder = prev.find((o) => o.orderNumber === orderNumber);
+      const isAlreadyCompleted = targetOrder?.status === 'completed';
+
       const next = prev.map((o) => {
         if (o.orderNumber === orderNumber) {
           if (o.promoCode) {
@@ -784,10 +905,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         localStorage.setItem('gsq_orders', JSON.stringify(next));
       } catch {}
 
-      // If this completed order contains a hat-box, credit boxes immediately to localStorage inventory
-      const targetOrder = next.find((o) => o.orderNumber === orderNumber);
+      // If this completed order contains a hat-box and wasn't already completed, credit boxes immediately!
       if (
         targetOrder &&
+        !isAlreadyCompleted &&
         (targetOrder.productId === 'hat-box' || targetOrder.productName?.toLowerCase().includes('шляп'))
       ) {
         const qty = targetOrder.quantity || 1;
@@ -798,18 +919,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (!credited.includes(orderNumber)) {
             credited.push(orderNumber);
             localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
-
-            const currentAvail = Number(localStorage.getItem('gsq_available_boxes') || '0');
-            const nextAvail = currentAvail + qty;
-            localStorage.setItem('gsq_available_boxes', String(nextAvail));
-
-            const currentTotal = Number(localStorage.getItem('gsq_purchased_boxes_total') || '0');
-            localStorage.setItem('gsq_purchased_boxes_total', String(currentTotal + qty));
-
-            // Dispatch storage event for other components listening
-            window.dispatchEvent(new Event('storage'));
+            addBoxes(qty);
           }
-        } catch {}
+        } catch {
+          addBoxes(qty);
+        }
       }
 
       return next;
@@ -894,6 +1008,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         serverSettings,
         isTestMode,
         setIsTestMode,
+        availableBoxes,
+        addBoxes,
+        consumeBox,
         addHatDrop,
         clearHatDrops,
         updateProduct,

@@ -19,9 +19,10 @@ export interface CheckoutItem {
 interface CheckoutModalProps {
   item: CheckoutItem | null;
   onClose: () => void;
+  onOpenHatBox?: () => void;
 }
 
-export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) => {
+export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onOpenHatBox }) => {
   const { validateCoupon, createYooKassaPayment } = useStore();
 
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'forever'>('forever');
@@ -488,13 +489,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                Заказ {redirectInfo.orderNumber}
+              <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+                Заказ {redirectInfo.orderNumber} • Оплачен
               </span>
-              <h3 className="text-2xl font-black text-white">Переход в ЮKassa</h3>
+              <h3 className="text-2xl font-black text-white">
+                {redirectInfo.isDemo ? 'Оплата успешно завершена! 🎉' : 'Переход в ЮKassa'}
+              </h3>
               <p className="text-xs text-neutral-300 max-w-sm mx-auto">
                 {redirectInfo.isDemo
-                  ? 'ЮKassa готова к приёму платежей. Для теста вы можете перейти на экран подтверждения.'
+                  ? isBoxOrQuantityAllowed
+                    ? `Вам успешно начислено ${quantity} ${quantity === 1 ? 'коробка' : 'коробок'}! Они уже добавлены к вашему балансу.`
+                    : 'Тестовая оплата подтверждена! Услуга успешно активирована.'
                   : 'Перенаправляем вас на официальную страницу оплаты ЮKassa...'}
               </p>
             </div>
@@ -502,7 +507,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
             <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-left space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-neutral-400">Товар:</span>
-                <span className="font-semibold text-white">{item.name}</span>
+                <span className="font-semibold text-white">
+                  {item.name} {isBoxOrQuantityAllowed && `(x${quantity})`}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-400">Игрок:</span>
@@ -512,31 +519,65 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                 <span className="text-neutral-400">Сумма:</span>
                 <span className="font-mono text-white font-bold">{finalPrice} ₽</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-400">Статус:</span>
+                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Успешно оплачено</span>
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2 pt-2">
-              <a
-                href={redirectInfo.paymentUrl}
-                target={redirectInfo.paymentUrl.startsWith('http') ? '_blank' : '_self'}
-                rel="noopener noreferrer"
-                onClick={() => {
-                  if (!redirectInfo.paymentUrl.startsWith('http')) {
-                    handleModalClose();
-                  }
-                }}
-                className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-glow-sm"
-              >
-                <span>{redirectInfo.isDemo ? 'Перейти к тестовой проверке' : 'Оплатить на странице ЮKassa'}</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
+              {redirectInfo.isDemo ? (
+                <>
+                  {isBoxOrQuantityAllowed && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleModalClose();
+                        if (onOpenHatBox) {
+                          onOpenHatBox();
+                        } else {
+                          window.location.hash = '#/store?openBox=true';
+                        }
+                      }}
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg flex items-center justify-center gap-2 active:scale-98"
+                    >
+                      <Sparkles className="w-4 h-4 text-black" />
+                      <span>🎁 Открыть коробку прямо сейчас</span>
+                    </button>
+                  )}
 
-              <button
-                type="button"
-                onClick={handleModalClose}
-                className="w-full py-2.5 text-xs text-neutral-400 hover:text-white transition-colors"
-              >
-                Закрыть окно
-              </button>
+                  <button
+                    type="button"
+                    onClick={handleModalClose}
+                    className="w-full py-3 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs transition-all"
+                  >
+                    Вернуться в магазин
+                  </button>
+                </>
+              ) : (
+                <>
+                  <a
+                    href={redirectInfo.paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-glow-sm"
+                  >
+                    <span>Оплатить на странице ЮKassa</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={handleModalClose}
+                    className="w-full py-2.5 text-xs text-neutral-400 hover:text-white transition-colors"
+                  >
+                    Закрыть окно
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

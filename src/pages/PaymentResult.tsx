@@ -31,12 +31,19 @@ export const PaymentResult: React.FC = () => {
           const res = await api.checkYooKassaOrder(orderNumber);
           if (res && res.found && res.order && isMounted) {
             setCurrentOrder(res.order);
-            if (res.paid) {
+            if (res.paid || res.order.status === 'completed' || isDemo) {
               completeOrder(orderNumber);
+              if (isDemo) setDemoConfirmed(true);
             }
+          } else if (isDemo && isMounted) {
+            completeOrder(orderNumber);
+            setDemoConfirmed(true);
           }
         } catch (err) {
-          // If offline / gh-pages, keep current local order
+          if (isDemo && isMounted) {
+            completeOrder(orderNumber);
+            setDemoConfirmed(true);
+          }
         }
       }
 

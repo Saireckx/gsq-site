@@ -36,7 +36,7 @@ export const SERVER_INFO = {
   links: {
     discord: 'https://discord.gg/GbgNVXDdtf',
     tiktok: 'https://www.tiktok.com/@gsq_mc',
-    boosty: 'https://boosty.to/gsq_mc',
+    donate: 'https://www.donationalerts.com/r/wowrizze_donate',
   },
 };
 
@@ -127,8 +127,8 @@ export const ADDITIONAL_SERVICES: ServiceItem[] = [
     name: 'Пожертвование',
     iconType: 'donate',
     description: 'Поддержи сервер и получи благодарность!',
-    priceText: 'на Boosty',
-    priceMin: 50,
+    priceText: 'любая сумма',
+    priceMin: 10,
     buttonText: 'Поддержать',
   },
 ];

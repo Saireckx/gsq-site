@@ -416,13 +416,13 @@ export const Store: React.FC = () => {
                     {service.id === 'donate' ? 'Любая сумма' : `${service.price} ₽`}
                   </div>
                   <span className="text-xs text-neutral-500 font-sans">
-                    {service.id === 'donate' ? 'на Boosty' : service.period}
+                    {service.id === 'donate' ? 'DonationAlerts' : service.period}
                   </span>
                 </div>
 
                 {service.id === 'donate' ? (
                   <a
-                    href={SERVER_INFO.links.boosty || 'https://boosty.to/gsq_mc'}
+                    href={SERVER_INFO.links.donate || 'https://www.donationalerts.com/r/wowrizze_donate'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-2.5 px-4 rounded-xl bg-neutral-950/80 hover:bg-neutral-800 text-white border border-white/15 hover:border-white/30 text-xs sm:text-sm font-semibold transition-all hover:shadow-glow-sm flex items-center justify-center gap-1.5"

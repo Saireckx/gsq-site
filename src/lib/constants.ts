@@ -40,6 +40,13 @@ export const SERVER_INFO = {
   },
 };
 
+export const SELLER_REQUISITES = {
+  name: 'Полянских Егор Александрович',
+  status: 'Плательщик налога на профессиональный доход (Самозанятый)',
+  inn: '691106468034',
+  email: 'polyanskihegor@yandex.ru',
+};
+
 export interface SubscriptionItem {
   id: string;
   name: string;

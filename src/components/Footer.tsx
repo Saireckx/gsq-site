@@ -80,18 +80,62 @@ export const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
+          {/* Col 4: Legal & Requisites */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-200 mb-4">
+              Документы
+            </h4>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <Link
+                  to="/offer"
+                  className="hover:text-white transition-colors duration-200 flex items-center gap-1.5 group"
+                >
+                  <span className="w-1 h-1 rounded-full bg-neutral-600 group-hover:bg-white transition-colors" />
+                  <span>Договор оферты</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/privacy"
+                  className="hover:text-white transition-colors duration-200 flex items-center gap-1.5 group"
+                >
+                  <span className="w-1 h-1 rounded-full bg-neutral-600 group-hover:bg-white transition-colors" />
+                  <span>Конфиденциальность</span>
+                </Link>
+              </li>
+            </ul>
+
+            <div className="pt-2 text-[11px] text-neutral-500 space-y-1 border-t border-white/[0.06]">
+              <p className="text-neutral-300 font-medium">{SERVER_INFO.links ? 'Полянских Е. А.' : ''}</p>
+              <p>ИНН: <span className="font-mono text-neutral-300">691106468034</span></p>
+              <p>
+                <a href="mailto:polyanskihegor@yandex.ru" className="hover:text-white transition-colors">
+                  polyanskihegor@yandex.ru
+                </a>
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
-          <div>
-            <p>© {new Date().getFullYear()} GSQ Minecraft. Все права защищены.</p>
-            <p className="mt-1 text-[11px] text-neutral-600">
-              Сервер не имеет прямого отношения к Mojang Studios или Microsoft.
+        <div className="pt-8 border-t border-white/[0.06] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
+          <div className="space-y-1 text-center md:text-left">
+            <p>© {new Date().getFullYear()} GSQ Minecraft. Все права защищены. Самозанятый Полянских Е. А. (ИНН 691106468034).</p>
+            <p className="text-[11px] text-neutral-600">
+              Сервер не имеет прямого отношения к Mojang Studios или Microsoft. Оплата обрабатывается через сервис ЮKassa.
             </p>
           </div>
 
           <div className="flex items-center gap-4">
+            <Link to="/offer" className="hover:text-neutral-300 transition-colors text-[11px]">
+              Оферта
+            </Link>
+            <span className="text-neutral-700">•</span>
+            <Link to="/privacy" className="hover:text-neutral-300 transition-colors text-[11px]">
+              Конфиденциальность
+            </Link>
+            <span className="text-neutral-700">•</span>
             <button
               onClick={scrollToTop}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-neutral-400 hover:text-white border border-white/[0.06] hover:border-white/20 transition-all group"

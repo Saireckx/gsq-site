@@ -387,6 +387,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                 </button>
               </div>
 
+              <p className="text-[11px] text-center text-neutral-500 leading-relaxed px-1">
+                Совершая оплату, вы подтверждаете согласие с условиями{' '}
+                <a
+                  href="#/offer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-neutral-300 hover:text-white underline underline-offset-2 transition-colors"
+                >
+                  Публичной оферты
+                </a>{' '}
+                и{' '}
+                <a
+                  href="#/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-neutral-300 hover:text-white underline underline-offset-2 transition-colors"
+                >
+                  Политики конфиденциальности
+                </a>
+              </p>
+
               <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-500">
                 <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
                 <span>Защищённое SSL соединение ЮKassa. Выдача за 1–2 мин.</span>

@@ -8,6 +8,8 @@ import { Rules } from './pages/Rules';
 import { Store } from './pages/Store';
 import { Map } from './pages/Map';
 import { PaymentResult } from './pages/PaymentResult';
+import { Offer } from './pages/Offer';
+import { Privacy } from './pages/Privacy';
 import { Admin } from './pages/Admin';
 
 export const App: React.FC = () => {
@@ -22,6 +24,9 @@ export const App: React.FC = () => {
             <Route path="rules" element={<Rules />} />
             <Route path="store" element={<Store />} />
             <Route path="map" element={<Map />} />
+            <Route path="offer" element={<Offer />} />
+            <Route path="terms" element={<Offer />} />
+            <Route path="privacy" element={<Privacy />} />
             <Route path="payment/result" element={<PaymentResult />} />
             <Route path="payment/success" element={<PaymentResult />} />
           </Route>

@@ -142,6 +142,11 @@ export const OrdersTab: React.FC = () => {
                         <ProductIcon productId={order.productId} name={order.productName} size="sm" />
                         <span className="text-slate-200 font-medium">
                           {order.productName}
+                          {order.quantity && order.quantity > 1 && !order.productName.includes('(x') && (
+                            <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 font-mono font-bold">
+                              x{order.quantity}
+                            </span>
+                          )}
                         </span>
                       </div>
                     </td>

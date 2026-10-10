@@ -52,6 +52,7 @@ export const Store: React.FC = () => {
   };
 
   const [isHatBoxModalOpen, setIsHatBoxModalOpen] = useState(false);
+  const [boxQuantity, setBoxQuantity] = useState(1);
   const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
 
@@ -60,11 +61,11 @@ export const Store: React.FC = () => {
     return Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
   });
 
-  const completedBoxOrders = orders.filter(
-    (o) => o.productId === 'hat-box' && o.status === 'completed'
-  ).length;
+  const completedBoxesTotal = orders
+    .filter((o) => o.productId === 'hat-box' && o.status === 'completed')
+    .reduce((sum, o) => sum + (o.quantity || 1), 0);
 
-  const availableBoxes = Math.max(0, completedBoxOrders - openedBoxesCount);
+  const availableBoxes = Math.max(0, completedBoxesTotal - openedBoxesCount);
 
   // Auto-open modal if navigated with ?openBox=true
   useEffect(() => {
@@ -91,8 +92,9 @@ export const Store: React.FC = () => {
     setSelectedPeriods((prev) => ({ ...prev, [productId]: period }));
   };
 
-  const handleBuy = (product: ProductItem) => {
+  const handleBuy = (product: ProductItem, initialQuantity: number = 1) => {
     const isSub = product.id === 'sub' || product.id === 'sub-plus';
+    const isBox = product.id === 'hat-box';
     const period = selectedPeriods[product.id] || 'forever';
     const monthly = product.monthlyPrice || (product.id === 'sub' ? 139 : 289);
     const forever = product.price;
@@ -110,6 +112,8 @@ export const Store: React.FC = () => {
       description: product.description,
       isCustomAmount: product.id === 'donate',
       isSubscription: isSub,
+      initialQuantity: isBox ? initialQuantity : 1,
+      allowQuantity: isBox,
     });
   };
 
@@ -330,13 +334,66 @@ export const Store: React.FC = () => {
                 </div>
               )}
 
+              {/* Quantity selector for box */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-neutral-300">Количество коробок:</span>
+                  <span className="text-xs font-mono font-bold text-amber-300">
+                    {boxQuantity} шт. • {hatBoxPrice * boxQuantity} ₽
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center rounded-xl bg-black/50 border border-white/10 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setBoxQuantity((q) => Math.max(1, q - 1))}
+                      disabled={boxQuantity <= 1}
+                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      title="Уменьшить"
+                    >
+                      -
+                    </button>
+                    <span className="px-3 text-xs font-mono font-black text-white min-w-[32px] text-center">
+                      {boxQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setBoxQuantity((q) => Math.min(50, q + 1))}
+                      disabled={boxQuantity >= 50}
+                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      title="Увеличить"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {[1, 3, 5, 10].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setBoxQuantity(n)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                          boxQuantity === n
+                            ? 'bg-amber-400 text-black shadow-sm'
+                            : 'bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/5'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Price and Buttons */}
               <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-black text-white font-mono">
-                    {hatBoxPrice} ₽
+                    {hatBoxPrice * boxQuantity} ₽
                   </span>
-                  <span className="text-sm text-neutral-400">/ 1 шт.</span>
+                  <span className="text-xs text-neutral-400 font-medium">/ {boxQuantity} шт.</span>
                 </div>
 
                 <div className="flex items-center gap-3 flex-1 min-w-[280px]">
@@ -351,21 +408,23 @@ export const Store: React.FC = () => {
                       </button>
 
                       <button
-                        onClick={() => handleBuy(hatBoxProduct)}
+                        onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
                         className="py-3.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 flex items-center justify-center gap-1.5"
-                        title="Купить ещё коробку"
+                        title={`Купить ещё ${boxQuantity} шт.`}
                       >
                         <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>+1 ещё ({hatBoxPrice} ₽)</span>
+                        <span>+{boxQuantity} ещё ({hatBoxPrice * boxQuantity} ₽)</span>
                       </button>
                     </>
                   ) : (
                     <button
-                      onClick={() => handleBuy(hatBoxProduct)}
+                      onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
                       className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm transition-all shadow-glow-white hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                       <ShoppingBag className="w-4 h-4" />
-                      <span>Купить коробку ({hatBoxPrice} ₽)</span>
+                      <span>
+                        Купить {boxQuantity > 1 ? `${boxQuantity} коробок` : 'коробку'} ({hatBoxPrice * boxQuantity} ₽)
+                      </span>
                     </button>
                   )}
                 </div>

@@ -183,6 +183,7 @@ export const api = {
     productId: string;
     productName: string;
     amount: number;
+    quantity?: number;
     promoCode?: string;
     period?: string;
     returnUrl?: string;

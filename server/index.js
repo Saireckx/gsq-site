@@ -557,7 +557,7 @@ const server = http.createServer(async (req, res) => {
       // 2. Create payment in YooKassa
       if (pathname === '/api/yookassa/create-payment' && method === 'POST') {
         const body = await parseJsonBody(req);
-        const { nickname, productId, productName, amount, promoCode, period, returnUrl } = body;
+        const { nickname, productId, productName, amount, promoCode, period, returnUrl, quantity } = body;
 
         const cleanNick = String(nickname || '').trim();
         if (!cleanNick || cleanNick.length < 3 || cleanNick.length > 16) {
@@ -568,6 +568,7 @@ const server = http.createServer(async (req, res) => {
         const finalAmount = Math.max(1, Math.round(Number(amount) || matchingProduct?.price || 50));
         const orderNumber = `GSQ-${Math.floor(100000 + Math.random() * 900000)}`;
         const orderId = `ord-${Date.now()}`;
+        const qty = Math.max(1, Math.min(100, Number(quantity) || 1));
 
         const shopId = process.env.YOOKASSA_SHOP_ID || db.yookassa?.shopId;
         const secretKey = process.env.YOOKASSA_SECRET_KEY || db.yookassa?.secretKey;
@@ -582,6 +583,7 @@ const server = http.createServer(async (req, res) => {
           productId: productId || 'item',
           productName: productName || matchingProduct?.name || 'Товар',
           amount: finalAmount,
+          quantity: qty,
           promoCode: promoCode ? String(promoCode).trim().toUpperCase() : undefined,
           paymentMethod: 'ЮKassa',
           status: 'pending',

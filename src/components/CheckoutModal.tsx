@@ -12,6 +12,8 @@ export interface CheckoutItem {
   description?: string;
   isCustomAmount?: boolean;
   isSubscription?: boolean;
+  initialQuantity?: number;
+  allowQuantity?: boolean;
 }
 
 interface CheckoutModalProps {
@@ -23,6 +25,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
   const { validateCoupon, createYooKassaPayment } = useStore();
 
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'forever'>('forever');
+  const [quantity, setQuantity] = useState(1);
   const [nickname, setNickname] = useState('');
   const [customPrice, setCustomPrice] = useState('100');
   const [promoCode, setPromoCode] = useState('');
@@ -46,13 +49,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
       setPromoCode('');
       setPromoDiscount(0);
       setPromoMessage(null);
+      setQuantity(item.initialQuantity || 1);
       if (item.period?.includes('месяц')) {
         setSelectedPeriod('month');
       } else {
         setSelectedPeriod('forever');
       }
     }
-  }, [item?.id, item?.period]);
+  }, [item?.id, item?.period, item?.initialQuantity]);
 
   const handleModalClose = () => {
     setLoading(false);
@@ -66,17 +70,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
 
   if (!item) return null;
 
+  const isBoxOrQuantityAllowed = item.id === 'hat-box' || !!item.allowQuantity;
+
   const currentSubPrice = selectedPeriod === 'month' 
     ? (item.monthlyPrice || (item.id === 'sub' ? 139 : 289))
     : (item.foreverPrice || item.price);
 
-  const basePrice = item.isCustomAmount
+  const unitPrice = item.isCustomAmount
     ? Math.max(50, Number(customPrice) || 50)
     : (item.isSubscription ? currentSubPrice : item.price);
 
+  const basePrice = isBoxOrQuantityAllowed ? unitPrice * quantity : unitPrice;
+
   const currentPeriodLabel = item.isSubscription
     ? (selectedPeriod === 'month' ? '1 месяц' : 'навсегда')
-    : item.period;
+    : (isBoxOrQuantityAllowed ? `${quantity} шт.` : item.period);
 
   const discountAmount = Math.round(basePrice * (promoDiscount / 100));
   const finalPrice = Math.max(1, basePrice - discountAmount);
@@ -119,12 +127,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
     } catch {}
 
     try {
-      const fullProductName = `${item.name}${item.isSubscription ? ` (${currentPeriodLabel})` : ''}`;
+      const fullProductName = `${item.name}${isBoxOrQuantityAllowed && quantity > 1 ? ` (x${quantity})` : ''}${item.isSubscription ? ` (${currentPeriodLabel})` : ''}`;
       const res = await createYooKassaPayment({
         nickname: cleanNick,
         productId: item.id,
         productName: fullProductName,
         amount: finalPrice,
+        quantity: isBoxOrQuantityAllowed ? quantity : 1,
         promoCode: promoDiscount > 0 ? promoCode.trim().toUpperCase() : undefined,
         period: currentPeriodLabel,
       });
@@ -230,6 +239,63 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose }) =
                 >
                   <span>Навсегда ({item.foreverPrice || item.price} ₽)</span>
                 </button>
+              </div>
+            )}
+
+            {/* Box Quantity Selector */}
+            {isBoxOrQuantityAllowed && (
+              <div className="mb-5 p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-neutral-300">Количество коробок:</span>
+                  <span className="font-mono text-amber-300 font-bold">
+                    {quantity} шт. × {unitPrice} ₽ = {basePrice} ₽
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white font-black text-lg flex items-center justify-center transition-all border border-white/10 active:scale-95"
+                    title="Уменьшить"
+                  >
+                    -
+                  </button>
+
+                  <div className="flex-1 py-2 px-3 rounded-xl bg-black/40 border border-white/15 text-center flex items-center justify-center gap-1.5">
+                    <span className="text-xl font-black text-white font-mono">{quantity}</span>
+                    <span className="text-xs text-neutral-400 font-medium">шт.</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.min(50, q + 1))}
+                    disabled={quantity >= 50}
+                    className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-white font-black text-lg flex items-center justify-center transition-all border border-white/10 active:scale-95"
+                    title="Увеличить"
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Quick preset chips */}
+                <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+                  {[1, 3, 5, 10].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setQuantity(num)}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all ${
+                        quantity === num
+                          ? 'bg-amber-400 text-black shadow-sm'
+                          : 'bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/5'
+                      }`}
+                    >
+                      {num} шт.
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 

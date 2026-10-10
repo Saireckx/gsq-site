@@ -40,6 +40,7 @@ export interface OrderItem {
   productId: string;
   productName: string;
   amount: number;
+  quantity?: number;
   promoCode?: string;
   discountAmount?: number;
   paymentMethod: string;
@@ -96,6 +97,7 @@ interface StoreContextType {
     productId: string;
     productName: string;
     amount: number;
+    quantity?: number;
     promoCode?: string;
     period?: string;
   }) => Promise<{
@@ -658,6 +660,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     productId,
     productName,
     amount,
+    quantity,
     promoCode,
     period,
   }: {
@@ -665,6 +668,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     productId: string;
     productName: string;
     amount: number;
+    quantity?: number;
     promoCode?: string;
     period?: string;
   }) => {
@@ -677,6 +681,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         productId,
         productName,
         amount,
+        quantity,
         promoCode,
         period,
         returnUrl,
@@ -691,6 +696,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           productId,
           productName,
           amount,
+          quantity: quantity || 1,
           promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
           paymentMethod: 'ЮKassa',
           status: 'pending',
@@ -713,6 +719,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         productId,
         productName,
         amount,
+        quantity: quantity || 1,
         promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
         paymentMethod: 'ЮKassa',
         status: 'pending',

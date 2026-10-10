@@ -56,16 +56,81 @@ export const Store: React.FC = () => {
   const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
 
-  // Track purchased and opened boxes
-  const [openedBoxesCount, setOpenedBoxesCount] = useState<number>(() => {
-    return Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
+  // Track player available boxes balance across refreshes
+  const [availableBoxes, setAvailableBoxes] = useState<number>(() => {
+    const savedAvail = localStorage.getItem('gsq_available_boxes');
+    if (savedAvail !== null) {
+      return Math.max(0, Number(savedAvail));
+    }
+    const opened = Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
+    const completedTotal = orders
+      .filter(
+        (o) =>
+          (o.productId === 'hat-box' || o.productName?.toLowerCase().includes('шляп')) &&
+          o.status === 'completed'
+      )
+      .reduce((sum, o) => sum + (o.quantity || 1), 0);
+    return Math.max(0, completedTotal - opened);
   });
 
-  const completedBoxesTotal = orders
-    .filter((o) => o.productId === 'hat-box' && o.status === 'completed')
-    .reduce((sum, o) => sum + (o.quantity || 1), 0);
+  // Synchronize available boxes with completed orders so no purchase is ever missed
+  useEffect(() => {
+    let credited: string[] = [];
+    try {
+      credited = JSON.parse(localStorage.getItem('gsq_credited_box_orders') || '[]');
+    } catch {}
 
-  const availableBoxes = Math.max(0, completedBoxesTotal - openedBoxesCount);
+    const completedBoxOrders = orders.filter(
+      (o) =>
+        (o.productId === 'hat-box' || o.productName?.toLowerCase().includes('шляп')) &&
+        o.status === 'completed'
+    );
+
+    let newBoxesToAdd = 0;
+    let hasNewCredited = false;
+
+    for (const o of completedBoxOrders) {
+      if (!credited.includes(o.orderNumber)) {
+        credited.push(o.orderNumber);
+        newBoxesToAdd += o.quantity || 1;
+        hasNewCredited = true;
+      }
+    }
+
+    if (hasNewCredited || localStorage.getItem('gsq_available_boxes') === null) {
+      try {
+        localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
+      } catch {}
+
+      setAvailableBoxes((prev) => {
+        const saved = localStorage.getItem('gsq_available_boxes');
+        let currentVal = saved !== null ? Number(saved) : prev;
+        if (saved === null) {
+          const opened = Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
+          const totalCompleted = completedBoxOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
+          currentVal = Math.max(0, totalCompleted - opened);
+        } else {
+          currentVal += newBoxesToAdd;
+        }
+        try {
+          localStorage.setItem('gsq_available_boxes', String(currentVal));
+        } catch {}
+        return currentVal;
+      });
+    }
+  }, [orders]);
+
+  // Keep available boxes synced across tabs / events
+  useEffect(() => {
+    const syncFromStorage = () => {
+      const saved = localStorage.getItem('gsq_available_boxes');
+      if (saved !== null) {
+        setAvailableBoxes(Math.max(0, Number(saved)));
+      }
+    };
+    window.addEventListener('storage', syncFromStorage);
+    return () => window.removeEventListener('storage', syncFromStorage);
+  }, []);
 
   // Auto-open modal if navigated with ?openBox=true
   useEffect(() => {
@@ -590,13 +655,16 @@ export const Store: React.FC = () => {
         price={hatBoxPrice}
         availableBoxes={availableBoxes}
         onOpenSuccess={() => {
-          if (availableBoxes > 0) {
-            setOpenedBoxesCount((prev) => {
-              const next = prev + 1;
-              localStorage.setItem('gsq_opened_boxes_count', String(next));
-              return next;
-            });
-          }
+          setAvailableBoxes((prev) => {
+            const next = Math.max(0, prev - 1);
+            try {
+              localStorage.setItem('gsq_available_boxes', String(next));
+              const currentOpened = Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
+              localStorage.setItem('gsq_opened_boxes_count', String(currentOpened + 1));
+              window.dispatchEvent(new Event('storage'));
+            } catch {}
+            return next;
+          });
         }}
         onDropWon={(hat, isPaid) => {
           const lastNick = 

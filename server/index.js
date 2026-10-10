@@ -481,6 +481,59 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
+      // Complete order endpoint
+      if (pathname.startsWith('/api/orders/') && pathname.endsWith('/complete') && method === 'POST') {
+        const orderIdOrNumber = decodeURIComponent(
+          pathname.replace('/api/orders/', '').replace('/complete', '')
+        );
+        const order = (db.orders || []).find(
+          (o) => o.orderNumber === orderIdOrNumber || o.id === orderIdOrNumber
+        );
+
+        if (!order) {
+          return sendJson(res, 404, { error: 'Order not found' });
+        }
+
+        order.status = 'completed';
+        order.paidAt = new Date().toISOString();
+
+        if (order.promoCode) {
+          const cp = (db.coupons || []).find((c) => c.code === order.promoCode);
+          if (cp) {
+            cp.usesCount = (cp.usesCount || 0) + 1;
+          }
+        }
+
+        const targetProduct = (db.products || []).find((p) => p.id === order.productId);
+        if (targetProduct?.command) {
+          const mcCommand = targetProduct.command.replace('{user}', order.nickname);
+          console.log(`[ORDER COMPLETED] Order ${order.orderNumber} for ${order.nickname}: Executing command ${mcCommand}`);
+        }
+
+        await writeDb(db);
+        return sendJson(res, 200, { success: true, order });
+      }
+
+      // Update order endpoint
+      if (
+        pathname.startsWith('/api/orders/') &&
+        !pathname.endsWith('/complete') &&
+        pathname !== '/api/orders/mock-sale' &&
+        method === 'PUT'
+      ) {
+        const orderIdOrNumber = decodeURIComponent(pathname.replace('/api/orders/', ''));
+        const body = await parseJsonBody(req);
+        const order = (db.orders || []).find(
+          (o) => o.orderNumber === orderIdOrNumber || o.id === orderIdOrNumber
+        );
+        if (!order) {
+          return sendJson(res, 404, { error: 'Order not found' });
+        }
+        Object.assign(order, body);
+        await writeDb(db);
+        return sendJson(res, 200, order);
+      }
+
       if (pathname === '/api/orders/mock-sale' && method === 'POST') {
         if (!isAuthorized(req, db)) return sendJson(res, 401, { error: 'Unauthorized' });
         const sampleNicknames = ['Danik_Pro', 'Miner_77', 'AlexCool', 'ShadowNinja', 'EnderGamer', 'CraftKing', 'Ksenia_MC'];

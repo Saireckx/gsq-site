@@ -212,7 +212,7 @@ export const PaymentResult: React.FC = () => {
                   className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg flex items-center justify-center gap-2 active:scale-98"
                 >
                   <Sparkles className="w-4 h-4 text-black" />
-                  <span>🎁 Открыть коробку со шляпой</span>
+                  <span>🎁 Открыть коробку со шляпой{currentOrder.quantity && currentOrder.quantity > 1 ? ` (${currentOrder.quantity} шт.)` : ''}</span>
                 </Link>
               </div>
             )}

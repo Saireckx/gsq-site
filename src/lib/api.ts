@@ -148,6 +148,12 @@ export const api = {
     });
   },
 
+  async completeOrder(orderNumber: string) {
+    return request<any>(`/orders/${encodeURIComponent(orderNumber)}/complete`, {
+      method: 'POST',
+    });
+  },
+
   async clearOrders() {
     return request<any>('/orders', {
       method: 'DELETE',

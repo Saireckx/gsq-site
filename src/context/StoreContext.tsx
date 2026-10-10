@@ -463,7 +463,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setCoupons(cps);
         }
         if (Array.isArray(ords) && ords.length > 0) {
-          setOrders(ords);
+          setOrders((prev) => {
+            // Merge remote orders with local orders:
+            // 1. Never revert an already 'completed' local order back to 'pending'
+            const merged = ords.map((remote) => {
+              const local = prev.find((l) => l.orderNumber === remote.orderNumber);
+              if (local && local.status === 'completed' && remote.status !== 'completed') {
+                return { ...remote, status: 'completed' as const };
+              }
+              return remote;
+            });
+
+            // 2. Retain any local orders that have not yet arrived on the remote backend
+            for (const local of prev) {
+              if (!merged.some((m) => m.orderNumber === local.orderNumber)) {
+                merged.unshift(local);
+              }
+            }
+
+            try {
+              localStorage.setItem('gsq_orders', JSON.stringify(merged));
+            } catch {}
+
+            return merged;
+          });
         }
         if (settings && settings.ip) {
           setServerSettings((prev) => ({ ...prev, ...settings }));
@@ -740,8 +763,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const completeOrder = (orderNumber: string) => {
-    setOrders((prev) =>
-      prev.map((o) => {
+    // Notify remote backend to persist status 'completed' in db
+    api.completeOrder(orderNumber).catch(() => {});
+
+    setOrders((prev) => {
+      const next = prev.map((o) => {
         if (o.orderNumber === orderNumber) {
           if (o.promoCode) {
             const clean = o.promoCode.trim().toUpperCase();
@@ -749,11 +775,45 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               cps.map((c) => (c.code === clean ? { ...c, usesCount: c.usesCount + 1 } : c))
             );
           }
-          return { ...o, status: 'completed' };
+          return { ...o, status: 'completed' as const };
         }
         return o;
-      })
-    );
+      });
+
+      try {
+        localStorage.setItem('gsq_orders', JSON.stringify(next));
+      } catch {}
+
+      // If this completed order contains a hat-box, credit boxes immediately to localStorage inventory
+      const targetOrder = next.find((o) => o.orderNumber === orderNumber);
+      if (
+        targetOrder &&
+        (targetOrder.productId === 'hat-box' || targetOrder.productName?.toLowerCase().includes('шляп'))
+      ) {
+        const qty = targetOrder.quantity || 1;
+        try {
+          const credited: string[] = JSON.parse(
+            localStorage.getItem('gsq_credited_box_orders') || '[]'
+          );
+          if (!credited.includes(orderNumber)) {
+            credited.push(orderNumber);
+            localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
+
+            const currentAvail = Number(localStorage.getItem('gsq_available_boxes') || '0');
+            const nextAvail = currentAvail + qty;
+            localStorage.setItem('gsq_available_boxes', String(nextAvail));
+
+            const currentTotal = Number(localStorage.getItem('gsq_purchased_boxes_total') || '0');
+            localStorage.setItem('gsq_purchased_boxes_total', String(currentTotal + qty));
+
+            // Dispatch storage event for other components listening
+            window.dispatchEvent(new Event('storage'));
+          }
+        } catch {}
+      }
+
+      return next;
+    });
   };
 
   const generateMockSale = () => {

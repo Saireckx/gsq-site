@@ -2,7 +2,11 @@
  * GSQ API Client for Node.js Backend
  */
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL
+  ? (import.meta.env.VITE_API_URL as string).replace(/\/+$/, '') + '/api'
+  : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? '/api'
+      : 'https://gsq-site.onrender.com/api');
 
 export function getAuthToken(): string | null {
   return sessionStorage.getItem('gsq_admin_token') || sessionStorage.getItem('gsq_admin_pin') || null;

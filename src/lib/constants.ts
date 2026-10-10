@@ -36,6 +36,7 @@ export const SERVER_INFO = {
   links: {
     discord: 'https://discord.gg/GbgNVXDdtf',
     tiktok: 'https://www.tiktok.com/@gsq_mc',
+    boosty: 'https://boosty.to/gsq_mc',
   },
 };
 
@@ -108,8 +109,8 @@ export const ADDITIONAL_SERVICES: ServiceItem[] = [
     name: 'Разбан',
     iconType: 'unban',
     description: 'Снятие блокировки с аккаунта (если это возможно).',
-    priceText: 'от 299 ₽',
-    priceMin: 299,
+    priceText: '399 ₽',
+    priceMin: 399,
     buttonText: 'Купить',
   },
   {
@@ -117,8 +118,8 @@ export const ADDITIONAL_SERVICES: ServiceItem[] = [
     name: 'Размут',
     iconType: 'unmute',
     description: 'Снятие мута с чата.',
-    priceText: 'от 199 ₽',
-    priceMin: 199,
+    priceText: '99 ₽',
+    priceMin: 99,
     buttonText: 'Купить',
   },
   {
@@ -126,7 +127,7 @@ export const ADDITIONAL_SERVICES: ServiceItem[] = [
     name: 'Пожертвование',
     iconType: 'donate',
     description: 'Поддержи сервер и получи благодарность!',
-    priceText: 'от 50 ₽',
+    priceText: 'на Boosty',
     priceMin: 50,
     buttonText: 'Поддержать',
   },
@@ -333,8 +334,8 @@ export const SERVER_FEATURES = [
     icon: 'Ticket',
   },
   {
-    title: 'Защита построек',
-    description: 'Все постройки быстро откатываются модерацией, сервер находится под защитой coreProtector.',
+    title: 'Защита от гриферов',
+    description: 'Все постройки быстро откатываются модерацией, сервер находится под защитой CoreProtect.',
     icon: 'ShieldCheck',
   },
   {

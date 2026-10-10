@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { CheckoutModal, CheckoutItem } from '../components/CheckoutModal';
 import { HatBoxModal } from '../components/HatBoxModal';
-import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Clock, Package, ShoppingBag } from 'lucide-react';
+import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Clock, Package, ShoppingBag, ExternalLink } from 'lucide-react';
+import { SERVER_INFO } from '../lib/constants';
 
 export const Store: React.FC = () => {
   const { products, orders, addHatDrop } = useStore();
@@ -359,23 +360,13 @@ export const Store: React.FC = () => {
                       </button>
                     </>
                   ) : (
-                    <>
-                      <button
-                        onClick={() => handleBuy(hatBoxProduct)}
-                        className="flex-1 py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm transition-all shadow-glow-white hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        <span>Купить коробку ({hatBoxPrice} ₽)</span>
-                      </button>
-
-                      <button
-                        onClick={() => setIsHatBoxModalOpen(true)}
-                        className="py-3.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 flex items-center justify-center gap-1.5"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Тест рулетки</span>
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handleBuy(hatBoxProduct)}
+                      className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm transition-all shadow-glow-white hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Купить коробку ({hatBoxPrice} ₽)</span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -422,17 +413,31 @@ export const Store: React.FC = () => {
               <div className="pt-4 border-t border-white/[0.06] space-y-3">
                 <div className="flex items-baseline justify-between">
                   <div className="text-base sm:text-lg font-mono font-bold text-white">
-                    {service.id === 'donate' ? 'от 50 ₽' : `${service.price} ₽`}
+                    {service.id === 'donate' ? 'Любая сумма' : `${service.price} ₽`}
                   </div>
-                  <span className="text-xs text-neutral-500 font-sans">{service.period}</span>
+                  <span className="text-xs text-neutral-500 font-sans">
+                    {service.id === 'donate' ? 'на Boosty' : service.period}
+                  </span>
                 </div>
 
-                <button
-                  onClick={() => handleBuy(service)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-neutral-950/80 hover:bg-neutral-800 text-white border border-white/15 hover:border-white/30 text-xs sm:text-sm font-semibold transition-all hover:shadow-glow-sm"
-                >
-                  {service.id === 'donate' ? 'Поддержать' : 'Купить'}
-                </button>
+                {service.id === 'donate' ? (
+                  <a
+                    href={SERVER_INFO.links.boosty || 'https://boosty.to/gsq_mc'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-neutral-950/80 hover:bg-neutral-800 text-white border border-white/15 hover:border-white/30 text-xs sm:text-sm font-semibold transition-all hover:shadow-glow-sm flex items-center justify-center gap-1.5"
+                  >
+                    <span>Поддержать</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => handleBuy(service)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-neutral-950/80 hover:bg-neutral-800 text-white border border-white/15 hover:border-white/30 text-xs sm:text-sm font-semibold transition-all hover:shadow-glow-sm"
+                  >
+                    Купить
+                  </button>
+                )}
               </div>
             </div>
           ))}

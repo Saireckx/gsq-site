@@ -480,21 +480,13 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                 </div>
 
                 <div className="pt-2 w-full flex flex-wrap items-center justify-center gap-3">
-                  {availableBoxes > 0 ? (
+                  {availableBoxes > 0 && (
                     <button
                       onClick={handleStartOpening}
                       className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-extrabold text-xs transition-all flex items-center gap-2 shadow-glow-sm active:scale-95"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>Открыть следующую (осталось {availableBoxes} шт.)</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleStartOpening}
-                      className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-neutral-200 transition-colors flex items-center gap-2 shadow-glow-white active:scale-95"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Крутить ещё раз (Тест)</span>
                     </button>
                   )}
                   {onBuy && (
@@ -506,9 +498,15 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                       className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors flex items-center gap-2 active:scale-95"
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Купить ещё ({price} ₽)</span>
+                      <span>{availableBoxes > 0 ? 'Купить ещё' : 'Купить коробку'} ({price} ₽)</span>
                     </button>
                   )}
+                  <button
+                    onClick={onClose}
+                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors flex items-center gap-2 active:scale-95"
+                  >
+                    <span>Закрыть</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -551,32 +549,19 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                     <span>{isOpening ? 'Открываем...' : `🎁 Открыть коробку (${availableBoxes} шт.)`}</span>
                   </button>
                 ) : (
-                  <>
-                    {onBuy && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onClose();
-                          onBuy();
-                        }}
-                        className="flex-1 py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        <span>Купить коробку ({price} ₽)</span>
-                      </button>
-                    )}
+                  onBuy && (
                     <button
                       type="button"
-                      onClick={handleStartOpening}
-                      disabled={isOpening}
-                      className={`py-3.5 px-5 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 text-white ${
-                        isOpening ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'
-                      }`}
+                      onClick={() => {
+                        onClose();
+                        onBuy();
+                      }}
+                      className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg active:scale-95 flex items-center justify-center gap-2"
                     >
-                      <Sparkles className="w-4 h-4 text-amber-400" />
-                      <span>{isOpening ? 'Крутится...' : 'Тест рулетки'}</span>
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Купить коробку ({price} ₽)</span>
                     </button>
-                  </>
+                  )
                 )}
 
                 {availableBoxes > 0 && onBuy && (

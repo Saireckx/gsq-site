@@ -649,7 +649,7 @@ const server = http.createServer(async (req, res) => {
           amount: finalAmount,
           quantity: qty,
           promoCode: promoCode ? String(promoCode).trim().toUpperCase() : undefined,
-          paymentMethod: 'ЮKassa',
+          paymentMethod: 'Онлайн-оплата',
           status: 'pending',
           createdAt: 'Только что',
           createdAtIso: new Date().toISOString(),
@@ -692,9 +692,9 @@ const server = http.createServer(async (req, res) => {
             const yooData = await yooRes.json();
 
             if (!yooRes.ok) {
-              console.error('[YooKassa API Error]:', yooData);
+              console.error('[Payment Gateway Error]:', yooData);
               return sendJson(res, 400, {
-                error: yooData.description || 'Ошибка при создании платежа в ЮKassa',
+                error: yooData.description || 'Ошибка при создании платежа',
                 details: yooData,
               });
             }
@@ -714,8 +714,8 @@ const server = http.createServer(async (req, res) => {
               status: yooData.status,
             });
           } catch (apiErr) {
-            console.error('[YooKassa Request Error]:', apiErr);
-            return sendJson(res, 502, { error: 'Не удалось связаться с сервером ЮKassa: ' + apiErr.message });
+            console.error('[Payment Gateway Request Error]:', apiErr);
+            return sendJson(res, 502, { error: 'Не удалось связаться с платёжным сервером: ' + apiErr.message });
           }
         }
 
@@ -737,7 +737,7 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      // 3. YooKassa Webhook endpoint (POST https://your-domain/api/yookassa/webhook)
+      // 3. Payment Gateway Webhook endpoint
       if (pathname === '/api/yookassa/webhook' && method === 'POST') {
         const body = await parseJsonBody(req);
         const event = body.event;
@@ -756,7 +756,7 @@ const server = http.createServer(async (req, res) => {
               order.status = 'completed';
               order.paidAt = new Date().toISOString();
               if (paymentObj.payment_method?.title) {
-                order.paymentMethod = `ЮKassa (${paymentObj.payment_method.title})`;
+                order.paymentMethod = paymentObj.payment_method.title;
               }
 
               // Increment promo code usage if used
@@ -769,7 +769,7 @@ const server = http.createServer(async (req, res) => {
               const targetProduct = (db.products || []).find((p) => p.id === order.productId);
               if (targetProduct?.command) {
                 const mcCommand = targetProduct.command.replace('{user}', order.nickname);
-                console.log(`[YOOKASSA SUCCESS] Order ${order.orderNumber} for ${order.nickname} PAID! Executing command: ${mcCommand}`);
+                console.log(`[PAYMENT SUCCESS] Order ${order.orderNumber} for ${order.nickname} PAID! Executing command: ${mcCommand}`);
               }
             } else if (event === 'payment.canceled') {
               order.status = 'canceled';

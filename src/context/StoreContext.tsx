@@ -810,7 +810,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           amount,
           quantity: quantity || 1,
           promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
-          paymentMethod: 'ЮKassa',
+          paymentMethod: 'Онлайн-оплата',
           status: isCompleted ? 'completed' : 'pending',
           createdAt: 'Только что',
           iconColor: matchingProduct?.iconColor || 'gold',
@@ -835,7 +835,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       return res;
     } catch (err: any) {
-      console.warn('[YooKassa API unreachable, using client offline mode]:', err);
+      console.warn('[Payment API unreachable, using client offline mode]:', err);
       const orderNumber = 'GSQ-' + Math.floor(100000 + Math.random() * 900000);
       const matchingProduct = products.find((p) => p.id === productId);
       const newOrder: OrderItem = {
@@ -847,7 +847,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         amount,
         quantity: quantity || 1,
         promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
-        paymentMethod: 'ЮKassa',
+        paymentMethod: 'Онлайн-оплата',
         status: 'completed',
         createdAt: 'Только что',
         iconColor: matchingProduct?.iconColor || 'gold',

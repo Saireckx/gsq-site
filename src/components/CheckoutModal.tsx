@@ -149,7 +149,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
           message: res.message,
         });
 
-        // If real external YooKassa confirmation URL, redirect automatically
+        // If real external payment gateway confirmation URL, redirect automatically
         if (res.paymentUrl.startsWith('http')) {
           window.location.href = res.paymentUrl;
         }
@@ -158,7 +158,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
       }
     } catch (err: any) {
       setLoading(false);
-      setErrorMessage(err.message || 'Произошла ошибка при обращении к ЮKassa');
+      setErrorMessage(err.message || 'Произошла ошибка при обращении к платёжной системе');
     }
   };
 
@@ -186,7 +186,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
             <div className="mb-5">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">
-                  Оплата через ЮKassa
+                  Онлайн-оплата (СБП, Карты)
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-neutral-300">
                   Мгновенно
@@ -443,7 +443,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Подготовка платежа в ЮKassa...</span>
+                      <span>Подготовка платежа...</span>
                     </>
                   ) : (
                     <>
@@ -477,7 +477,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
 
               <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-500">
                 <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
-                <span>Защищённое SSL соединение ЮKassa. Выдача за 1–2 мин.</span>
+                <span>Защищённое SSL-соединение. Выдача за 1–2 мин.</span>
               </div>
             </form>
           </div>
@@ -493,14 +493,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
                 Заказ {redirectInfo.orderNumber} • Оплачен
               </span>
               <h3 className="text-2xl font-black text-white">
-                {redirectInfo.isDemo ? 'Оплата успешно завершена! 🎉' : 'Переход в ЮKassa'}
+                {redirectInfo.isDemo ? 'Оплата успешно завершена! 🎉' : 'Переход к оплате'}
               </h3>
               <p className="text-xs text-neutral-300 max-w-sm mx-auto">
                 {redirectInfo.isDemo
                   ? isBoxOrQuantityAllowed
                     ? `Вам успешно начислено ${quantity} ${quantity === 1 ? 'коробка' : 'коробок'}! Они уже добавлены к вашему балансу.`
                     : 'Тестовая оплата подтверждена! Услуга успешно активирована.'
-                  : 'Перенаправляем вас на официальную страницу оплаты ЮKassa...'}
+                  : 'Перенаправляем вас на защищённую страницу оплаты...'}
               </p>
             </div>
 
@@ -565,7 +565,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
                     rel="noopener noreferrer"
                     className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-glow-sm"
                   >
-                    <span>Оплатить на странице ЮKassa</span>
+                    <span>Перейти к оплате</span>
                     <ExternalLink className="w-4 h-4" />
                   </a>
 

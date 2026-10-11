@@ -123,7 +123,7 @@ export const Footer: React.FC = () => {
           <div className="space-y-1 text-center md:text-left">
             <p>© {new Date().getFullYear()} GSQ Minecraft. Все права защищены. Самозанятый Полянских Е. А. (ИНН 691106468034).</p>
             <p className="text-[11px] text-neutral-600">
-              Сервер не имеет прямого отношения к Mojang Studios или Microsoft. Оплата обрабатывается через сервис ЮKassa.
+              Сервер не имеет прямого отношения к Mojang Studios или Microsoft. Все платежи обрабатываются через защищённый платёжный сервис.
             </p>
           </div>
 

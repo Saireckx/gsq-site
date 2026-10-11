@@ -60,7 +60,7 @@ export const ServerSettingsTab: React.FC = () => {
         setTimeout(() => setYooSaved(false), 2500);
       }
     } catch (err) {
-      alert('Ошибка при сохранении настроек ЮKassa: ' + (err as Error).message);
+      alert('Ошибка при сохранении настроек платёжного шлюза: ' + (err as Error).message);
     } finally {
       setYooSaving(false);
     }
@@ -94,7 +94,7 @@ export const ServerSettingsTab: React.FC = () => {
           <span>GSQ — настройки сервера и шлюзов</span>
         </h2>
         <p className="text-xs text-slate-400 mt-0.5">
-          Управляйте IP-адресом, версией, картой и платёжным шлюзом ЮKassa прямо из панели управления.
+          Управляйте IP-адресом, версией, картой и платёжным шлюзом прямо из панели управления.
         </p>
       </div>
 
@@ -202,7 +202,7 @@ export const ServerSettingsTab: React.FC = () => {
         </div>
       </form>
 
-      {/* 2. YooKassa Integration Card */}
+      {/* 2. Payment Gateway Integration Card */}
       <form onSubmit={handleSaveYooKassa} className="p-6 rounded-2xl bg-[#131a29] border border-slate-800 space-y-6 shadow-xl">
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export const ServerSettingsTab: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-white">Интеграция ЮKassa</span>
+                <span className="text-sm font-bold text-white">Платёжный шлюз (Онлайн-оплата)</span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
                     yooConfigured
@@ -231,7 +231,7 @@ export const ServerSettingsTab: React.FC = () => {
           {yooSaved && (
             <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
               <Check className="w-4 h-4" />
-              <span>ЮKassa сохранена!</span>
+              <span>Настройки сохранены!</span>
             </span>
           )}
         </div>
@@ -240,7 +240,7 @@ export const ServerSettingsTab: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-              <span>Идентификатор магазина (Shop ID)</span>
+              <span>Идентификатор кассы / проекта (Shop ID)</span>
               <span className="text-amber-400">*</span>
             </label>
             <input
@@ -251,14 +251,14 @@ export const ServerSettingsTab: React.FC = () => {
               placeholder="Например: 1042981"
             />
             <p className="text-[10px] text-slate-500 mt-1">
-              Берётся в личном кабинете ЮKassa в левом верхнем углу
+              Берётся в личном кабинете платёжной системы
             </p>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
               <Key className="w-3.5 h-3.5 text-slate-400" />
-              <span>Секретный ключ API</span>
+              <span>Секретный ключ / API Key</span>
               <span className="text-amber-400">*</span>
             </label>
             <input
@@ -266,10 +266,10 @@ export const ServerSettingsTab: React.FC = () => {
               value={yooSecretKey}
               onChange={(e) => setYooSecretKey(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1422] border border-slate-800 text-white font-mono text-sm focus:border-emerald-400 focus:outline-none"
-              placeholder="live_... или test_..."
+              placeholder="Секретный ключ API"
             />
             <p className="text-[10px] text-slate-500 mt-1">
-              Сгенерируйте в ЛК ЮKassa (раздел Интеграция → Ключи API)
+              Сгенерируйте в ЛК платёжной системы (раздел API / Интеграция)
             </p>
           </div>
         </div>
@@ -280,7 +280,7 @@ export const ServerSettingsTab: React.FC = () => {
             <div className="space-y-0.5">
               <span className="text-xs font-bold text-white block">Тестовый режим</span>
               <span className="text-[11px] text-slate-400 block">
-                Для тестирования оплат тестовыми картами
+                Для тестирования оплат без списания реальных средств
               </span>
             </div>
             <input
@@ -311,7 +311,7 @@ export const ServerSettingsTab: React.FC = () => {
         <div className="p-4 rounded-xl bg-[#0e1422] border border-slate-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-300">
-              URL для HTTP-уведомлений (Webhook в ЛК ЮKassa)
+              URL для HTTP-уведомлений (Webhook)
             </span>
             <button
               type="button"
@@ -326,7 +326,7 @@ export const ServerSettingsTab: React.FC = () => {
             {webhookUrl}
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            Вставьте эту ссылку в личном кабинете ЮKassa в разделе <strong>Интеграция → HTTP-уведомления</strong> и выберите событие <code>payment.succeeded</code>.
+            Вставьте эту ссылку в личном кабинете платёжной системы в разделе <strong>Webhook / Уведомления</strong> для автоматического зачисления оплат.
           </p>
         </div>
 
@@ -334,12 +334,12 @@ export const ServerSettingsTab: React.FC = () => {
         <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 space-y-2">
           <div className="font-bold text-white flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Как подключить магазин в 3 шага:</span>
+            <span>Как подключить платёжный шлюз:</span>
           </div>
           <ol className="list-decimal list-inside space-y-1 text-slate-400 text-[11px]">
-            <li>Зарегистрируйтесь в <a href="https://yookassa.ru" target="_blank" rel="noreferrer" className="text-emerald-400 underline">yookassa.ru</a> и активируйте договор.</li>
-            <li>В разделе «Интеграция → Ключи API» скопируйте Shop ID и создайте секретный ключ.</li>
-            <li>Вставьте их в поля выше, скопируйте Webhook URL и нажмите «Сохранить настройки ЮKassa».</li>
+            <li>Зарегистрируйтесь в выбранной платёжной системе и создайте кассу/проект.</li>
+            <li>В разделе настроек скопируйте ID проекта/кассы и сгенерируйте секретный ключ API.</li>
+            <li>Вставьте их в поля выше, скопируйте Webhook URL и нажмите кнопку сохранения.</li>
           </ol>
         </div>
 
@@ -349,7 +349,7 @@ export const ServerSettingsTab: React.FC = () => {
             disabled={yooSaving}
             className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
           >
-            {yooSaving ? 'Сохранение...' : 'Сохранить настройки ЮKassa'}
+            {yooSaving ? 'Сохранение...' : 'Сохранить настройки платёжки'}
           </button>
         </div>
       </form>

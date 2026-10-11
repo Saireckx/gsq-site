@@ -79,7 +79,7 @@ export const PaymentResult: React.FC = () => {
         {loading ? (
           <div className="text-center py-12 space-y-4">
             <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-white animate-spin mx-auto" />
-            <p className="text-sm text-neutral-400">Проверяем статус платежа в ЮKassa...</p>
+            <p className="text-sm text-neutral-400">Проверяем статус платежа...</p>
           </div>
         ) : currentOrder ? (
           <>
@@ -100,7 +100,7 @@ export const PaymentResult: React.FC = () => {
               </div>
 
               <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
-                Платёжный шлюз ЮKassa
+                Платёжный шлюз
               </span>
 
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -110,7 +110,7 @@ export const PaymentResult: React.FC = () => {
               <p className="text-sm text-neutral-400 max-w-md mx-auto">
                 {isCompleted
                   ? 'Платеж успешно обработан. Услуга уже отправлена на сервер и будет активирована автоматически.'
-                  : 'ЮKassa ожидает проведение транзакции. Если вы уже оплатили, статус обновится автоматически в течение пары минут.'}
+                  : 'Ожидаем проведение транзакции. Если вы уже оплатили, статус обновится автоматически в течение пары минут.'}
               </p>
             </div>
 
@@ -119,10 +119,10 @@ export const PaymentResult: React.FC = () => {
               <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2.5">
                 <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
                   <Sparkles className="w-4 h-4" />
-                  <span>Тестовый режим ЮKassa (На этапе подключения)</span>
+                  <span>Тестовый режим (На этапе подключения)</span>
                 </div>
                 <p className="text-xs text-neutral-300 leading-relaxed">
-                  Магазин настроен и готов принимать боевые платежи после ввода Shop ID и Секретного ключа в панели управления. Вы можете подтвердить оплату прямо сейчас для проверки выдачи услуги:
+                  Магазин настроен и готов принимать боевые платежи после ввода данных шлюза в панели управления. Вы можете подтвердить оплату прямо сейчас для проверки выдачи услуги:
                 </p>
                 <button
                   type="button"
@@ -178,7 +178,7 @@ export const PaymentResult: React.FC = () => {
                 <span className="text-neutral-400">Платёжный метод:</span>
                 <span className="text-white font-medium flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span>ЮKassa (СБП, Карты МИР, SberPay)</span>
+                  <span>Банковская карта, СБП, T-Pay, SberPay</span>
                 </span>
               </div>
             </div>
@@ -244,7 +244,7 @@ export const PaymentResult: React.FC = () => {
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-500 pt-1">
               <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
-              <span>Официальный шлюз ЮKassa. Безопасность гарантирована.</span>
+              <span>Безопасная онлайн-оплата. Данные защищены по стандарту PCI DSS.</span>
             </div>
           </>
         ) : (

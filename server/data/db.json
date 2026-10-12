@@ -198,7 +198,7 @@
     "pin": "982164",
     "password": "Gsq#Admin2026_9xK!"
   },
-  "yookassa": {
+  "paymentGateway": {
     "shopId": "",
     "secretKey": "",
     "testMode": true,

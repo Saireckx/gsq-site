@@ -56,8 +56,8 @@ export const Offer: React.FC = () => {
             <span className="font-mono text-neutral-300">https://gsqshop.shop</span>
           </div>
           <div>
-            <span className="text-neutral-500 block">Код верификации:</span>
-            <span className="font-mono font-bold text-white">PLAT</span>
+            <span className="text-neutral-500 block">Ключевое слово:</span>
+            <span className="font-mono font-bold text-amber-300 bg-white/10 px-2 py-0.5 rounded border border-white/20">PLAT</span>
           </div>
         </div>
       </div>
@@ -231,8 +231,8 @@ export const Offer: React.FC = () => {
             <p><strong>ИНН:</strong> <span className="font-mono font-bold text-amber-300">{SELLER_REQUISITES.inn}</span></p>
             <p><strong>Служба технической поддержки:</strong> <a href={`mailto:${SELLER_REQUISITES.email}`} className="text-white underline font-mono">{SELLER_REQUISITES.email}</a></p>
             <p><strong>Сайт:</strong> <span className="font-mono text-neutral-300">https://gsqshop.shop</span></p>
-            <p className="pt-2 text-xs text-neutral-400 border-t border-white/5">
-              Идентификатор верификации платёжной системы: <span className="font-mono font-bold text-white">PLAT</span>
+            <p className="pt-2 text-xs text-neutral-300 border-t border-white/5 font-semibold">
+              Ключевое слово: <span className="font-mono font-bold text-amber-300 bg-white/10 px-2 py-0.5 rounded border border-white/20">PLAT</span>
             </p>
           </div>
         </section>

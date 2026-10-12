@@ -10,28 +10,28 @@ export const ServerSettingsTab: React.FC = () => {
   const [formData, setFormData] = useState(serverSettings);
   const [saved, setSaved] = useState(false);
 
-  // YooKassa Configuration State
-  const [yooShopId, setYooShopId] = useState('');
-  const [yooSecretKey, setYooSecretKey] = useState('');
-  const [yooTestMode, setYooTestMode] = useState(true);
-  const [yooEnabled, setYooEnabled] = useState(true);
-  const [yooConfigured, setYooConfigured] = useState(false);
-  const [yooSaved, setYooSaved] = useState(false);
-  const [yooSaving, setYooSaving] = useState(false);
+  // Payment Gateway Configuration State
+  const [payShopId, setPayShopId] = useState('');
+  const [paySecretKey, setPaySecretKey] = useState('');
+  const [payTestMode, setPayTestMode] = useState(true);
+  const [payEnabled, setPayEnabled] = useState(true);
+  const [payConfigured, setPayConfigured] = useState(false);
+  const [paySaved, setPaySaved] = useState(false);
+  const [paySaving, setPaySaving] = useState(false);
   const [copiedWebhook, setCopiedWebhook] = useState(false);
 
-  const webhookUrl = `${window.location.origin}/api/yookassa/webhook`;
+  const webhookUrl = `${window.location.origin}/api/payment/webhook`;
 
   useEffect(() => {
-    // Fetch YooKassa settings from backend
-    api.getYooKassaSettings()
+    // Fetch payment gateway settings from backend
+    api.getPaymentSettings()
       .then((data) => {
         if (data) {
-          setYooShopId(data.shopId || '');
-          setYooSecretKey(data.secretKey || '');
-          setYooTestMode(data.testMode ?? true);
-          setYooEnabled(data.enabled ?? true);
-          setYooConfigured(data.isConfigured ?? false);
+          setPayShopId(data.shopId || '');
+          setPaySecretKey(data.secretKey || '');
+          setPayTestMode(data.testMode ?? true);
+          setPayEnabled(data.enabled ?? true);
+          setPayConfigured(data.isConfigured ?? false);
         }
       })
       .catch(() => {});
@@ -44,25 +44,25 @@ export const ServerSettingsTab: React.FC = () => {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleSaveYooKassa = async (e: React.FormEvent) => {
+  const handleSavePaymentSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    setYooSaving(true);
+    setPaySaving(true);
     try {
-      const res = await api.updateYooKassaSettings({
-        shopId: yooShopId.trim(),
-        secretKey: yooSecretKey.trim(),
-        testMode: yooTestMode,
-        enabled: yooEnabled,
+      const res = await api.updatePaymentSettings({
+        shopId: payShopId.trim(),
+        secretKey: paySecretKey.trim(),
+        testMode: payTestMode,
+        enabled: payEnabled,
       });
       if (res && res.success) {
-        setYooConfigured(res.isConfigured);
-        setYooSaved(true);
-        setTimeout(() => setYooSaved(false), 2500);
+        setPayConfigured(res.isConfigured);
+        setPaySaved(true);
+        setTimeout(() => setPaySaved(false), 2500);
       }
     } catch (err) {
       alert('Ошибка при сохранении настроек платёжного шлюза: ' + (err as Error).message);
     } finally {
-      setYooSaving(false);
+      setPaySaving(false);
     }
   };
 
@@ -203,7 +203,7 @@ export const ServerSettingsTab: React.FC = () => {
       </form>
 
       {/* 2. Payment Gateway Integration Card */}
-      <form onSubmit={handleSaveYooKassa} className="p-6 rounded-2xl bg-[#131a29] border border-slate-800 space-y-6 shadow-xl">
+      <form onSubmit={handleSavePaymentSettings} className="p-6 rounded-2xl bg-[#131a29] border border-slate-800 space-y-6 shadow-xl">
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -214,12 +214,12 @@ export const ServerSettingsTab: React.FC = () => {
                 <span className="text-sm font-bold text-white">Платёжный шлюз (Онлайн-оплата)</span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
-                    yooConfigured
+                    payConfigured
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                       : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                   }`}
                 >
-                  {yooConfigured ? 'Подключено' : 'Требуется настройка'}
+                  {payConfigured ? 'Подключено' : 'Требуется настройка'}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">
@@ -228,7 +228,7 @@ export const ServerSettingsTab: React.FC = () => {
             </div>
           </div>
 
-          {yooSaved && (
+          {paySaved && (
             <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
               <Check className="w-4 h-4" />
               <span>Настройки сохранены!</span>
@@ -245,8 +245,8 @@ export const ServerSettingsTab: React.FC = () => {
             </label>
             <input
               type="text"
-              value={yooShopId}
-              onChange={(e) => setYooShopId(e.target.value)}
+              value={payShopId}
+              onChange={(e) => setPayShopId(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1422] border border-slate-800 text-white font-mono text-sm focus:border-emerald-400 focus:outline-none"
               placeholder="Например: 1042981"
             />
@@ -263,8 +263,8 @@ export const ServerSettingsTab: React.FC = () => {
             </label>
             <input
               type="password"
-              value={yooSecretKey}
-              onChange={(e) => setYooSecretKey(e.target.value)}
+              value={paySecretKey}
+              onChange={(e) => setPaySecretKey(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e1422] border border-slate-800 text-white font-mono text-sm focus:border-emerald-400 focus:outline-none"
               placeholder="Секретный ключ API"
             />
@@ -285,8 +285,8 @@ export const ServerSettingsTab: React.FC = () => {
             </div>
             <input
               type="checkbox"
-              checked={yooTestMode}
-              onChange={(e) => setYooTestMode(e.target.checked)}
+              checked={payTestMode}
+              onChange={(e) => setPayTestMode(e.target.checked)}
               className="w-4 h-4 rounded text-emerald-500 focus:ring-0 focus:ring-offset-0 bg-slate-900 border-slate-700"
             />
           </label>
@@ -300,8 +300,8 @@ export const ServerSettingsTab: React.FC = () => {
             </div>
             <input
               type="checkbox"
-              checked={yooEnabled}
-              onChange={(e) => setYooEnabled(e.target.checked)}
+              checked={payEnabled}
+              onChange={(e) => setPayEnabled(e.target.checked)}
               className="w-4 h-4 rounded text-emerald-500 focus:ring-0 focus:ring-offset-0 bg-slate-900 border-slate-700"
             />
           </label>
@@ -346,10 +346,10 @@ export const ServerSettingsTab: React.FC = () => {
         <div className="pt-2 flex justify-end">
           <button
             type="submit"
-            disabled={yooSaving}
+            disabled={paySaving}
             className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
           >
-            {yooSaving ? 'Сохранение...' : 'Сохранить настройки платёжки'}
+            {paySaving ? 'Сохранение...' : 'Сохранить настройки платёжки'}
           </button>
         </div>
       </form>

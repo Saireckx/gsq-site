@@ -183,8 +183,8 @@ export const api = {
     return request<any>('/stats');
   },
 
-  // YooKassa API
-  async createYooKassaPayment(data: {
+  // Payment Gateway API
+  async createPayment(data: {
     nickname: string;
     productId: string;
     productName: string;
@@ -202,29 +202,29 @@ export const api = {
       isDemo?: boolean;
       message?: string;
       status?: string;
-    }>('/yookassa/create-payment', {
+    }>('/payment/create', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  async checkYooKassaPayment(paymentId: string) {
+  async checkPayment(paymentId: string) {
     return request<{
       status: string;
       paid: boolean;
       order?: any;
-    }>(`/yookassa/check/${paymentId}`);
+    }>(`/payment/check/${paymentId}`);
   },
 
-  async checkYooKassaOrder(orderNumber: string) {
+  async checkPaymentOrder(orderNumber: string) {
     return request<{
       found: boolean;
       order?: any;
       paid: boolean;
-    }>(`/yookassa/check-order/${orderNumber}`);
+    }>(`/payment/check-order/${orderNumber}`);
   },
 
-  async getYooKassaSettings() {
+  async getPaymentSettings() {
     return request<{
       shopId: string;
       secretKey: string;
@@ -233,10 +233,10 @@ export const api = {
       enabled: boolean;
       isConfigured: boolean;
       webhookUrl: string;
-    }>('/yookassa/settings');
+    }>('/payment/settings');
   },
 
-  async updateYooKassaSettings(settings: {
+  async updatePaymentSettings(settings: {
     shopId?: string;
     secretKey?: string;
     testMode?: boolean;
@@ -245,7 +245,7 @@ export const api = {
     return request<{
       success: boolean;
       isConfigured: boolean;
-    }>('/yookassa/settings', {
+    }>('/payment/settings', {
       method: 'POST',
       body: JSON.stringify(settings),
     });

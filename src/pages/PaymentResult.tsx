@@ -28,7 +28,7 @@ export const PaymentResult: React.FC = () => {
       // 2. Query backend to verify latest payment status
       if (orderNumber) {
         try {
-          const res = await api.checkYooKassaOrder(orderNumber);
+          const res = await api.checkPaymentOrder(orderNumber);
           if (res && res.found && res.order && isMounted) {
             setCurrentOrder(res.order);
             if (res.paid || res.order.status === 'completed' || isDemo) {
@@ -247,12 +247,12 @@ export const PaymentResult: React.FC = () => {
                 <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
                 <span>Безопасная онлайн-оплата. Данные защищены по стандарту PCI DSS.</span>
               </div>
-              <p className="text-[10px] text-neutral-500">
+              <p className="text-[10px] text-neutral-400">
                 Служба поддержки:{' '}
-                <a href="mailto:polyanskihegor@yandex.ru" className="text-neutral-400 hover:text-white underline font-mono">
+                <a href="mailto:polyanskihegor@yandex.ru" className="text-neutral-300 hover:text-white underline font-mono">
                   polyanskihegor@yandex.ru
                 </a>{' '}
-                <span className="text-neutral-600">|</span> <span className="font-mono">PLAT</span>
+                <span className="text-neutral-600 mx-1">|</span> Ключевое слово: <span className="font-mono text-amber-300 font-bold">PLAT</span>
               </p>
             </div>
           </>

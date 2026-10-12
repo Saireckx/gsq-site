@@ -23,7 +23,7 @@ interface CheckoutModalProps {
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onOpenHatBox }) => {
-  const { validateCoupon, createYooKassaPayment } = useStore();
+  const { validateCoupon, createPaymentGatewayOrder } = useStore();
 
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'forever'>('forever');
   const [quantity, setQuantity] = useState(1);
@@ -129,7 +129,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
 
     try {
       const fullProductName = `${item.name}${isBoxOrQuantityAllowed && quantity > 1 ? ` (x${quantity})` : ''}${item.isSubscription ? ` (${currentPeriodLabel})` : ''}`;
-      const res = await createYooKassaPayment({
+      const res = await createPaymentGatewayOrder({
         nickname: cleanNick,
         productId: item.id,
         productName: fullProductName,

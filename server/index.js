@@ -45,9 +45,9 @@ async function ensureDb() {
         pin: ADMIN_PIN,
         password: ADMIN_PASSWORD,
       },
-      yookassa: {
-        shopId: process.env.YOOKASSA_SHOP_ID || '',
-        secretKey: process.env.YOOKASSA_SECRET_KEY || '',
+      paymentGateway: {
+        shopId: process.env.PAYMENT_SHOP_ID || '',
+        secretKey: process.env.PAYMENT_SECRET_KEY || '',
         testMode: true,
         enabled: true,
       },
@@ -572,54 +572,54 @@ const server = http.createServer(async (req, res) => {
       }
 
       // ---------------------------------------------------------------------
-      // YooKassa Payment Gateway Integration (Official YooKassa API v3)
+      // Payment Gateway Integration (/api/payment)
       // ---------------------------------------------------------------------
 
-      // 1. Get YooKassa configuration (Admin only for full details)
-      if (pathname === '/api/yookassa/settings') {
+      // 1. Get Payment Gateway configuration (Admin only for full details)
+      if (pathname === '/api/payment/settings') {
         if (method === 'GET') {
-          const yk = db.yookassa || {
-            shopId: process.env.YOOKASSA_SHOP_ID || '',
-            secretKey: process.env.YOOKASSA_SECRET_KEY || '',
+          const pg = db.paymentGateway || {
+            shopId: process.env.PAYMENT_SHOP_ID || '',
+            secretKey: process.env.PAYMENT_SECRET_KEY || '',
             testMode: true,
             enabled: true,
           };
           const host = req.headers.host || 'play.mygsq.fun';
           const proto = req.headers['x-forwarded-proto'] || 'https';
-          const currentShopId = yk.shopId || process.env.YOOKASSA_SHOP_ID || '';
-          const currentSecret = yk.secretKey || process.env.YOOKASSA_SECRET_KEY || '';
+          const currentShopId = pg.shopId || process.env.PAYMENT_SHOP_ID || '';
+          const currentSecret = pg.secretKey || process.env.PAYMENT_SECRET_KEY || '';
 
           return sendJson(res, 200, {
             shopId: currentShopId,
             secretKey: currentSecret ? (currentSecret.slice(0, 8) + '••••••••••••') : '',
             hasSecretKey: !!currentSecret,
-            testMode: yk.testMode ?? true,
-            enabled: yk.enabled ?? true,
+            testMode: pg.testMode ?? true,
+            enabled: pg.enabled ?? true,
             isConfigured: !!(currentShopId && currentSecret),
-            webhookUrl: `${proto}://${host}/api/yookassa/webhook`,
+            webhookUrl: `${proto}://${host}/api/payment/webhook`,
           });
         }
 
         if (method === 'POST') {
           if (!isAuthorized(req, db)) return sendJson(res, 401, { error: 'Unauthorized' });
           const body = await parseJsonBody(req);
-          db.yookassa = {
-            ...(db.yookassa || {}),
-            shopId: body.shopId !== undefined ? String(body.shopId).trim() : (db.yookassa?.shopId || ''),
-            secretKey: body.secretKey && !body.secretKey.includes('•••') ? String(body.secretKey).trim() : (db.yookassa?.secretKey || ''),
+          db.paymentGateway = {
+            ...(db.paymentGateway || {}),
+            shopId: body.shopId !== undefined ? String(body.shopId).trim() : (db.paymentGateway?.shopId || ''),
+            secretKey: body.secretKey && !body.secretKey.includes('•••') ? String(body.secretKey).trim() : (db.paymentGateway?.secretKey || ''),
             testMode: body.testMode !== undefined ? Boolean(body.testMode) : true,
             enabled: body.enabled !== undefined ? Boolean(body.enabled) : true,
           };
           await writeDb(db);
           return sendJson(res, 200, {
             success: true,
-            isConfigured: !!(db.yookassa.shopId && db.yookassa.secretKey),
+            isConfigured: !!(db.paymentGateway.shopId && db.paymentGateway.secretKey),
           });
         }
       }
 
-      // 2. Create payment in YooKassa
-      if (pathname === '/api/yookassa/create-payment' && method === 'POST') {
+      // 2. Create payment in Payment Gateway
+      if ((pathname === '/api/payment/create' || pathname === '/api/payment/create-payment') && method === 'POST') {
         const body = await parseJsonBody(req);
         const { nickname, productId, productName, amount, promoCode, period, returnUrl, quantity } = body;
 
@@ -634,8 +634,9 @@ const server = http.createServer(async (req, res) => {
         const orderId = `ord-${Date.now()}`;
         const qty = Math.max(1, Math.min(100, Number(quantity) || 1));
 
-        const shopId = process.env.YOOKASSA_SHOP_ID || db.yookassa?.shopId;
-        const secretKey = process.env.YOOKASSA_SECRET_KEY || db.yookassa?.secretKey;
+        const pgConfig = db.paymentGateway || {};
+        const shopId = process.env.PAYMENT_SHOP_ID || pgConfig.shopId;
+        const secretKey = process.env.PAYMENT_SECRET_KEY || pgConfig.secretKey;
         const host = req.headers.host || 'play.mygsq.fun';
         const proto = req.headers['x-forwarded-proto'] || 'https';
         const defaultReturnUrl = returnUrl || `${proto}://${host}/#/payment/result?orderNumber=${orderNumber}`;
@@ -656,13 +657,14 @@ const server = http.createServer(async (req, res) => {
           iconColor: matchingProduct?.iconColor || 'gold',
         };
 
-        // If credentials are configured, create real payment via YooKassa API v3
+        // If credentials are configured, connect to payment API
         if (shopId && secretKey) {
           try {
             const idempotenceKey = crypto.randomUUID();
             const authHeader = 'Basic ' + Buffer.from(`${shopId}:${secretKey}`).toString('base64');
+            const apiUrl = process.env.PAYMENT_API_URL || 'https://api.platega.com/v1/payments';
 
-            const yooRes = await fetch('https://api.yookassa.ru/v3/payments', {
+            const gatewayRes = await fetch(apiUrl, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -689,19 +691,19 @@ const server = http.createServer(async (req, res) => {
               }),
             });
 
-            const yooData = await yooRes.json();
+            const gatewayData = await gatewayRes.json();
 
-            if (!yooRes.ok) {
-              console.error('[Payment Gateway Error]:', yooData);
+            if (!gatewayRes.ok) {
+              console.error('[Payment Gateway Error]:', gatewayData);
               return sendJson(res, 400, {
-                error: yooData.description || 'Ошибка при создании платежа',
-                details: yooData,
+                error: gatewayData.description || 'Ошибка при создании платежа',
+                details: gatewayData,
               });
             }
 
-            newOrder.yookassaPaymentId = yooData.id;
-            newOrder.paymentUrl = yooData.confirmation?.confirmation_url;
-            newOrder.yooStatus = yooData.status;
+            newOrder.paymentGatewayId = gatewayData.id;
+            newOrder.paymentUrl = gatewayData.confirmation?.confirmation_url;
+            newOrder.gatewayStatus = gatewayData.status;
 
             db.orders.unshift(newOrder);
             await writeDb(db);
@@ -709,9 +711,9 @@ const server = http.createServer(async (req, res) => {
             return sendJson(res, 201, {
               success: true,
               orderNumber,
-              paymentId: yooData.id,
-              paymentUrl: yooData.confirmation?.confirmation_url,
-              status: yooData.status,
+              paymentId: gatewayData.id,
+              paymentUrl: gatewayData.confirmation?.confirmation_url,
+              status: gatewayData.status,
             });
           } catch (apiErr) {
             console.error('[Payment Gateway Request Error]:', apiErr);
@@ -738,7 +740,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // 3. Payment Gateway Webhook endpoint
-      if (pathname === '/api/yookassa/webhook' && method === 'POST') {
+      if (pathname === '/api/payment/webhook' && method === 'POST') {
         const body = await parseJsonBody(req);
         const event = body.event;
         const paymentObj = body.object;
@@ -748,7 +750,7 @@ const server = http.createServer(async (req, res) => {
           const orderNumber = paymentObj.metadata?.orderNumber;
 
           const order = (db.orders || []).find(
-            (o) => o.yookassaPaymentId === paymentId || (orderNumber && o.orderNumber === orderNumber)
+            (o) => o.paymentGatewayId === paymentId || (orderNumber && o.orderNumber === orderNumber)
           );
 
           if (order) {
@@ -784,17 +786,19 @@ const server = http.createServer(async (req, res) => {
       }
 
       // 4. Status Check by Payment ID or Order Number
-      if (pathname.startsWith('/api/yookassa/check/')) {
-        const paymentId = pathname.replace('/api/yookassa/check/', '');
-        const order = (db.orders || []).find((o) => o.yookassaPaymentId === paymentId || o.id === paymentId);
+      if (pathname.startsWith('/api/payment/check/')) {
+        const paymentId = pathname.replace('/api/payment/check/', '');
+        const order = (db.orders || []).find((o) => o.paymentGatewayId === paymentId || o.id === paymentId);
 
-        const shopId = process.env.YOOKASSA_SHOP_ID || db.yookassa?.shopId;
-        const secretKey = process.env.YOOKASSA_SECRET_KEY || db.yookassa?.secretKey;
+        const pgConfig = db.paymentGateway || {};
+        const shopId = process.env.PAYMENT_SHOP_ID || pgConfig.shopId;
+        const secretKey = process.env.PAYMENT_SECRET_KEY || pgConfig.secretKey;
 
         if (shopId && secretKey && paymentId && !order?.isDemo) {
           try {
             const authHeader = 'Basic ' + Buffer.from(`${shopId}:${secretKey}`).toString('base64');
-            const checkRes = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
+            const apiUrl = process.env.PAYMENT_API_URL || 'https://api.platega.com/v1/payments';
+            const checkRes = await fetch(`${apiUrl}/${paymentId}`, {
               headers: { 'Authorization': authHeader },
             });
             if (checkRes.ok) {
@@ -819,8 +823,8 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      if (pathname.startsWith('/api/yookassa/check-order/')) {
-        const orderNumber = pathname.replace('/api/yookassa/check-order/', '');
+      if (pathname.startsWith('/api/payment/check-order/')) {
+        const orderNumber = pathname.replace('/api/payment/check-order/', '');
         const order = (db.orders || []).find((o) => o.orderNumber === orderNumber);
         if (order && order.isDemo && order.status === 'pending') {
           order.status = 'completed';

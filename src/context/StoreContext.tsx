@@ -96,7 +96,7 @@ interface StoreContextType {
   validateCoupon: (code: string, productId?: string) => { valid: boolean; discount: number; message: string; coupon?: CouponItem };
   // Order management
   createOrder: (order: { nickname: string; productId: string; productName: string; amount: number; paymentMethod: string; promoCode?: string }) => OrderItem;
-  createYooKassaPayment: (params: {
+  createPaymentGatewayOrder: (params: {
     nickname: string;
     productId: string;
     productName: string;
@@ -766,7 +766,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return newOrder;
   };
 
-  const createYooKassaPayment = async ({
+  const createPaymentGatewayOrder = async ({
     nickname,
     productId,
     productName,
@@ -787,7 +787,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const returnUrl = `${window.location.origin}${window.location.pathname}#/payment/result`;
 
     try {
-      const res = await api.createYooKassaPayment({
+      const res = await api.createPayment({
         nickname: cleanNick,
         productId,
         productName,
@@ -1021,7 +1021,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteCoupon,
         validateCoupon,
         createOrder,
-        createYooKassaPayment,
+        createPaymentGatewayOrder,
         completeOrder,
         generateMockSale,
         clearOrders,

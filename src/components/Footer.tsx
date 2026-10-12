@@ -106,7 +106,7 @@ export const Footer: React.FC = () => {
               </li>
             </ul>
 
-            <div className="pt-2 text-[11px] text-neutral-500 space-y-1.5 border-t border-white/[0.06]">
+            <div className="pt-2 text-[11px] text-neutral-500 space-y-2 border-t border-white/[0.06]">
               <p className="text-neutral-300 font-medium">Самозанятый Полянских Егор Александрович</p>
               <p>ИНН: <span className="font-mono text-neutral-300">691106468034</span></p>
               <div>
@@ -118,9 +118,10 @@ export const Footer: React.FC = () => {
                   polyanskihegor@yandex.ru
                 </a>
               </div>
-              <p className="text-[10px] text-neutral-500 font-mono pt-0.5">
-                Код проверки: <span className="text-neutral-300 font-bold">PLAT</span>
-              </p>
+              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold text-xs flex items-center justify-between">
+                <span>Ключевое слово:</span>
+                <span className="font-mono font-black text-white bg-black/50 px-2 py-0.5 rounded border border-amber-400/40">PLAT</span>
+              </div>
             </div>
           </div>
         </div>
@@ -132,7 +133,7 @@ export const Footer: React.FC = () => {
             <p className="text-[11px] text-neutral-400">
               Служба поддержки: <a href="mailto:polyanskihegor@yandex.ru" className="text-white hover:underline font-mono">polyanskihegor@yandex.ru</a>
               <span className="mx-2 text-neutral-600">|</span>
-              Проверочный код: <span className="font-mono font-bold text-neutral-300">PLAT</span>
+              <span className="text-amber-300 font-bold">Ключевое слово: <span className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded border border-white/20">PLAT</span></span>
             </p>
             <p className="text-[11px] text-neutral-600">
               Сервер не имеет прямого отношения к Mojang Studios или Microsoft. Все платежи обрабатываются через защищённый платёжный сервис.
@@ -148,8 +149,8 @@ export const Footer: React.FC = () => {
               Конфиденциальность
             </Link>
             <span className="text-neutral-700">•</span>
-            <span className="text-[11px] font-mono text-neutral-400 font-bold px-1.5 py-0.5 rounded bg-white/5 border border-white/10" title="Код верификации платежной системы">
-              PLAT
+            <span className="text-xs font-mono font-bold text-amber-300 px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30" title="Ключевое слово для модерации платежей">
+              Ключевое слово: PLAT
             </span>
             <span className="text-neutral-700">•</span>
             <button

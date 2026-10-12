@@ -36,20 +36,28 @@ export const Offer: React.FC = () => {
           </div>
           <div>
             <span className="text-neutral-500 block">Правовой статус:</span>
-            <span className="font-semibold text-white">{SELLER_REQUISITES.status}</span>
+            <span className="font-semibold text-emerald-400">Самозанятый (плательщик налога на проф. доход)</span>
           </div>
           <div>
             <span className="text-neutral-500 block">ИНН:</span>
             <span className="font-mono font-bold text-amber-300">{SELLER_REQUISITES.inn}</span>
           </div>
           <div>
-            <span className="text-neutral-500 block">Контактный E-mail:</span>
+            <span className="text-neutral-500 block">Служба поддержки (E-mail):</span>
             <a
               href={`mailto:${SELLER_REQUISITES.email}`}
-              className="font-medium text-neutral-200 hover:text-white underline underline-offset-2"
+              className="font-medium text-white hover:text-amber-300 underline underline-offset-2 font-mono"
             >
               {SELLER_REQUISITES.email}
             </a>
+          </div>
+          <div>
+            <span className="text-neutral-500 block">Веб-сайт:</span>
+            <span className="font-mono text-neutral-300">https://gsqshop.shop</span>
+          </div>
+          <div>
+            <span className="text-neutral-500 block">Код верификации:</span>
+            <span className="font-mono font-bold text-white">PLAT</span>
           </div>
         </div>
       </div>
@@ -219,10 +227,13 @@ export const Offer: React.FC = () => {
           </h2>
           <div className="p-5 rounded-2xl bg-neutral-900/60 border border-white/10 space-y-2 text-xs sm:text-sm">
             <p><strong>Исполнитель:</strong> {SELLER_REQUISITES.name}</p>
-            <p><strong>Статус:</strong> {SELLER_REQUISITES.status}</p>
+            <p><strong>Правовой статус:</strong> Самозанятый (Плательщик налога на профессиональный доход)</p>
             <p><strong>ИНН:</strong> <span className="font-mono font-bold text-amber-300">{SELLER_REQUISITES.inn}</span></p>
-            <p><strong>Электронная почта:</strong> <a href={`mailto:${SELLER_REQUISITES.email}`} className="text-white underline">{SELLER_REQUISITES.email}</a></p>
+            <p><strong>Служба технической поддержки:</strong> <a href={`mailto:${SELLER_REQUISITES.email}`} className="text-white underline font-mono">{SELLER_REQUISITES.email}</a></p>
             <p><strong>Сайт:</strong> <span className="font-mono text-neutral-300">https://gsqshop.shop</span></p>
+            <p className="pt-2 text-xs text-neutral-400 border-t border-white/5">
+              Идентификатор верификации платёжной системы: <span className="font-mono font-bold text-white">PLAT</span>
+            </p>
           </div>
         </section>
       </div>

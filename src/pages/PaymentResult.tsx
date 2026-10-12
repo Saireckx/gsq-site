@@ -242,9 +242,18 @@ export const PaymentResult: React.FC = () => {
               </Link>
             </div>
 
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-500 pt-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
-              <span>Безопасная онлайн-оплата. Данные защищены по стандарту PCI DSS.</span>
+            <div className="space-y-1.5 text-center pt-1">
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-500">
+                <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
+                <span>Безопасная онлайн-оплата. Данные защищены по стандарту PCI DSS.</span>
+              </div>
+              <p className="text-[10px] text-neutral-500">
+                Служба поддержки:{' '}
+                <a href="mailto:polyanskihegor@yandex.ru" className="text-neutral-400 hover:text-white underline font-mono">
+                  polyanskihegor@yandex.ru
+                </a>{' '}
+                <span className="text-neutral-600">|</span> <span className="font-mono">PLAT</span>
+              </p>
             </div>
           </>
         ) : (

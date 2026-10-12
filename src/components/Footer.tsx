@@ -83,7 +83,7 @@ export const Footer: React.FC = () => {
           {/* Col 4: Legal & Requisites */}
           <div className="space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-200 mb-4">
-              Документы
+              Документы и поддержка
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
@@ -106,13 +106,20 @@ export const Footer: React.FC = () => {
               </li>
             </ul>
 
-            <div className="pt-2 text-[11px] text-neutral-500 space-y-1 border-t border-white/[0.06]">
-              <p className="text-neutral-300 font-medium">{SERVER_INFO.links ? 'Полянских Е. А.' : ''}</p>
+            <div className="pt-2 text-[11px] text-neutral-500 space-y-1.5 border-t border-white/[0.06]">
+              <p className="text-neutral-300 font-medium">Самозанятый Полянских Егор Александрович</p>
               <p>ИНН: <span className="font-mono text-neutral-300">691106468034</span></p>
-              <p>
-                <a href="mailto:polyanskihegor@yandex.ru" className="hover:text-white transition-colors">
+              <div>
+                <span className="text-neutral-400 block text-[10px] uppercase tracking-wider font-semibold">Служба поддержки:</span>
+                <a
+                  href="mailto:polyanskihegor@yandex.ru"
+                  className="text-white hover:text-amber-300 transition-colors font-mono font-medium"
+                >
                   polyanskihegor@yandex.ru
                 </a>
+              </div>
+              <p className="text-[10px] text-neutral-500 font-mono pt-0.5">
+                Код проверки: <span className="text-neutral-300 font-bold">PLAT</span>
               </p>
             </div>
           </div>
@@ -120,8 +127,13 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/[0.06] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
-          <div className="space-y-1 text-center md:text-left">
-            <p>© {new Date().getFullYear()} GSQ Minecraft. Все права защищены. Самозанятый Полянских Е. А. (ИНН 691106468034).</p>
+          <div className="space-y-1.5 text-center md:text-left">
+            <p>© {new Date().getFullYear()} GSQ Minecraft. Все права защищены. Самозанятый Полянских Егор Александрович (ИНН 691106468034).</p>
+            <p className="text-[11px] text-neutral-400">
+              Служба поддержки: <a href="mailto:polyanskihegor@yandex.ru" className="text-white hover:underline font-mono">polyanskihegor@yandex.ru</a>
+              <span className="mx-2 text-neutral-600">|</span>
+              Проверочный код: <span className="font-mono font-bold text-neutral-300">PLAT</span>
+            </p>
             <p className="text-[11px] text-neutral-600">
               Сервер не имеет прямого отношения к Mojang Studios или Microsoft. Все платежи обрабатываются через защищённый платёжный сервис.
             </p>
@@ -135,6 +147,10 @@ export const Footer: React.FC = () => {
             <Link to="/privacy" className="hover:text-neutral-300 transition-colors text-[11px]">
               Конфиденциальность
             </Link>
+            <span className="text-neutral-700">•</span>
+            <span className="text-[11px] font-mono text-neutral-400 font-bold px-1.5 py-0.5 rounded bg-white/5 border border-white/10" title="Код верификации платежной системы">
+              PLAT
+            </span>
             <span className="text-neutral-700">•</span>
             <button
               onClick={scrollToTop}

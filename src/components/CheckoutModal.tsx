@@ -475,9 +475,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
                 </a>
               </p>
 
-              <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-500">
-                <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
-                <span>Защищённое SSL-соединение. Выдача за 1–2 мин.</span>
+              <div className="space-y-1.5 pt-1 text-[11px] text-neutral-500 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Защищённое SSL-соединение. Выдача за 1–2 мин.</span>
+                </div>
+                <div className="text-[10px] text-neutral-400">
+                  Служба поддержки:{' '}
+                  <a
+                    href="mailto:polyanskihegor@yandex.ru"
+                    className="text-neutral-300 hover:text-white underline font-mono"
+                  >
+                    polyanskihegor@yandex.ru
+                  </a>
+                </div>
               </div>
             </form>
           </div>

@@ -380,19 +380,6 @@ export const Home: React.FC = () => {
                   <DiscordIcon className="w-4 h-4" />
                   <span>Discord сервера: discord.gg/GbgNVXDdtf</span>
                 </a>
-
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-2 text-xs text-neutral-400">
-                  <div className="text-[11px]">
-                    <span>Поддержка: </span>
-                    <a href="mailto:polyanskihegor@yandex.ru" className="text-white hover:underline font-mono">
-                      polyanskihegor@yandex.ru
-                    </a>
-                  </div>
-                  <div className="text-amber-300 font-semibold text-xs flex items-center gap-1.5">
-                    <span>Ключевое слово:</span>
-                    <span className="font-mono font-bold text-white bg-black/40 px-2 py-0.5 rounded border border-amber-400/30">PLAT</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

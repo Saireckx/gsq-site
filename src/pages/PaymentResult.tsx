@@ -251,8 +251,7 @@ export const PaymentResult: React.FC = () => {
                 Служба поддержки:{' '}
                 <a href="mailto:polyanskihegor@yandex.ru" className="text-neutral-300 hover:text-white underline font-mono">
                   polyanskihegor@yandex.ru
-                </a>{' '}
-                <span className="text-neutral-600 mx-1">|</span> Ключевое слово: <span className="font-mono text-amber-300 font-bold">PLAT</span>
+                </a>
               </p>
             </div>
           </>

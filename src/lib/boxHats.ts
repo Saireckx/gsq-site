@@ -74,23 +74,99 @@ export const HATS_LIST: HatItem[] = [
 ];
 
 /**
- * Честный генератор выпадения согласно процентам (70% обычные, 25% редкие, 5% лег)
+ * Базовый статистический вес шляпы исходя из её категории редкости:
+ * - 70% на категорию обычных (7 шляп => 10.0% каждая)
+ * - 25% на категорию редких (7 шляп => 3.5714% каждая)
+ * - 5% на категорию легендарных (3 шляпы => 1.6667% каждая)
  */
-export function getRandomHat(): HatItem {
-  const rand = Math.random() * 100;
-  let chosenRarity: HatRarity = 'common';
+export function getBaseHatWeight(hat: HatItem): number {
+  const countOfRarity = HATS_LIST.filter((h) => h.rarity === hat.rarity).length;
+  const categoryPercent = RARITY_CONFIG[hat.rarity]?.percent ?? 0;
+  return countOfRarity > 0 ? categoryPercent / countOfRarity : 0;
+}
 
-  if (rand < 5) {
-    // 5% Легендарная
-    chosenRarity = 'legendary';
-  } else if (rand < 5 + 25) {
-    // 25% Редкая
-    chosenRarity = 'rare';
-  } else {
-    // 70% Базовая
-    chosenRarity = 'common';
+/**
+ * Получение пула доступных для выпадения шляп с защитой от повторок.
+ * Если исключены не все шляпы — возвращаются оставшиеся.
+ * Если собраны все 17 шляп — коллекция собрана на 100%, возвращается весь список для нового цикла.
+ */
+export function getDynamicDropPool(excludedHatIds: string[] = []): {
+  availableHats: HatItem[];
+  isCollectionFull: boolean;
+} {
+  const excludedSet = new Set(excludedHatIds);
+  const remaining = HATS_LIST.filter((h) => !excludedSet.has(h.id));
+  if (remaining.length === 0) {
+    return { availableHats: HATS_LIST, isCollectionFull: true };
+  }
+  return { availableHats: remaining, isCollectionFull: false };
+}
+
+/**
+ * Динамический расчет текущих шансов на каждую шляпу и категорию с учетом защиты от повторок:
+ * Когда шляпа выпадает, ее шанс пропорционально перераспределяется между всеми оставшимися шляпами!
+ */
+export function getHatChances(excludedHatIds: string[] = []): {
+  hatChances: Record<string, number>;
+  rarityChances: Record<HatRarity, number>;
+  totalRemaining: number;
+  totalHats: number;
+  isCollectionFull: boolean;
+} {
+  const { availableHats, isCollectionFull } = getDynamicDropPool(excludedHatIds);
+  const totalWeight = availableHats.reduce((sum, h) => sum + getBaseHatWeight(h), 0);
+
+  const hatChances: Record<string, number> = {};
+  const rarityChances: Record<HatRarity, number> = {
+    common: 0,
+    rare: 0,
+    legendary: 0,
+  };
+
+  const excludedSet = new Set(excludedHatIds);
+
+  for (const hat of HATS_LIST) {
+    const isExcluded = excludedSet.has(hat.id) && !isCollectionFull;
+    if (isExcluded || totalWeight <= 0) {
+      hatChances[hat.id] = 0;
+    } else {
+      const weight = getBaseHatWeight(hat);
+      const percent = (weight / totalWeight) * 100;
+      hatChances[hat.id] = percent;
+      rarityChances[hat.rarity] += percent;
+    }
   }
 
-  const candidates = HATS_LIST.filter((h) => h.rarity === chosenRarity);
-  return candidates[Math.floor(Math.random() * candidates.length)];
+  return {
+    hatChances,
+    rarityChances,
+    totalRemaining: isCollectionFull ? 0 : availableHats.length,
+    totalHats: HATS_LIST.length,
+    isCollectionFull,
+  };
+}
+
+/**
+ * Генератор выпадения БЕЗ ПОВТОРОК с пропорциональным распределением шансов:
+ * Если переданы excludedHatIds (уже полученные шляпы), выпадает строго одна из оставшихся.
+ * Шансы исключенных шляп автоматически и честно распределяются по остальным.
+ */
+export function getRandomHat(excludedHatIds: string[] = []): HatItem {
+  const { availableHats } = getDynamicDropPool(excludedHatIds);
+  const totalWeight = availableHats.reduce((sum, h) => sum + getBaseHatWeight(h), 0);
+
+  if (totalWeight <= 0) {
+    return availableHats[Math.floor(Math.random() * availableHats.length)] || HATS_LIST[0];
+  }
+
+  const rand = Math.random() * totalWeight;
+  let cumulative = 0;
+  for (const hat of availableHats) {
+    cumulative += getBaseHatWeight(hat);
+    if (rand <= cumulative) {
+      return hat;
+    }
+  }
+
+  return availableHats[availableHats.length - 1];
 }

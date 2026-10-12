@@ -1,6 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HATS_LIST, HatItem, RARITY_CONFIG, getRandomHat, HatRarity } from '../lib/boxHats';
-import { X, Sparkles, Volume2, VolumeX, RotateCcw, Package, HelpCircle, ShoppingBag, Crown, Gem, Shield } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
+import {
+  HATS_LIST,
+  HatItem,
+  RARITY_CONFIG,
+  getRandomHat,
+  getHatChances,
+  HatRarity,
+} from '../lib/boxHats';
+import {
+  X,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  RotateCcw,
+  Package,
+  HelpCircle,
+  ShoppingBag,
+  Crown,
+  Gem,
+  Shield,
+  Check,
+  Trophy,
+} from 'lucide-react';
 
 interface HatBoxModalProps {
   isOpen: boolean;
@@ -127,6 +149,20 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
   onDropWon,
   onBuy,
 }) => {
+  const {
+    collectedHatIds,
+    addCollectedHat,
+    resetCollectedHats,
+  } = useStore();
+
+  const {
+    hatChances,
+    rarityChances,
+    totalRemaining,
+    totalHats,
+    isCollectionFull,
+  } = getHatChances(collectedHatIds);
+
   const [activeTab, setActiveTab] = useState<'open' | 'collection'>('open');
   const [isOpening, setIsOpening] = useState(false);
   const [isSpinningTransition, setIsSpinningTransition] = useState(false);
@@ -165,8 +201,9 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
     setIsSpinningTransition(false);
     setWonHat(null);
 
-    // Pick fair winner based on 70% common, 25% rare, 5% legendary
-    const target = getRandomHat();
+    // Pick fair winner WITHOUT DUPLICATES (excluding already obtained hats)
+    // Chances of previously dropped hats are automatically redistributed among remaining hats!
+    const target = getRandomHat(collectedHatIds);
     const newReel = generateReel(target);
     setReel(newReel);
     setTranslateX(0);
@@ -218,6 +255,10 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
       setIsOpening(false);
       setIsSpinningTransition(false);
       playWinSound(audioContextRef, target.rarity, soundEnabled);
+
+      // Register won hat in anti-duplicate collection pool
+      addCollectedHat(target.id);
+
       if (onOpenSuccess) {
         onOpenSuccess();
       }
@@ -295,8 +336,25 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
           </div>
         </div>
 
+        {/* Anti-Duplicate Live Status Banner */}
+        <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 px-3.5 mt-3 mb-1 rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent border border-amber-500/25 text-xs flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-bold text-amber-300">Защита от повторок: активна</span>
+            <span className="text-neutral-400 hidden sm:inline">
+              • Выпавшие шляпы не повторяются, шансы остальных растут
+            </span>
+          </div>
+          <div className="flex items-center gap-2 font-mono">
+            <span className="text-neutral-400 text-[11px]">Собрано:</span>
+            <span className="font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
+              {collectedHatIds.length} / {totalHats}
+            </span>
+          </div>
+        </div>
+
         {/* Navigation Tabs (Open / Collection) */}
-        <div className="flex items-center gap-2 mt-4 mb-5 flex-shrink-0">
+        <div className="flex items-center gap-2 mt-2 mb-4 flex-shrink-0">
           <button
             onClick={() => setActiveTab('open')}
             disabled={isOpening}
@@ -475,8 +533,14 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                     }}
                   >
                     <span>{RARITY_CONFIG[wonHat.rarity].label}</span>
-                    <span>• {RARITY_CONFIG[wonHat.rarity].percent}% шанс</span>
                   </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold mt-1">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Добавлено в коллекцию ({collectedHatIds.length} / {totalHats})</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-400">
+                    Эта шляпа больше не выпадет — шансы остальных предметов увеличены!
+                  </p>
                 </div>
 
                 <div className="pt-2 w-full flex flex-wrap items-center justify-center gap-3">
@@ -511,20 +575,26 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
               </div>
             )}
 
-            {/* Rarity Drop Rates Banner */}
+            {/* Live Rarity Drop Rates Banner */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {(['common', 'rare', 'legendary'] as HatRarity[]).map((r) => {
                 const config = RARITY_CONFIG[r];
+                const curChance = rarityChances[r];
+                const isAllCollectedOfRarity = curChance === 0;
                 return (
                   <div
                     key={r}
-                    className={`p-3 rounded-2xl ${config.bgColor} border ${config.borderColor} text-center space-y-0.5`}
+                    className={`p-3 rounded-2xl ${config.bgColor} border ${config.borderColor} text-center space-y-0.5 transition-all`}
                   >
                     <span className={`text-[10px] sm:text-xs font-bold uppercase block ${config.textColor}`}>
                       {config.shortLabel}
                     </span>
                     <span className="text-base sm:text-lg font-black text-white font-mono">
-                      {config.percent}%
+                      {isAllCollectedOfRarity ? (
+                        <span className="text-xs text-neutral-400 font-normal">Собраны ✓</span>
+                      ) : (
+                        `${curChance.toFixed(1)}%`
+                      )}
                     </span>
                   </div>
                 );
@@ -617,7 +687,9 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                         border: `1px solid ${config.accentColor}35`,
                       }}
                     >
-                      Шанс {config.percent}%
+                      {rarityChances[rarityKey] === 0
+                        ? 'Все получены (0%)'
+                        : `Текущий шанс ${rarityChances[rarityKey].toFixed(1)}%`}
                     </span>
                   </div>
 
@@ -625,12 +697,32 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                     {hatsOfRarity.map((hat) => {
                       const isAnimated = Boolean(hat.subtitle?.includes('Анимировано') || hat.subtitle?.includes('анимировано'));
+                      const isCollected = collectedHatIds.includes(hat.id);
+                      const currentChance = hatChances[hat.id] ?? 0;
 
                       return (
                         <div
                           key={hat.id}
-                          className="relative rounded-2xl bg-[#131622] hover:bg-[#181c2b] border border-white/10 hover:border-white/20 transition-all duration-200 flex flex-col justify-between overflow-hidden shadow-sm group hover:-translate-y-0.5"
+                          className={`relative rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden shadow-sm group hover:-translate-y-0.5 ${
+                            isCollected
+                              ? 'bg-emerald-950/20 border border-emerald-500/35 hover:border-emerald-500/50'
+                              : 'bg-[#131622] hover:bg-[#181c2b] border border-white/10 hover:border-white/20'
+                          }`}
                         >
+                          {/* Collected Badge or Current Chance Badge (Top Left) */}
+                          <div className="absolute top-2 left-2 z-10">
+                            {isCollected ? (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-300 bg-emerald-500/25 border border-emerald-500/40 px-1.5 py-0.5 rounded-md shadow-sm">
+                                <Check className="w-2.5 h-2.5" />
+                                <span>В коллекции</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center text-[9px] font-mono font-bold text-neutral-200 bg-black/60 border border-white/15 px-1.5 py-0.5 rounded-md shadow-sm">
+                                {currentChance.toFixed(1)}%
+                              </span>
+                            )}
+                          </div>
+
                           {/* Animated Badge (Top Right) */}
                           {isAnimated && (
                             <div className="absolute top-2 right-2 z-10">
@@ -646,14 +738,16 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                             {/* Subtle Radial Ambient */}
                             <div
                               className="absolute inset-2 rounded-full blur-xl opacity-20 group-hover:opacity-35 transition-opacity pointer-events-none"
-                              style={{ backgroundColor: config.accentColor }}
+                              style={{ backgroundColor: isCollected ? '#10b981' : config.accentColor }}
                             />
 
                             {hat.image ? (
                               <img
                                 src={hat.image}
                                 alt={hat.name}
-                                className={`w-20 h-20 sm:w-24 sm:h-24 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)] group-hover:scale-110 transition-transform duration-200 relative z-10 ${hat.scale || ''}`}
+                                className={`w-20 h-20 sm:w-24 sm:h-24 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)] group-hover:scale-110 transition-transform duration-200 relative z-10 ${hat.scale || ''} ${
+                                  isCollected ? 'brightness-110' : ''
+                                }`}
                               />
                             ) : (
                               <span className="text-4xl filter drop-shadow relative z-10">{hat.emoji}</span>
@@ -665,10 +759,17 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                             <p className="text-xs sm:text-sm font-bold text-white text-center leading-snug">
                               {hat.name}
                             </p>
+                            <span className="text-[10px] mt-0.5">
+                              {isCollected ? (
+                                <span className="text-emerald-400 font-semibold">Получено ✓</span>
+                              ) : (
+                                <span className="text-neutral-400">Шанс: {currentChance.toFixed(1)}%</span>
+                              )}
+                            </span>
                           </div>
 
                           {/* Bottom Rarity Accent Bar */}
-                          <div className={`h-1 w-full ${config.barColor}`} />
+                          <div className={`h-1 w-full ${isCollected ? 'bg-emerald-400' : config.barColor}`} />
                         </div>
                       );
                     })}
@@ -676,6 +777,30 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
                 </div>
               );
             })}
+
+            {/* Collection Footer: Stats & Reset Button */}
+            {collectedHatIds.length > 0 && (
+              <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-400">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span>
+                    Собрано: <strong className="text-white">{collectedHatIds.length}</strong> из {totalHats} предметов (шансы перераспределены)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm('Сбросить коллекцию и вернуть базовые шансы?')) {
+                      resetCollectedHats();
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/10 text-neutral-300 hover:text-white transition-colors border border-white/10 flex items-center gap-1.5 text-xs active:scale-95"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Сбросить коллекцию</span>
+                </button>
+              </div>
+            )}
           </div>
       </div>
     </div>

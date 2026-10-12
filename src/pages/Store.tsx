@@ -571,17 +571,13 @@ export const Store: React.FC = () => {
           </div>
         )}
 
-        {/* Support & Moderation keyword card */}
-        <div className="mt-8 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-400">
+        {/* Support contacts */}
+        <div className="mt-8 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 flex items-center justify-between gap-3 text-xs text-neutral-400">
           <div>
             <span>Служба поддержки по заказам: </span>
             <a href="mailto:polyanskihegor@yandex.ru" className="text-white hover:underline font-mono font-medium">
               polyanskihegor@yandex.ru
             </a>
-          </div>
-          <div className="font-semibold text-amber-300 flex items-center gap-2">
-            <span>Ключевое слово:</span>
-            <span className="font-mono font-bold text-white bg-black/40 px-2 py-0.5 rounded border border-amber-400/30">PLAT</span>
           </div>
         </div>
       </div>

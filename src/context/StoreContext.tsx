@@ -82,7 +82,10 @@ interface StoreContextType {
   availableBoxes: number;
   addBoxes: (count: number) => void;
   consumeBox: () => boolean;
-  // Hat Drops
+  // Hat Drops & Collection (Anti-duplicate)
+  collectedHatIds: string[];
+  addCollectedHat: (hatId: string) => void;
+  resetCollectedHats: () => void;
   addHatDrop: (drop: Omit<HatDropItem, 'id' | 'createdAt'>) => void;
   clearHatDrops: () => void;
   // Product management
@@ -424,6 +427,46 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return [];
   });
 
+  // Unique collected hats for anti-duplicate box system
+  const [collectedHatIds, setCollectedHatIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('gsq_collected_hat_ids');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+      const savedDrops = localStorage.getItem('gsq_hat_drops');
+      if (savedDrops) {
+        const drops: HatDropItem[] = JSON.parse(savedDrops);
+        if (Array.isArray(drops) && drops.length > 0) {
+          const uniqueIds = Array.from(new Set(drops.map((d) => d.hatId)));
+          localStorage.setItem('gsq_collected_hat_ids', JSON.stringify(uniqueIds));
+          return uniqueIds;
+        }
+      }
+    } catch {}
+    return [];
+  });
+
+  const addCollectedHat = (hatId: string) => {
+    if (!hatId) return;
+    setCollectedHatIds((prev) => {
+      if (prev.includes(hatId)) return prev;
+      const next = [...prev, hatId];
+      try {
+        localStorage.setItem('gsq_collected_hat_ids', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const resetCollectedHats = () => {
+    setCollectedHatIds([]);
+    try {
+      localStorage.removeItem('gsq_collected_hat_ids');
+    } catch {}
+  };
+
   const addHatDrop = (drop: Omit<HatDropItem, 'id' | 'createdAt'>) => {
     const newDrop: HatDropItem = {
       ...drop,
@@ -437,10 +480,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } catch {}
       return next;
     });
+    // Automatically add to collected hats pool
+    addCollectedHat(drop.hatId);
   };
 
   const clearHatDrops = () => {
     setHatDrops([]);
+    resetCollectedHats();
     try {
       localStorage.removeItem('gsq_hat_drops');
     } catch {}
@@ -1011,6 +1057,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         availableBoxes,
         addBoxes,
         consumeBox,
+        collectedHatIds,
+        addCollectedHat,
+        resetCollectedHats,
         addHatDrop,
         clearHatDrops,
         updateProduct,

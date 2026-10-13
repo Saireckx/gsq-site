@@ -7,13 +7,11 @@ import { CheckCircle2, Clock, AlertTriangle, ArrowLeft, Copy, Check, ShieldCheck
 export const PaymentResult: React.FC = () => {
   const [searchParams] = useSearchParams();
   const orderNumber = searchParams.get('orderNumber') || searchParams.get('order_id') || searchParams.get('orderId') || '';
-  const isDemo = searchParams.get('demo') === 'true';
 
   const { orders, completeOrder, serverSettings } = useStore();
   const [currentOrder, setCurrentOrder] = useState<OrderItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [demoConfirmed, setDemoConfirmed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -31,19 +29,12 @@ export const PaymentResult: React.FC = () => {
           const res = await api.checkPaymentOrder(orderNumber);
           if (res && res.found && res.order && isMounted) {
             setCurrentOrder(res.order);
-            if (res.paid || res.order.status === 'completed' || isDemo) {
+            if (res.paid || res.order.status === 'completed') {
               completeOrder(orderNumber);
-              if (isDemo) setDemoConfirmed(true);
             }
-          } else if (isDemo && isMounted) {
-            completeOrder(orderNumber);
-            setDemoConfirmed(true);
           }
         } catch (err) {
-          if (isDemo && isMounted) {
-            completeOrder(orderNumber);
-            setDemoConfirmed(true);
-          }
+          console.error('Failed to check order status:', err);
         }
       }
 
@@ -63,15 +54,7 @@ export const PaymentResult: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleConfirmDemoPayment = () => {
-    if (orderNumber) {
-      completeOrder(orderNumber);
-      setCurrentOrder((prev) => (prev ? { ...prev, status: 'completed' } : prev));
-      setDemoConfirmed(true);
-    }
-  };
-
-  const isCompleted = currentOrder?.status === 'completed' || demoConfirmed;
+  const isCompleted = currentOrder?.status === 'completed';
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
@@ -114,26 +97,6 @@ export const PaymentResult: React.FC = () => {
               </p>
             </div>
 
-            {/* Demo Mode Notice Banner */}
-            {isDemo && !isCompleted && (
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2.5">
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Тестовый режим (На этапе подключения)</span>
-                </div>
-                <p className="text-xs text-neutral-300 leading-relaxed">
-                  Магазин настроен и готов принимать боевые платежи после ввода данных шлюза в панели управления. Вы можете подтвердить оплату прямо сейчас для проверки выдачи услуги:
-                </p>
-                <button
-                  type="button"
-                  onClick={handleConfirmDemoPayment}
-                  className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-sm"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Подтвердить тестовую оплату</span>
-                </button>
-              </div>
-            )}
 
             {/* Order Details Card */}
             <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3 text-xs sm:text-sm">

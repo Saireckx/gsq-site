@@ -141,20 +141,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
 
       setLoading(false);
 
-      if (res && res.paymentUrl) {
+      if (res && res.success && res.paymentUrl && res.paymentUrl.startsWith('http')) {
         setRedirectInfo({
           orderNumber: res.orderNumber,
           paymentUrl: res.paymentUrl,
-          isDemo: res.isDemo,
-          message: res.message,
         });
 
-        // If real external payment gateway confirmation URL, redirect automatically
-        if (res.paymentUrl.startsWith('http')) {
-          window.location.href = res.paymentUrl;
-        }
+        // Automatically redirect to external payment gateway confirmation
+        window.location.href = res.paymentUrl;
       } else {
-        setErrorMessage(res?.message || 'Не удалось сформировать платёж. Попробуйте снова.');
+        setErrorMessage(res?.message || 'Не удалось сформировать счёт на оплату. Платёжная система временно недоступна.');
       }
     } catch (err: any) {
       setLoading(false);
@@ -495,23 +491,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
         ) : (
           /* Redirection / Payment initiated Screen */
           <div className="text-center py-6 space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
-              <Sparkles className="w-8 h-8 stroke-[2.5]" />
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+              <CreditCard className="w-8 h-8 stroke-[2.5]" />
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
-                Заказ {redirectInfo.orderNumber} • Оплачен
+              <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+                Заказ {redirectInfo.orderNumber} • Ожидает оплаты
               </span>
               <h3 className="text-2xl font-black text-white">
-                {redirectInfo.isDemo ? 'Оплата успешно завершена! 🎉' : 'Переход к оплате'}
+                Переход к оплате
               </h3>
               <p className="text-xs text-neutral-300 max-w-sm mx-auto">
-                {redirectInfo.isDemo
-                  ? isBoxOrQuantityAllowed
-                    ? `Вам успешно начислено ${quantity} ${quantity === 1 ? 'коробка' : 'коробок'}! Они уже добавлены к вашему балансу.`
-                    : 'Тестовая оплата подтверждена! Услуга успешно активирована.'
-                  : 'Перенаправляем вас на защищённую страницу оплаты...'}
+                Для завершения покупки перейдите на страницу оплаты. После успешного проведения платежа услуга будет выдана на сервере.
               </p>
             </div>
 
@@ -532,63 +524,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-400">Статус:</span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Успешно оплачено</span>
+                <span className="text-amber-400 font-bold flex items-center gap-1">
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Ожидает оплаты</span>
                 </span>
               </div>
             </div>
 
             <div className="space-y-2 pt-2">
-              {redirectInfo.isDemo ? (
-                <>
-                  {isBoxOrQuantityAllowed && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleModalClose();
-                        if (onOpenHatBox) {
-                          onOpenHatBox();
-                        } else {
-                          window.location.hash = '#/store?openBox=true';
-                        }
-                      }}
-                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg flex items-center justify-center gap-2 active:scale-98"
-                    >
-                      <Sparkles className="w-4 h-4 text-black" />
-                      <span>🎁 Открыть коробку прямо сейчас</span>
-                    </button>
-                  )}
+              <a
+                href={redirectInfo.paymentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg flex items-center justify-center gap-2 active:scale-98"
+              >
+                <span>Перейти к оплате</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
 
-                  <button
-                    type="button"
-                    onClick={handleModalClose}
-                    className="w-full py-3 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs transition-all"
-                  >
-                    Вернуться в магазин
-                  </button>
-                </>
-              ) : (
-                <>
-                  <a
-                    href={redirectInfo.paymentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-glow-sm"
-                  >
-                    <span>Перейти к оплате</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={handleModalClose}
-                    className="w-full py-2.5 text-xs text-neutral-400 hover:text-white transition-colors"
-                  >
-                    Закрыть окно
-                  </button>
-                </>
-              )}
+              <button
+                type="button"
+                onClick={handleModalClose}
+                className="w-full py-2.5 text-xs text-neutral-400 hover:text-white transition-colors"
+              >
+                Закрыть окно
+              </button>
             </div>
           </div>
         )}

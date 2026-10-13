@@ -371,15 +371,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem('gsq_orders');
       if (saved) {
         const parsed: OrderItem[] = JSON.parse(saved);
-        // Purge legacy mock demo orders if present
-        const nonMock = parsed.filter(
+        // Purge legacy mock demo orders and fake demo purchases
+        const validOrders = parsed.filter(
           (o) =>
-            !['Armor_ykon', 'sicttik', 'Zaqul2912', 'RockyHydra45115', 'Notch_Fan', 'VoxelCrafter'].includes(o.nickname)
+            !['Armor_ykon', 'sicttik', 'Zaqul2912', 'RockyHydra45115', 'Notch_Fan', 'VoxelCrafter'].includes(o.nickname) &&
+            !o.paymentUrl?.includes('demo=true')
         );
-        if (nonMock.length !== parsed.length) {
-          localStorage.setItem('gsq_orders', JSON.stringify(nonMock));
+        if (validOrders.length !== parsed.length) {
+          localStorage.setItem('gsq_orders', JSON.stringify(validOrders));
         }
-        return nonMock;
+        return validOrders;
       }
     } catch {}
     return DEFAULT_ORDERS;
@@ -505,7 +506,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         .filter(
           (o) =>
             (o.productId === 'hat-box' || o.productName?.toLowerCase().includes('шляп')) &&
-            o.status === 'completed'
+            o.status === 'completed' &&
+            !o.paymentUrl?.includes('demo=true')
         )
         .reduce((sum, o) => sum + (o.quantity || 1), 0);
       const opened = Number(localStorage.getItem('gsq_opened_boxes_count') || '0');
@@ -632,7 +634,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const completedBoxOrders = orders.filter(
       (o) =>
         (o.productId === 'hat-box' || o.productName?.toLowerCase().includes('шляп')) &&
-        o.status === 'completed'
+        o.status === 'completed' &&
+        !o.paymentUrl?.includes('demo=true')
     );
 
     let newBoxes = 0;
@@ -844,8 +847,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         returnUrl,
       });
 
-      if (res && res.orderNumber) {
-        const isCompleted = res.isDemo || res.status === 'completed';
+      if (res && res.orderNumber && res.paymentUrl && res.paymentUrl.startsWith('http')) {
         const matchingProduct = products.find((p) => p.id === productId);
         const newOrder: OrderItem = {
           id: 'ord-' + Date.now(),
@@ -857,71 +859,32 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           quantity: quantity || 1,
           promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
           paymentMethod: 'Онлайн-оплата',
-          status: isCompleted ? 'completed' : 'pending',
+          status: 'pending',
           createdAt: 'Только что',
           iconColor: matchingProduct?.iconColor || 'gold',
           paymentUrl: res.paymentUrl,
         };
         setOrders((prev) => [newOrder, ...prev.filter((o) => o.orderNumber !== res.orderNumber)]);
 
-        if (isCompleted && (productId === 'hat-box' || productName?.toLowerCase().includes('шляп'))) {
-          const qty = quantity || 1;
-          try {
-            const credited: string[] = JSON.parse(
-              localStorage.getItem('gsq_credited_box_orders') || '[]'
-            );
-            if (!credited.includes(res.orderNumber)) {
-              credited.push(res.orderNumber);
-              localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
-            }
-          } catch {}
-          addBoxes(qty);
-        }
-      }
-
-      return res;
-    } catch (err: any) {
-      console.warn('[Payment API unreachable, using client offline mode]:', err);
-      const orderNumber = 'GSQ-' + Math.floor(100000 + Math.random() * 900000);
-      const matchingProduct = products.find((p) => p.id === productId);
-      const newOrder: OrderItem = {
-        id: 'ord-' + Date.now(),
-        orderNumber,
-        nickname: cleanNick,
-        productId,
-        productName,
-        amount,
-        quantity: quantity || 1,
-        promoCode: promoCode ? promoCode.trim().toUpperCase() : undefined,
-        paymentMethod: 'Онлайн-оплата',
-        status: 'completed',
-        createdAt: 'Только что',
-        iconColor: matchingProduct?.iconColor || 'gold',
-        paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
-      };
-      setOrders((prev) => [newOrder, ...prev]);
-
-      if (productId === 'hat-box' || productName?.toLowerCase().includes('шляп')) {
-        const qty = quantity || 1;
-        try {
-          const credited: string[] = JSON.parse(
-            localStorage.getItem('gsq_credited_box_orders') || '[]'
-          );
-          if (!credited.includes(orderNumber)) {
-            credited.push(orderNumber);
-            localStorage.setItem('gsq_credited_box_orders', JSON.stringify(credited));
-          }
-        } catch {}
-        addBoxes(qty);
+        return {
+          success: true,
+          orderNumber: res.orderNumber,
+          paymentUrl: res.paymentUrl,
+          paymentId: res.paymentId,
+        };
       }
 
       return {
-        success: true,
-        orderNumber,
-        isDemo: true,
-        status: 'completed',
-        paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
-        message: 'Тестовый платёж успешно проведён!',
+        success: false,
+        orderNumber: res?.orderNumber || '',
+        message: (res as any)?.error || res?.message || 'Платёжная система временно недоступна. Пожалуйста, повторите попытку позже.',
+      };
+    } catch (err: any) {
+      console.warn('[Payment Gateway Error]:', err);
+      return {
+        success: false,
+        orderNumber: '',
+        message: 'Платёжная система временно недоступна. Пожалуйста, повторите попытку позже.',
       };
     }
   };

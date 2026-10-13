@@ -56,14 +56,14 @@ export const Store: React.FC = () => {
   const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
 
-  // Auto-open modal if navigated with ?openBox=true
+  // Auto-open modal if navigated with ?openBox=true (only if player has paid boxes)
   useEffect(() => {
     const search = window.location.hash.split('?')[1] || window.location.search;
     const params = new URLSearchParams(search);
-    if (params.get('openBox') === 'true') {
+    if (params.get('openBox') === 'true' && availableBoxes > 0) {
       setIsHatBoxModalOpen(true);
     }
-  }, []);
+  }, [availableBoxes]);
 
   const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
@@ -245,9 +245,15 @@ export const Store: React.FC = () => {
             {/* Left: Box Image with Interactive Hover */}
             <div className="lg:col-span-5 flex flex-col items-center justify-center text-center">
               <div
-                onClick={() => setIsHatBoxModalOpen(true)}
+                onClick={() => {
+                  if (availableBoxes > 0) {
+                    setIsHatBoxModalOpen(true);
+                  } else {
+                    handleBuy(hatBoxProduct, boxQuantity);
+                  }
+                }}
                 className="relative group cursor-pointer"
-                title="Нажмите, чтобы открыть кейс!"
+                title={availableBoxes > 0 ? 'Нажмите, чтобы открыть кейс!' : 'Нажмите, чтобы купить коробку!'}
               >
                 <img
                   src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/box.png`}
@@ -255,8 +261,17 @@ export const Store: React.FC = () => {
                   className="relative w-64 sm:w-72 h-auto drop-shadow-[0_16px_32px_rgba(0,0,0,0.9)] group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300"
                 />
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/70 border border-amber-500/30 text-amber-300 text-xs font-semibold backdrop-blur-sm shadow-md mt-2 group-hover:border-amber-400 transition-colors">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Открыть коробку</span>
+                  {availableBoxes > 0 ? (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Открыть коробку ({availableBoxes} шт.)</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Купить коробку ({hatBoxPrice * boxQuantity} ₽)</span>
+                    </>
+                  )}
                 </span>
               </div>
             </div>

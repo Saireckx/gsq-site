@@ -437,17 +437,6 @@ const server = http.createServer(async (req, res) => {
       // ---------------------------------------------------------------------
       if (pathname === '/api/orders') {
         if (method === 'GET') {
-          let updated = false;
-          for (const ord of (db.orders || [])) {
-            if (ord.isDemo && ord.status === 'pending') {
-              ord.status = 'completed';
-              ord.paidAt = ord.paidAt || new Date().toISOString();
-              updated = true;
-            }
-          }
-          if (updated) {
-            await writeDb(db);
-          }
           return sendJson(res, 200, db.orders || []);
         }
 
@@ -721,21 +710,10 @@ const server = http.createServer(async (req, res) => {
           }
         }
 
-        // Keys not configured yet -> Test / demo mode response
-        newOrder.isDemo = true;
-        newOrder.status = 'completed';
-        newOrder.paidAt = new Date().toISOString();
-        newOrder.paymentUrl = `#/payment/result?orderNumber=${orderNumber}&demo=true`;
-        db.orders.unshift(newOrder);
-        await writeDb(db);
-
-        return sendJson(res, 200, {
-          success: true,
-          orderNumber,
-          isDemo: true,
-          status: 'completed',
-          paymentUrl: `#/payment/result?orderNumber=${orderNumber}&demo=true`,
-          message: 'Тестовый платёж успешно проведён!',
+        // If payment gateway keys are not configured yet, do not give free goods
+        return sendJson(res, 503, {
+          success: false,
+          error: 'Платёжный шлюз временно не настроен администратором. Онлайн-оплата будет доступна после подключения платёжной системы.',
         });
       }
 
@@ -826,11 +804,6 @@ const server = http.createServer(async (req, res) => {
       if (pathname.startsWith('/api/payment/check-order/')) {
         const orderNumber = pathname.replace('/api/payment/check-order/', '');
         const order = (db.orders || []).find((o) => o.orderNumber === orderNumber);
-        if (order && order.isDemo && order.status === 'pending') {
-          order.status = 'completed';
-          order.paidAt = order.paidAt || new Date().toISOString();
-          await writeDb(db);
-        }
         return sendJson(res, 200, {
           found: !!order,
           order,

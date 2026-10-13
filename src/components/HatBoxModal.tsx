@@ -192,6 +192,7 @@ export const HatBoxModal: React.FC<HatBoxModalProps> = ({
 
   const handleStartOpening = () => {
     if (isOpening) return;
+    if (!availableBoxes || availableBoxes <= 0) return;
 
     // 1. Clear any running timers immediately to prevent double sounds or overlapping loops
     timerRef.current.forEach(clearTimeout);

@@ -127,65 +127,7 @@
       ]
     }
   ],
-  "coupons": [
-    {
-      "id": "c1",
-      "code": "TECH10",
-      "discount": 10,
-      "description": "tech",
-      "usesCount": 0,
-      "applicableProductIds": [
-        "all"
-      ],
-      "active": true
-    },
-    {
-      "id": "c2",
-      "code": "KOT10",
-      "discount": 10,
-      "description": "новости",
-      "usesCount": 0,
-      "applicableProductIds": [
-        "all"
-      ],
-      "active": true
-    },
-    {
-      "id": "c3",
-      "code": "CODE20",
-      "discount": 20,
-      "description": "Скидка",
-      "usesCount": 0,
-      "applicableProductIds": [
-        "unban",
-        "sub",
-        "sub-plus"
-      ],
-      "active": true
-    },
-    {
-      "id": "c4",
-      "code": "END10",
-      "discount": 10,
-      "description": "end10",
-      "usesCount": 0,
-      "applicableProductIds": [
-        "all"
-      ],
-      "active": true
-    },
-    {
-      "id": "c5",
-      "code": "GSQ",
-      "discount": 15,
-      "description": "Фирменный промокод GSQ",
-      "usesCount": 0,
-      "applicableProductIds": [
-        "all"
-      ],
-      "active": true
-    }
-  ],
+  "coupons": [],
   "orders": [],
   "serverSettings": {
     "ip": "play.mygsq.fun",

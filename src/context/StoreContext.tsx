@@ -258,53 +258,42 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
   },
 ];
 
-const DEFAULT_COUPONS: CouponItem[] = [
-  {
-    id: 'c1',
-    code: 'TECH10',
-    discount: 10,
-    description: 'tech',
-    usesCount: 0,
-    applicableProductIds: ['all'],
-    active: true,
-  },
-  {
-    id: 'c2',
-    code: 'KOT10',
-    discount: 10,
-    description: 'новости',
-    usesCount: 0,
-    applicableProductIds: ['all'],
-    active: true,
-  },
-  {
-    id: 'c3',
-    code: 'CODE20',
-    discount: 20,
-    description: 'Скидка',
-    usesCount: 0,
-    applicableProductIds: ['unban', 'sub', 'sub-plus'],
-    active: true,
-  },
-  {
-    id: 'c4',
-    code: 'END10',
-    discount: 10,
-    description: 'end10',
-    usesCount: 0,
-    applicableProductIds: ['all'],
-    active: true,
-  },
-  {
-    id: 'c5',
-    code: 'GSQ',
-    discount: 15,
-    description: 'Фирменный промокод GSQ',
-    usesCount: 0,
-    applicableProductIds: ['all'],
-    active: true,
-  },
-];
+const LEGACY_MOCK_PROMOS = ['TECH10', 'KOT10', 'CODE20', 'END10', 'GSQ'];
+
+const getDeletedCoupons = (): string[] => {
+  try {
+    const raw = localStorage.getItem('gsq_deleted_coupons');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map((s) => String(s).toUpperCase());
+    }
+  } catch {}
+  return [];
+};
+
+const saveDeletedCoupon = (idOrCode: string) => {
+  if (!idOrCode) return;
+  try {
+    const list = getDeletedCoupons();
+    const clean = idOrCode.toUpperCase().trim();
+    if (!list.includes(clean)) {
+      list.push(clean);
+      localStorage.setItem('gsq_deleted_coupons', JSON.stringify(list));
+    }
+  } catch {}
+};
+
+const unmarkDeletedCoupon = (code: string) => {
+  if (!code) return;
+  try {
+    const list = getDeletedCoupons();
+    const clean = code.toUpperCase().trim();
+    const filtered = list.filter((item) => item !== clean);
+    localStorage.setItem('gsq_deleted_coupons', JSON.stringify(filtered));
+  } catch {}
+};
+
+const DEFAULT_COUPONS: CouponItem[] = [];
 
 const DEFAULT_ORDERS: OrderItem[] = [];
 
@@ -359,8 +348,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Load coupons from localStorage or defaults
   const [coupons, setCoupons] = useState<CouponItem[]>(() => {
     try {
+      const deletedList = getDeletedCoupons();
       const saved = localStorage.getItem('gsq_coupons');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: CouponItem[] = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (c) =>
+              !LEGACY_MOCK_PROMOS.includes(c.code?.toUpperCase()) &&
+              !deletedList.includes(c.id.toUpperCase()) &&
+              !deletedList.includes(c.code?.toUpperCase())
+          );
+        }
+      }
     } catch {}
     return DEFAULT_COUPONS;
   });
@@ -563,8 +563,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (Array.isArray(prods) && prods.length > 0) {
           setProducts(prods);
         }
-        if (Array.isArray(cps) && cps.length > 0) {
-          setCoupons(cps);
+        if (Array.isArray(cps)) {
+          const deletedList = getDeletedCoupons();
+          const validCps = cps.filter(
+            (c) =>
+              !LEGACY_MOCK_PROMOS.includes(c.code?.toUpperCase()) &&
+              !deletedList.includes(c.id.toUpperCase()) &&
+              !deletedList.includes(c.code?.toUpperCase())
+          );
+          setCoupons(validCps);
         }
         if (Array.isArray(ords) && ords.length > 0) {
           setOrders((prev) => {
@@ -699,13 +706,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Coupon actions
   const addCoupon = (coupon: Omit<CouponItem, 'id' | 'usesCount'>) => {
+    const cleanCode = coupon.code.toUpperCase().trim();
+    unmarkDeletedCoupon(cleanCode);
     const newCoupon: CouponItem = {
       ...coupon,
       id: 'cp-' + Date.now(),
       usesCount: 0,
-      code: coupon.code.toUpperCase().trim(),
+      code: cleanCode,
     };
-    setCoupons((prev) => [newCoupon, ...prev]);
+    setCoupons((prev) => [newCoupon, ...prev.filter((c) => c.code !== cleanCode)]);
     api.addCoupon(newCoupon).catch(() => {});
   };
 
@@ -729,13 +738,33 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteCoupon = (id: string) => {
-    setCoupons((prev) => prev.filter((item) => item.id !== id));
+    const target = coupons.find((c) => c.id === id);
+    const targetCode = target?.code?.toUpperCase();
+
+    // 1. Permanently blacklist this coupon ID and code
+    saveDeletedCoupon(id);
+    if (targetCode) {
+      saveDeletedCoupon(targetCode);
+    }
+
+    // 2. Remove from active state immediately
+    setCoupons((prev) => prev.filter((item) => item.id !== id && item.code?.toUpperCase() !== targetCode));
+
+    // 3. Delete from backend by ID and by code
     api.deleteCoupon(id).catch(() => {});
+    if (targetCode) {
+      api.deleteCoupon(targetCode).catch(() => {});
+    }
   };
 
   const validateCoupon = (code: string, productId?: string) => {
     const clean = code.trim().toUpperCase();
     if (!clean) return { valid: false, discount: 0, message: '' };
+
+    const deletedList = getDeletedCoupons();
+    if (LEGACY_MOCK_PROMOS.includes(clean) || deletedList.includes(clean)) {
+      return { valid: false, discount: 0, message: 'Недействительный промокод' };
+    }
 
     const found = coupons.find((c) => c.code === clean && c.active);
     if (!found) {

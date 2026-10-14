@@ -19,7 +19,7 @@ import {
   ShieldCheck,
   Package
 } from 'lucide-react';
-import { api, getAuthToken } from '../lib/api';
+import { api, getAuthToken, setAuthToken } from '../lib/api';
 
 type AdminTab = 'dashboard' | 'products' | 'coupons' | 'orders' | 'drops' | 'settings';
 
@@ -43,6 +43,8 @@ export const Admin: React.FC = () => {
     try {
       const res = await api.login(pinInput);
       if (res && res.success) {
+        if (res.token) setAuthToken(res.token);
+        else setAuthToken(pinInput);
         setIsAuthenticated(true);
         sessionStorage.setItem('gsq_admin_auth', 'true');
         setIsLoading(false);
@@ -51,6 +53,7 @@ export const Admin: React.FC = () => {
     } catch {
       // Backend offline fallback check
       if (pinInput === 'Gsq#Admin2026_9xK!' || pinInput === '982164') {
+        setAuthToken(pinInput);
         setIsAuthenticated(true);
         sessionStorage.setItem('gsq_admin_auth', 'true');
         setIsLoading(false);

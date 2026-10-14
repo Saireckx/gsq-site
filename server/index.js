@@ -343,15 +343,24 @@ const server = http.createServer(async (req, res) => {
       // ---------------------------------------------------------------------
       if (pathname === '/api/coupons') {
         if (method === 'GET') {
-          return sendJson(res, 200, db.coupons || []);
+          // Exclude legacy mock coupons
+          const activeCoupons = (db.coupons || []).filter(
+            (c) => !['TECH10', 'KOT10', 'CODE20', 'END10', 'GSQ'].includes(c.code?.toUpperCase())
+          );
+          if (activeCoupons.length !== (db.coupons || []).length) {
+            db.coupons = activeCoupons;
+            await writeDb(db);
+          }
+          return sendJson(res, 200, activeCoupons);
         }
 
         if (method === 'POST') {
           if (!isAuthorized(req, db)) return sendJson(res, 401, { error: 'Unauthorized' });
           const body = await parseJsonBody(req);
+          const cleanCode = String(body.code || '').trim().toUpperCase();
           const newCoupon = {
-            id: `cp-${Date.now()}`,
-            code: String(body.code || '').trim().toUpperCase(),
+            id: body.id || `cp-${Date.now()}`,
+            code: cleanCode,
             discount: Number(body.discount) || 10,
             description: String(body.description || '').trim(),
             usesCount: 0,
@@ -359,6 +368,7 @@ const server = http.createServer(async (req, res) => {
             applicableProductIds: Array.isArray(body.applicableProductIds) ? body.applicableProductIds : ['all'],
             active: body.active !== false,
           };
+          db.coupons = (db.coupons || []).filter((c) => c.code?.toUpperCase() !== cleanCode);
           db.coupons.unshift(newCoupon);
           await writeDb(db);
           return sendJson(res, 201, newCoupon);
@@ -370,11 +380,11 @@ const server = http.createServer(async (req, res) => {
         const code = String(body.code || '').trim().toUpperCase();
         const productId = body.productId;
 
-        if (!code) {
-          return sendJson(res, 200, { valid: false, discount: 0, message: '' });
+        if (!code || ['TECH10', 'KOT10', 'CODE20', 'END10', 'GSQ'].includes(code)) {
+          return sendJson(res, 200, { valid: false, discount: 0, message: 'Недействительный промокод' });
         }
 
-        const coupon = (db.coupons || []).find((c) => c.code === code && c.active);
+        const coupon = (db.coupons || []).find((c) => c.code?.toUpperCase() === code && c.active);
         if (!coupon) {
           return sendJson(res, 200, { valid: false, discount: 0, message: 'Недействительный промокод' });
         }
@@ -406,17 +416,18 @@ const server = http.createServer(async (req, res) => {
 
       if (pathname.startsWith('/api/coupons/')) {
         const couponId = pathname.replace('/api/coupons/', '');
+        const search = decodeURIComponent(couponId).trim().toUpperCase();
 
         if (method === 'PUT') {
           if (!isAuthorized(req, db)) return sendJson(res, 401, { error: 'Unauthorized' });
           const body = await parseJsonBody(req);
-          const idx = db.coupons.findIndex((c) => c.id === couponId);
+          const idx = (db.coupons || []).findIndex((c) => c.id === couponId || c.code?.toUpperCase() === search);
           if (idx !== -1) {
             db.coupons[idx] = {
               ...db.coupons[idx],
               ...body,
               code: body.code ? String(body.code).trim().toUpperCase() : db.coupons[idx].code,
-              id: couponId,
+              id: db.coupons[idx].id,
             };
             await writeDb(db);
             return sendJson(res, 200, db.coupons[idx]);
@@ -426,7 +437,9 @@ const server = http.createServer(async (req, res) => {
 
         if (method === 'DELETE') {
           if (!isAuthorized(req, db)) return sendJson(res, 401, { error: 'Unauthorized' });
-          db.coupons = db.coupons.filter((c) => c.id !== couponId);
+          db.coupons = (db.coupons || []).filter(
+            (c) => c.id !== couponId && c.code?.toUpperCase() !== search
+          );
           await writeDb(db);
           return sendJson(res, 200, { success: true, id: couponId });
         }

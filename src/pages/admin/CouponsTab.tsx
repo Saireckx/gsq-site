@@ -104,7 +104,18 @@ export const CouponsTab: React.FC = () => {
 
       {/* Grid of coupon cards matching Screenshot 4 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {coupons.map((coupon) => {
+        {coupons.length === 0 ? (
+          <div className="col-span-full py-12 text-center rounded-2xl bg-[#131a29]/50 border border-slate-800/80 p-8 space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-slate-800/50 flex items-center justify-center mx-auto text-slate-500">
+              <Tag className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-white">Список промокодов пуст</h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Удалённые промокоды отключены и больше не действуют. Чтобы создать новый промокод со скидкой, нажмите «Добавить купон».
+            </p>
+          </div>
+        ) : (
+          coupons.map((coupon) => {
           const isAll = coupon.applicableProductIds.includes('all');
 
           return (
@@ -188,7 +199,7 @@ export const CouponsTab: React.FC = () => {
               </div>
             </div>
           );
-        })}
+        }))}
       </div>
 
       {/* Add / Edit Coupon Modal */}

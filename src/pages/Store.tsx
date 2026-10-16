@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { CheckoutModal, CheckoutItem } from '../components/CheckoutModal';
 import { HatBoxModal } from '../components/HatBoxModal';
-import { Crown, Check, RotateCcw, MessageSquare, Heart, Sparkles, Clock, Package, ShoppingBag, ExternalLink } from 'lucide-react';
+import { Crown, Check, RotateCcw, MessageSquare, Sparkles, Clock, Package, ShoppingBag } from 'lucide-react';
 import { SERVER_INFO } from '../lib/constants';
 
 export const Store: React.FC = () => {
@@ -15,7 +15,7 @@ export const Store: React.FC = () => {
     (p) => !p.hidden && (p.id === 'sub' || p.id === 'sub-plus')
   );
 
-  // Additional services (strictly unban, unmute, donate - no duplicates, no sword, no crate)
+  // Additional services (strictly unban and unmute - donate removed completely)
   const additionalProducts = products.filter(
     (p) =>
       !p.hidden &&
@@ -23,6 +23,9 @@ export const Store: React.FC = () => {
       p.id !== 'sub-plus' &&
       p.id !== 'hat-box' &&
       p.id !== 'diamond-sword' &&
+      p.id !== 'donate' &&
+      p.category !== 'Поддержка' &&
+      !p.name.toLowerCase().includes('пожертвован') &&
       !p.id.includes('-1m') &&
       !p.name.toLowerCase().includes('sub') &&
       !p.name.toLowerCase().includes('коробка') &&
@@ -68,7 +71,6 @@ export const Store: React.FC = () => {
   const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
     if (id === 'unmute') return <MessageSquare className="w-5 h-5 text-neutral-300" />;
-    if (id === 'donate') return <Heart className="w-5 h-5 text-neutral-300" />;
     return <Sparkles className="w-5 h-5 text-neutral-300" />;
   };
 
@@ -99,7 +101,6 @@ export const Store: React.FC = () => {
       foreverPrice: forever,
       period: currentPeriod,
       description: product.description,
-      isCustomAmount: product.id === 'donate',
       isSubscription: isSub,
       initialQuantity: isBox ? initialQuantity : 1,
       allowQuantity: isBox,
@@ -449,7 +450,7 @@ export const Store: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
           {additionalProducts.map((service) => (
             <div
               key={service.id}
@@ -476,31 +477,19 @@ export const Store: React.FC = () => {
               <div className="pt-4 border-t border-white/[0.06] space-y-3">
                 <div className="flex items-baseline justify-between">
                   <div className="text-base sm:text-lg font-mono font-bold text-white">
-                    {service.id === 'donate' ? 'Любая сумма' : `${service.price} ₽`}
+                    {service.price} ₽
                   </div>
                   <span className="text-xs text-neutral-500 font-sans">
-                    {service.id === 'donate' ? 'DonationAlerts' : service.period}
+                    / {service.period}
                   </span>
                 </div>
 
-                {service.id === 'donate' ? (
-                  <a
-                    href={SERVER_INFO.links.donate || 'https://www.donationalerts.com/r/wowrizze_donate'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-neutral-950/80 hover:bg-neutral-800 text-white border border-white/15 hover:border-white/30 text-xs sm:text-sm font-semibold transition-all hover:shadow-glow-sm flex items-center justify-center gap-1.5"
-                  >
-                    <span>Поддержать</span>
-                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
-                  </a>
-                ) : (
-                  <button
-                    onClick={() => handleBuy(service)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-neutral-950/80 hover:bg-neutral-800 text-white border border-white/15 hover:border-white/30 text-xs sm:text-sm font-semibold transition-all hover:shadow-glow-sm"
-                  >
-                    Купить
-                  </button>
-                )}
+                <button
+                  onClick={() => handleBuy(service)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-neutral-950/80 hover:bg-neutral-800 text-white border border-white/15 hover:border-white/30 text-xs sm:text-sm font-semibold transition-all hover:shadow-glow-sm"
+                >
+                  Купить
+                </button>
               </div>
             </div>
           ))}

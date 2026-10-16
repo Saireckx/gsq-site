@@ -241,21 +241,6 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
       'Моментальное открытие и примерка',
     ],
   },
-  {
-    id: 'donate',
-    numericId: 1060512,
-    name: 'Пожертвование',
-    price: 50,
-    period: 'навсегда',
-    type: 'Другое',
-    command: 'broadcast Спасибо игроку {user} за поддержку сервера!',
-    description: 'Поддержи сервер и получи благодарность всего сообщества!',
-    category: 'Поддержка',
-    iconColor: 'gold',
-    hidden: false,
-    offlineAllowed: true,
-    features: ['Благодарность в чате и значок мецената в Discord'],
-  },
 ];
 
 const LEGACY_MOCK_PROMOS = ['TECH10', 'KOT10', 'CODE20', 'END10', 'GSQ'];
@@ -329,7 +314,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             return p;
           })
           .filter(
-            (p) => Boolean(p) && p.id !== 'diamond-sword' && !p.id.includes('-1m')
+            (p) =>
+              Boolean(p) &&
+              p.id !== 'diamond-sword' &&
+              !p.id.includes('-1m') &&
+              p.id !== 'donate' &&
+              p.category !== 'Поддержка' &&
+              !p.name.toLowerCase().includes('пожертвован')
           );
 
         // Ensure hat-box and all other default products are always present
@@ -561,7 +552,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (!active) return;
 
         if (Array.isArray(prods) && prods.length > 0) {
-          setProducts(prods);
+          const cleanedProds = prods.filter(
+            (p) =>
+              p.id !== 'donate' &&
+              p.category !== 'Поддержка' &&
+              !p.name?.toLowerCase().includes('пожертвован')
+          );
+          setProducts(cleanedProds);
         }
         if (Array.isArray(cps)) {
           const deletedList = getDeletedCoupons();

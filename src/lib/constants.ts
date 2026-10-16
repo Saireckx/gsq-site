@@ -131,15 +131,6 @@ export const ADDITIONAL_SERVICES: ServiceItem[] = [
     priceMin: 99,
     buttonText: 'Купить',
   },
-  {
-    id: 'donate',
-    name: 'Пожертвование',
-    iconType: 'donate',
-    description: 'Поддержи сервер и получи благодарность!',
-    priceText: 'любая сумма',
-    priceMin: 10,
-    buttonText: 'Поддержать',
-  },
 ];
 
 export interface RuleCategory {

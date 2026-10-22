@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { CheckoutModal, CheckoutItem } from '../components/CheckoutModal';
 import { HatBoxModal } from '../components/HatBoxModal';
+import { BoxDiscordModal } from '../components/BoxDiscordModal';
 import { Crown, Check, RotateCcw, MessageSquare, Sparkles, Clock, Package, ShoppingBag } from 'lucide-react';
 import { SERVER_INFO } from '../lib/constants';
 
@@ -55,6 +56,7 @@ export const Store: React.FC = () => {
   };
 
   const [isHatBoxModalOpen, setIsHatBoxModalOpen] = useState(false);
+  const [isDiscordBoxModalOpen, setIsDiscordBoxModalOpen] = useState(false);
   const [boxQuantity, setBoxQuantity] = useState(1);
   const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
@@ -250,7 +252,7 @@ export const Store: React.FC = () => {
                   if (availableBoxes > 0) {
                     setIsHatBoxModalOpen(true);
                   } else {
-                    handleBuy(hatBoxProduct, boxQuantity);
+                    setIsDiscordBoxModalOpen(true);
                   }
                 }}
                 className="relative group cursor-pointer"
@@ -413,7 +415,7 @@ export const Store: React.FC = () => {
                       </button>
 
                       <button
-                        onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
+                        onClick={() => setIsDiscordBoxModalOpen(true)}
                         className="py-3.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 flex items-center justify-center gap-1.5"
                         title={`Купить ещё ${boxQuantity} шт.`}
                       >
@@ -423,8 +425,8 @@ export const Store: React.FC = () => {
                     </>
                   ) : (
                     <button
-                      onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
-                      className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm transition-all shadow-glow-white hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                      onClick={() => setIsDiscordBoxModalOpen(true)}
+                      className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-sm transition-all shadow-glow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                       <ShoppingBag className="w-4 h-4" />
                       <span>
@@ -613,8 +615,16 @@ export const Store: React.FC = () => {
         }}
         onBuy={() => {
           setIsHatBoxModalOpen(false);
-          handleBuy(hatBoxProduct);
+          setIsDiscordBoxModalOpen(true);
         }}
+      />
+
+      {/* Discord Box Purchase Modal */}
+      <BoxDiscordModal
+        isOpen={isDiscordBoxModalOpen}
+        onClose={() => setIsDiscordBoxModalOpen(false)}
+        initialQuantity={boxQuantity}
+        pricePerBox={hatBoxPrice}
       />
 
       {/* Checkout Modal */}

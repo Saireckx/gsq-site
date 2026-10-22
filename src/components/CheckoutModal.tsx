@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
+import { BoxDiscordModal } from './BoxDiscordModal';
 import { X, ShieldCheck, User, ArrowRight, Loader2, Sparkles, Check, ExternalLink, AlertCircle, CreditCard } from 'lucide-react';
 
 export interface CheckoutItem {
@@ -70,6 +71,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ item, onClose, onO
   };
 
   if (!item) return null;
+
+  if (item.id === 'hat-box') {
+    return (
+      <BoxDiscordModal
+        isOpen={true}
+        onClose={handleModalClose}
+        initialQuantity={item.initialQuantity || quantity || 1}
+        pricePerBox={item.price || 49}
+      />
+    );
+  }
 
   const isBoxOrQuantityAllowed = item.id === 'hat-box' || !!item.allowQuantity;
 

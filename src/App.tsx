@@ -11,7 +11,6 @@ import { PaymentResult } from './pages/PaymentResult';
 import { Offer } from './pages/Offer';
 import { Privacy } from './pages/Privacy';
 import { Admin } from './pages/Admin';
-import { GiftBoxClaim } from './pages/GiftBoxClaim';
 
 export const App: React.FC = () => {
   return (
@@ -30,8 +29,8 @@ export const App: React.FC = () => {
             <Route path="privacy" element={<Privacy />} />
             <Route path="payment/result" element={<PaymentResult />} />
             <Route path="payment/success" element={<PaymentResult />} />
-            <Route path="box" element={<GiftBoxClaim />} />
-            <Route path="gift" element={<GiftBoxClaim />} />
+            <Route path="box" element={<Navigate to="/store" replace />} />
+            <Route path="gift" element={<Navigate to="/store" replace />} />
           </Route>
 
           {/* Secret Admin Panel Route */}

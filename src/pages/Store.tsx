@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
-import { CheckoutModal, CheckoutItem } from '../components/CheckoutModal';
-import { HatBoxModal } from '../components/HatBoxModal';
-import { BoxDiscordModal } from '../components/BoxDiscordModal';
+import { DiscordInstructionModal, PurchaseItem } from '../components/DiscordInstructionModal';
 import { Crown, Check, RotateCcw, MessageSquare, Sparkles, Clock, Package, ShoppingBag } from 'lucide-react';
 import { SERVER_INFO } from '../lib/constants';
 
 export const Store: React.FC = () => {
-  const { products, orders, addHatDrop, availableBoxes, consumeBox } = useStore();
-  const [selectedItem, setSelectedItem] = useState<CheckoutItem | null>(null);
+  const { products, orders } = useStore();
+  const [selectedPurchaseItem, setSelectedPurchaseItem] = useState<PurchaseItem | null>(null);
   const [visibleOrdersCount, setVisibleOrdersCount] = useState(6);
 
   // Subscriptions (SUB and SUB+ only)
@@ -55,20 +53,9 @@ export const Store: React.FC = () => {
     ],
   };
 
-  const [isHatBoxModalOpen, setIsHatBoxModalOpen] = useState(false);
-  const [isDiscordBoxModalOpen, setIsDiscordBoxModalOpen] = useState(false);
   const [boxQuantity, setBoxQuantity] = useState(1);
   const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
-
-  // Auto-open modal if navigated with ?openBox=true (only if player has paid boxes)
-  useEffect(() => {
-    const search = window.location.hash.split('?')[1] || window.location.search;
-    const params = new URLSearchParams(search);
-    if (params.get('openBox') === 'true' && availableBoxes > 0) {
-      setIsHatBoxModalOpen(true);
-    }
-  }, [availableBoxes]);
 
   const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
@@ -95,7 +82,7 @@ export const Store: React.FC = () => {
     const currentPrice = isSub ? (period === 'month' ? monthly : forever) : product.price;
     const currentPeriod = isSub ? (period === 'month' ? '1 месяц' : 'навсегда') : product.period;
 
-    setSelectedItem({
+    setSelectedPurchaseItem({
       id: product.id,
       name: product.name,
       price: currentPrice,
@@ -104,8 +91,8 @@ export const Store: React.FC = () => {
       period: currentPeriod,
       description: product.description,
       isSubscription: isSub,
+      isBox: isBox,
       initialQuantity: isBox ? initialQuantity : 1,
-      allowQuantity: isBox,
     });
   };
 
@@ -241,40 +228,25 @@ export const Store: React.FC = () => {
         })}
       </div>
 
-      {/* Hat Box / Crate Showcase Section */}
+      {/* Hat Box Showcase Section */}
       <div className="mb-16 sm:mb-20">
         <div className="rounded-3xl p-6 sm:p-10 bg-neutral-900/60 border border-white/10 relative overflow-hidden shadow-2xl">
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left: Box Image with Interactive Hover */}
+            {/* Left: Box Image */}
             <div className="lg:col-span-5 flex flex-col items-center justify-center text-center">
               <div
-                onClick={() => {
-                  if (availableBoxes > 0) {
-                    setIsHatBoxModalOpen(true);
-                  } else {
-                    setIsDiscordBoxModalOpen(true);
-                  }
-                }}
+                onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
                 className="relative group cursor-pointer"
-                title={availableBoxes > 0 ? 'Нажмите, чтобы открыть кейс!' : 'Нажмите, чтобы купить коробку!'}
+                title="Нажмите, чтобы заказать коробку"
               >
                 <img
                   src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/box.png`}
                   alt="Коробка со шляпой"
-                  className="relative w-64 sm:w-72 h-auto drop-shadow-[0_16px_32px_rgba(0,0,0,0.9)] group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300"
+                  className="relative w-60 sm:w-68 h-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-200"
                 />
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/70 border border-amber-500/30 text-amber-300 text-xs font-semibold backdrop-blur-sm shadow-md mt-2 group-hover:border-amber-400 transition-colors">
-                  {availableBoxes > 0 ? (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Открыть коробку ({availableBoxes} шт.)</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Купить коробку ({hatBoxPrice * boxQuantity} ₽)</span>
-                    </>
-                  )}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-300 text-xs font-medium mt-3">
+                  <ShoppingBag className="w-3.5 h-3.5 text-white" />
+                  <span>{hatBoxPrice * boxQuantity} ₽ / {boxQuantity} шт.</span>
                 </span>
               </div>
             </div>
@@ -282,81 +254,58 @@ export const Store: React.FC = () => {
             {/* Right: Info, Drop Rates, Action Buttons */}
             <div className="lg:col-span-7 space-y-5">
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
-                  <Package className="w-3.5 h-3.5" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-800 text-neutral-300 text-xs font-semibold uppercase tracking-wider">
+                  <Package className="w-3.5 h-3.5 text-white" />
                   <span>Кейс с аксессуарами</span>
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
                   Коробка со шляпой
                 </h2>
-                <p className="text-sm text-neutral-300 leading-relaxed max-w-xl">
-                  В коробке спрятаны 17 уникальных головных уборов и аксессуаров. Испытай удачу и получи крутую шляпу с красивой анимацией открытия!
+                <p className="text-sm text-neutral-400 leading-relaxed max-w-xl">
+                  В коробке спрятаны 17 уникальных головных уборов и аксессуаров. Включает базовые, редкие и легендарные шляпы.
                 </p>
               </div>
 
-              {/* Rarity Chances Progress & Badges */}
+              {/* Rarity Chances (Clean Neutral Styling) */}
               <div className="space-y-2 pt-1">
                 <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
                   Шансы выпадения:
                 </span>
                 <div className="grid grid-cols-3 gap-2.5">
-                  <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-center">
-                    <span className="text-[10px] sm:text-xs font-bold uppercase text-sky-400 block">Базовая</span>
+                  <div className="p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800 text-center">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block">Базовая</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">70%</span>
-                    <span className="text-[10px] text-neutral-400 block mt-0.5">7 шляп</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">7 шляп</span>
                   </div>
-                  <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/25 text-center">
-                    <span className="text-[10px] sm:text-xs font-bold uppercase text-purple-400 block">Редкая</span>
+                  <div className="p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800 text-center">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block">Редкая</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">25%</span>
-                    <span className="text-[10px] text-neutral-400 block mt-0.5">7 шляп</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">7 шляп</span>
                   </div>
-                  <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/35 text-center">
-                    <span className="text-[10px] sm:text-xs font-bold uppercase text-amber-400 block">Легендарная</span>
+                  <div className="p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800 text-center">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-300 block">Легендарная</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">5%</span>
-                    <span className="text-[10px] text-neutral-400 block mt-0.5">Нимб, Сигарета, MLG</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">Нимб, Сигарета, MLG</span>
                   </div>
                 </div>
               </div>
 
-              {/* If player has unopened boxes, show celebratory banner */}
-              {availableBoxes > 0 && (
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/40 flex items-center justify-between gap-3 shadow-lg animate-in fade-in">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xl">🎁</span>
-                    <div>
-                      <span className="text-xs font-bold text-amber-300 block">
-                        У вас есть {availableBoxes} {availableBoxes === 1 ? 'оплаченная коробка' : 'оплаченные коробки'}!
-                      </span>
-                      <span className="text-[11px] text-neutral-300 block">
-                        Нажмите кнопку ниже, чтобы открыть коробку и получить шляпу.
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setIsHatBoxModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs transition-all shadow-md active:scale-95 whitespace-nowrap"
-                  >
-                    Крутить ({availableBoxes})
-                  </button>
-                </div>
-              )}
-
               {/* Quantity selector for box */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/10">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-neutral-300">Количество коробок:</span>
-                  <span className="text-xs font-mono font-bold text-amber-300">
+                  <span className="text-xs font-semibold text-neutral-400">Количество:</span>
+                  <span className="text-xs font-mono font-bold text-white">
                     {boxQuantity} шт. • {hatBoxPrice * boxQuantity} ₽
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center rounded-xl bg-black/50 border border-white/10 overflow-hidden">
+                  <div className="flex items-center rounded-xl bg-neutral-900 border border-neutral-800 overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setBoxQuantity((q) => Math.max(1, q - 1))}
                       disabled={boxQuantity <= 1}
-                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
                       title="Уменьшить"
                     >
                       -
@@ -368,7 +317,7 @@ export const Store: React.FC = () => {
                       type="button"
                       onClick={() => setBoxQuantity((q) => Math.min(50, q + 1))}
                       disabled={boxQuantity >= 50}
-                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
                       title="Увеличить"
                     >
                       +
@@ -383,8 +332,8 @@ export const Store: React.FC = () => {
                         onClick={() => setBoxQuantity(n)}
                         className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                           boxQuantity === n
-                            ? 'bg-amber-400 text-black shadow-sm'
-                            : 'bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/5'
+                            ? 'bg-white text-black'
+                            : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
                         }`}
                       >
                         {n}
@@ -394,8 +343,8 @@ export const Store: React.FC = () => {
                 </div>
               </div>
 
-              {/* Price and Buttons */}
-              <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-4">
+              {/* Price and Buy Button */}
+              <div className="pt-3 border-t border-neutral-800 flex flex-wrap items-center gap-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-black text-white font-mono">
                     {hatBoxPrice * boxQuantity} ₽
@@ -403,37 +352,16 @@ export const Store: React.FC = () => {
                   <span className="text-xs text-neutral-400 font-medium">/ {boxQuantity} шт.</span>
                 </div>
 
-                <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-                  {availableBoxes > 0 ? (
-                    <>
-                      <button
-                        onClick={() => setIsHatBoxModalOpen(true)}
-                        className="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-black text-sm transition-all shadow-glow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                      >
-                        <Sparkles className="w-4 h-4 text-black" />
-                        <span>Открыть коробку ({availableBoxes} шт.)</span>
-                      </button>
-
-                      <button
-                        onClick={() => setIsDiscordBoxModalOpen(true)}
-                        className="py-3.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 flex items-center justify-center gap-1.5"
-                        title={`Купить ещё ${boxQuantity} шт.`}
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>+{boxQuantity} ещё ({hatBoxPrice * boxQuantity} ₽)</span>
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setIsDiscordBoxModalOpen(true)}
-                      className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-sm transition-all shadow-glow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>
-                        Купить {boxQuantity > 1 ? `${boxQuantity} коробок` : 'коробку'} ({hatBoxPrice * boxQuantity} ₽)
-                      </span>
-                    </button>
-                  )}
+                <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+                  <button
+                    onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
+                    className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>
+                      Купить {boxQuantity > 1 ? `${boxQuantity} коробок` : 'коробку'} ({hatBoxPrice * boxQuantity} ₽)
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -588,50 +516,10 @@ export const Store: React.FC = () => {
         </div>
       </div>
 
-      {/* Hat Box Crate Opening Modal */}
-      <HatBoxModal
-        isOpen={isHatBoxModalOpen}
-        onClose={() => setIsHatBoxModalOpen(false)}
-        price={hatBoxPrice}
-        availableBoxes={availableBoxes}
-        onOpenSuccess={() => {
-          consumeBox();
-        }}
-        onDropWon={(hat, isPaid) => {
-          const lastNick = 
-            localStorage.getItem('gsq_last_nickname') || 
-            localStorage.getItem('gsq_nickname') || 
-            orders.find((o) => o.productId === 'hat-box' && o.status === 'completed')?.nickname || 
-            'Игрок';
-          addHatDrop({
-            nickname: lastNick,
-            hatId: hat.id,
-            hatName: hat.name,
-            hatImage: hat.image,
-            hatEmoji: hat.emoji,
-            rarity: hat.rarity,
-            isPaid: isPaid,
-          });
-        }}
-        onBuy={() => {
-          setIsHatBoxModalOpen(false);
-          setIsDiscordBoxModalOpen(true);
-        }}
-      />
-
-      {/* Discord Box Purchase Modal */}
-      <BoxDiscordModal
-        isOpen={isDiscordBoxModalOpen}
-        onClose={() => setIsDiscordBoxModalOpen(false)}
-        initialQuantity={boxQuantity}
-        pricePerBox={hatBoxPrice}
-      />
-
-      {/* Checkout Modal */}
-      <CheckoutModal
-        item={selectedItem}
-        onClose={() => setSelectedItem(null)}
-        onOpenHatBox={() => setIsHatBoxModalOpen(true)}
+      {/* Discord Purchase Instruction Modal */}
+      <DiscordInstructionModal
+        item={selectedPurchaseItem}
+        onClose={() => setSelectedPurchaseItem(null)}
       />
     </div>
   );

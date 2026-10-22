@@ -132,8 +132,6 @@ export const Footer: React.FC = () => {
             <p>© {new Date().getFullYear()} GSQ Minecraft. Все права защищены. Самозанятый Полянских Егор Александрович (ИНН 691106468034).</p>
             <p className="text-[11px] text-neutral-400">
               Служба поддержки: <a href="mailto:polyanskihegor@yandex.ru" className="text-white hover:underline font-mono">polyanskihegor@yandex.ru</a>
-              <span className="mx-2 text-neutral-600">|</span>
-              <span className="text-amber-300 font-bold">Ключевое слово: <span className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded border border-white/20">PLAT</span></span>
             </p>
             <p className="text-[11px] text-neutral-600">
               Сервер не имеет прямого отношения к Mojang Studios или Microsoft. Все платежи обрабатываются через защищённый платёжный сервис.
@@ -148,10 +146,6 @@ export const Footer: React.FC = () => {
             <Link to="/privacy" className="hover:text-neutral-300 transition-colors text-[11px]">
               Конфиденциальность
             </Link>
-            <span className="text-neutral-700">•</span>
-            <span className="text-xs font-mono font-bold text-amber-300 px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30" title="Ключевое слово для модерации платежей">
-              Ключевое слово: PLAT
-            </span>
             <span className="text-neutral-700">•</span>
             <button
               onClick={scrollToTop}

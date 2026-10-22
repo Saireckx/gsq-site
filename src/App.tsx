@@ -12,30 +12,7 @@ import { Offer } from './pages/Offer';
 import { Privacy } from './pages/Privacy';
 import { Admin } from './pages/Admin';
 
-// Moderation verification mode: site displays ONLY the single word PLAT
-const VERIFICATION_ONLY = true;
-
 export const App: React.FC = () => {
-  const isSecretAdmin = typeof window !== 'undefined' && window.location.hash.includes('gsq-control-9821');
-
-  if (VERIFICATION_ONLY && !isSecretAdmin) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#000000',
-        color: '#ffffff',
-        fontFamily: 'monospace',
-        fontSize: '32px',
-        fontWeight: 'bold',
-      }}>
-        PLAT
-      </div>
-    );
-  }
-
   return (
     <StoreProvider>
       <HashRouter>

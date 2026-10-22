@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { DiscordInstructionModal, PurchaseItem } from '../components/DiscordInstructionModal';
-import { Crown, Check, RotateCcw, MessageSquare, Sparkles, Clock, Package, ShoppingBag } from 'lucide-react';
+import { BoxContentsModal } from '../components/BoxContentsModal';
+import { Crown, Check, RotateCcw, MessageSquare, Sparkles, Clock, Package, ShoppingBag, Eye } from 'lucide-react';
 import { SERVER_INFO } from '../lib/constants';
 
 export const Store: React.FC = () => {
@@ -53,8 +54,19 @@ export const Store: React.FC = () => {
   };
 
   const [boxQuantity, setBoxQuantity] = useState(1);
+  const [isBoxContentsOpen, setIsBoxContentsOpen] = useState(false);
+  const [boxContentsFilter, setBoxContentsFilter] = useState<'all' | 'common' | 'rare' | 'legendary'>('all');
   const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
+
+  // Auto-open box contents if navigated with ?openBox=true or ?contents=true
+  useEffect(() => {
+    const search = window.location.hash.split('?')[1] || window.location.search;
+    const params = new URLSearchParams(search);
+    if (params.get('openBox') === 'true' || params.get('box') === 'true' || params.get('contents') === 'true') {
+      setIsBoxContentsOpen(true);
+    }
+  }, []);
 
   const getServiceIcon = (_type: string, id: string) => {
     if (id === 'unban') return <RotateCcw className="w-5 h-5 text-neutral-300" />;
@@ -231,21 +243,37 @@ export const Store: React.FC = () => {
       <div className="mb-16 sm:mb-20">
         <div className="rounded-3xl p-6 sm:p-10 bg-neutral-900/60 border border-white/10 relative overflow-hidden shadow-2xl">
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left: Box Image */}
+            {/* Left: Box Image with View Contents Trigger */}
             <div className="lg:col-span-5 flex flex-col items-center justify-center text-center">
               <div
-                onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
+                onClick={() => {
+                  setBoxContentsFilter('all');
+                  setIsBoxContentsOpen(true);
+                }}
                 className="relative group cursor-pointer"
-                title="Нажмите, чтобы заказать коробку"
+                title="Нажмите, чтобы посмотреть содержимое коробки (17 аксессуаров)"
               >
                 <img
                   src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/box.png`}
                   alt="Коробка со шляпой"
                   className="relative w-60 sm:w-68 h-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-200"
                 />
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-300 text-xs font-medium mt-3">
-                  <ShoppingBag className="w-3.5 h-3.5 text-white" />
-                  <span>{hatBoxPrice * boxQuantity} ₽ / {boxQuantity} шт.</span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBoxContentsFilter('all');
+                    setIsBoxContentsOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700 hover:border-neutral-500 text-neutral-200 hover:text-white text-xs font-semibold shadow-md transition-all active:scale-95 group"
+                >
+                  <Eye className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-colors" />
+                  <span>Посмотреть содержимое (17 шт.)</span>
+                </button>
+                <span className="text-[11px] text-neutral-500 font-mono">
+                  {hatBoxPrice * boxQuantity} ₽ / {boxQuantity} шт.
                 </span>
               </div>
             </div>
@@ -265,27 +293,67 @@ export const Store: React.FC = () => {
                 </p>
               </div>
 
-              {/* Rarity Chances (Clean Neutral Styling) */}
+              {/* Rarity Chances (Clean Neutral Styling with quick filter view) */}
               <div className="space-y-2 pt-1">
-                <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
-                  Шансы выпадения:
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+                    Шансы выпадения:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('all');
+                      setIsBoxContentsOpen(true);
+                    }}
+                    className="text-xs text-neutral-400 hover:text-white transition-colors underline underline-offset-2 flex items-center gap-1"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Посмотреть все предметы</span>
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-3 gap-2.5">
-                  <div className="p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800 text-center">
-                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block">Базовая</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('common');
+                      setIsBoxContentsOpen(true);
+                    }}
+                    className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
+                    title="Нажмите, чтобы просмотреть 7 базовых шляп"
+                  >
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block group-hover:text-neutral-300">Базовая</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">70%</span>
                     <span className="text-[10px] text-neutral-500 block mt-0.5">7 шляп</span>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800 text-center">
-                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block">Редкая</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('rare');
+                      setIsBoxContentsOpen(true);
+                    }}
+                    className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
+                    title="Нажмите, чтобы просмотреть 7 редких шляп"
+                  >
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block group-hover:text-neutral-300">Редкая</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">25%</span>
                     <span className="text-[10px] text-neutral-500 block mt-0.5">7 шляп</span>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800 text-center">
-                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-300 block">Легендарная</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('legendary');
+                      setIsBoxContentsOpen(true);
+                    }}
+                    className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
+                    title="Нажмите, чтобы просмотреть 3 легендарных аксессуара"
+                  >
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-300 block group-hover:text-white">Легендарная</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">5%</span>
                     <span className="text-[10px] text-neutral-500 block mt-0.5">Нимб, Сигарета, MLG</span>
-                  </div>
+                  </button>
                 </div>
               </div>
 
@@ -342,7 +410,7 @@ export const Store: React.FC = () => {
                 </div>
               </div>
 
-              {/* Price and Buy Button */}
+              {/* Price and Action Buttons */}
               <div className="pt-3 border-t border-neutral-800 flex flex-wrap items-center gap-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-black text-white font-mono">
@@ -351,10 +419,23 @@ export const Store: React.FC = () => {
                   <span className="text-xs text-neutral-400 font-medium">/ {boxQuantity} шт.</span>
                 </div>
 
-                <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+                <div className="flex items-center gap-3 flex-1 min-w-[280px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('all');
+                      setIsBoxContentsOpen(true);
+                    }}
+                    className="py-3.5 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white font-semibold text-xs transition-all border border-neutral-700 hover:border-neutral-600 flex items-center justify-center gap-2 active:scale-[0.99] whitespace-nowrap"
+                    title="Посмотреть все 17 предметов в коробке"
+                  >
+                    <Eye className="w-4 h-4 text-neutral-300" />
+                    <span>Содержимое</span>
+                  </button>
+
                   <button
                     onClick={() => handleBuy(hatBoxProduct, boxQuantity)}
-                    className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
+                    className="flex-1 py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
                   >
                     <ShoppingBag className="w-4 h-4" />
                     <span>
@@ -439,6 +520,15 @@ export const Store: React.FC = () => {
       <DiscordInstructionModal
         item={selectedPurchaseItem}
         onClose={() => setSelectedPurchaseItem(null)}
+      />
+
+      {/* Box Contents Preview Modal */}
+      <BoxContentsModal
+        isOpen={isBoxContentsOpen}
+        onClose={() => setIsBoxContentsOpen(false)}
+        onBuy={() => handleBuy(hatBoxProduct, boxQuantity)}
+        pricePerBox={hatBoxPrice}
+        initialFilter={boxContentsFilter}
       />
     </div>
   );

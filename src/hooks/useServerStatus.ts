@@ -16,81 +16,63 @@ export interface ServerStatusResult {
   refresh: () => void;
 }
 
-const SQUAREMAP_URL = 'https://map.mygsq.fun/tiles/players.json';
-// Fallback CORS proxy in case the browser enforces strict cross-origin restrictions
-const SQUAREMAP_CORS_PROXY = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(SQUAREMAP_URL);
+const CACHE_KEY = 'gsq_server_status_cache';
+
+function getCachedStatus(): { isOnline: boolean; playersOnline: number; maxPlayers: number } | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (typeof data.playersOnline === 'number') return data;
+    }
+  } catch {}
+  return null;
+}
+
+function setCachedStatus(data: { isOnline: boolean; playersOnline: number; maxPlayers: number }) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch {}
+}
 
 export function useServerStatus(ip: string): ServerStatusResult {
-  const [isOnline, setIsOnline] = useState<boolean>(false);
-  const [playersOnline, setPlayersOnline] = useState<number>(0);
-  const [maxPlayers, setMaxPlayers] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const cached = getCachedStatus();
+  const [isOnline, setIsOnline] = useState<boolean>(cached?.isOnline ?? true);
+  const [playersOnline, setPlayersOnline] = useState<number>(cached?.playersOnline ?? 30);
+  const [maxPlayers, setMaxPlayers] = useState<number | null>(cached?.maxPlayers ?? 100);
+  const [loading, setLoading] = useState<boolean>(!cached);
   const [motd, setMotd] = useState<string | undefined>(undefined);
   const [players, setPlayers] = useState<PlayerInfo[]>([]);
 
   const checkStatus = useCallback(async () => {
-    setLoading(true);
+    const cleanHost = (ip || 'play.mygsq.fun').trim();
 
-    // 1. Primary: Squaremap Realtime Players (Zero-delay direct from server)
-    const squaremapEndpoints = [SQUAREMAP_URL, SQUAREMAP_CORS_PROXY];
-    for (const url of squaremapEndpoints) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data.players)) {
-            setIsOnline(true);
-            setPlayersOnline(data.players.length);
-            setMaxPlayers(typeof data.max === 'number' && data.max > 0 ? data.max : 100);
-            setPlayers(
-              data.players.map((p: any) => ({
-                name: p.name || 'Player',
-                uuid: p.uuid,
-                world: p.world,
-              }))
-            );
-            setLoading(false);
-            return;
-          }
-        }
-      } catch {
-        // Continue to fallback
-      }
-    }
-
-    // 2. Secondary Fallback: mcstatus.io (with auto port 25605)
-    const cleanIp = ip ? (ip.includes(':') ? ip : `${ip}:25605`) : 'play.mygsq.fun:25605';
+    // 1. Primary Check: api.mcstatus.io (Fast, reliable, native CORS)
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-      const res = await fetch(`https://api.mcstatus.io/v2/status/java/${encodeURIComponent(cleanIp)}`, {
+      const res = await fetch(`https://api.mcstatus.io/v2/status/java/${encodeURIComponent(cleanHost)}`, {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
-        if (data.online) {
+        if (data && data.online) {
+          const count = typeof data.players?.online === 'number' ? data.players.online : 0;
+          const max = typeof data.players?.max === 'number' ? data.players.max : 100;
           setIsOnline(true);
-          const rawOnline = typeof data.players?.online === 'number' ? data.players.online : 0;
-          const rawMax = typeof data.players?.max === 'number' ? data.players.max : null;
+          setPlayersOnline(count);
+          setMaxPlayers(max);
+          setCachedStatus({ isOnline: true, playersOnline: count, maxPlayers: max });
 
-          setPlayersOnline(rawOnline > 0 ? rawOnline : 0);
-          setMaxPlayers(rawMax && rawMax > 0 ? rawMax : 100);
           if (Array.isArray(data.players?.list)) {
             setPlayers(
               data.players.list.map((p: any) => ({
                 name: typeof p === 'string' ? p : p.name_clean || p.name,
               }))
             );
-          } else {
-            setPlayers([]);
           }
 
           if (data.motd?.clean) {
@@ -100,29 +82,28 @@ export function useServerStatus(ip: string): ServerStatusResult {
           return;
         }
       }
-    } catch {
-      // Continue to mcsrvstat.us
-    }
+    } catch {}
 
-    // 3. Third Fallback: mcsrvstat.us
+    // 2. Secondary Fallback: api.mcsrvstat.us
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-      const res = await fetch(`https://api.mcsrvstat.us/3/${encodeURIComponent(cleanIp)}`, {
+      const res = await fetch(`https://api.mcsrvstat.us/3/${encodeURIComponent(cleanHost)}`, {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
-        if (data.online) {
+        if (data && data.online) {
+          const count = typeof data.players?.online === 'number' ? data.players.online : 0;
+          const max = typeof data.players?.max === 'number' ? data.players.max : 100;
           setIsOnline(true);
-          const rawOnline = typeof data.players?.online === 'number' ? data.players.online : 0;
-          const rawMax = typeof data.players?.max === 'number' ? data.players.max : null;
+          setPlayersOnline(count);
+          setMaxPlayers(max);
+          setCachedStatus({ isOnline: true, playersOnline: count, maxPlayers: max });
 
-          setPlayersOnline(rawOnline > 0 ? rawOnline : 0);
-          setMaxPlayers(rawMax && rawMax > 0 ? rawMax : 100);
           if (Array.isArray(data.players?.list)) {
             setPlayers(data.players.list.map((p: any) => ({ name: typeof p === 'string' ? p : p.name })));
           }
@@ -134,22 +115,38 @@ export function useServerStatus(ip: string): ServerStatusResult {
           return;
         }
       }
-    } catch {
-      // All endpoints failed
-    }
+    } catch {}
 
+    // 3. Fallback check with port 25605 if SRV record had issues
+    try {
+      const hostWithPort = cleanHost.includes(':') ? cleanHost : `${cleanHost}:25605`;
+      const res = await fetch(`https://api.mcstatus.io/v2/status/java/${encodeURIComponent(hostWithPort)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.online) {
+          const count = typeof data.players?.online === 'number' ? data.players.online : 0;
+          const max = typeof data.players?.max === 'number' ? data.players.max : 100;
+          setIsOnline(true);
+          setPlayersOnline(count);
+          setMaxPlayers(max);
+          setCachedStatus({ isOnline: true, playersOnline: count, maxPlayers: max });
+          setLoading(false);
+          return;
+        }
+      }
+    } catch {}
+
+    // Only if all three fast checks fail, mark offline
     setIsOnline(false);
     setPlayersOnline(0);
-    setMaxPlayers(null);
-    setPlayers([]);
     setLoading(false);
   }, [ip]);
 
   useEffect(() => {
     checkStatus();
 
-    // Recheck status every 10 seconds for real-time Squaremap synchronization
-    const interval = setInterval(checkStatus, 10000);
+    // Recheck status every 15 seconds
+    const interval = setInterval(checkStatus, 15000);
     return () => clearInterval(interval);
   }, [checkStatus]);
 

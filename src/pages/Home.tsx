@@ -83,6 +83,8 @@ export const Home: React.FC = () => {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
                   </>
+                ) : serverStatus.loading ? (
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-neutral-400 animate-pulse"></span>
                 ) : (
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
                 )}
@@ -93,6 +95,8 @@ export const Home: React.FC = () => {
                     Сервер онлайн: <span className="text-white font-mono">{serverStatus.playersOnline}</span>
                     {serverStatus.maxPlayers && serverStatus.maxPlayers > 0 ? ` из ${serverStatus.maxPlayers}` : ' игроков'}
                   </>
+                ) : serverStatus.loading ? (
+                  <span className="text-neutral-400">Проверка сервера...</span>
                 ) : (
                   <span className="text-rose-400">Сервер оффлайн / запуск</span>
                 )}

@@ -128,5 +128,6 @@
     "secretKey": "",
     "testMode": true,
     "enabled": true
-  }
+  },
+  "giftLinks": []
 }

@@ -51,6 +51,7 @@ async function ensureDb() {
         testMode: true,
         enabled: true,
       },
+      giftLinks: [],
     };
     await fs.writeFile(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
   }
@@ -61,7 +62,11 @@ async function readDb() {
   await ensureDb();
   try {
     const content = await fs.readFile(DB_FILE, 'utf-8');
-    return JSON.parse(content);
+    const data = JSON.parse(content);
+    if (!Array.isArray(data.giftLinks)) {
+      data.giftLinks = [];
+    }
+    return data;
   } catch (err) {
     console.error('[DB] Error reading db.json:', err);
     throw err;
@@ -855,6 +860,186 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/stats' && method === 'GET') {
         const stats = calculateStats(db.orders);
         return sendJson(res, 200, stats);
+      }
+
+      // ---------------------------------------------------------------------
+      // Gift Links Endpoints (Discord tickets / Manual crate links)
+      // ---------------------------------------------------------------------
+      const SERVER_HATS = [
+        { id: 'sombrero', name: 'Сомбреро', rarity: 'common', emoji: '👒', image: '/hats/sombrero.png' },
+        { id: 'mushroom_hat', name: 'Грибная шляпа', rarity: 'common', emoji: '🍄', image: '/hats/mushroom_hat.png' },
+        { id: 'toad', name: 'Жаба', rarity: 'common', emoji: '🐸', image: '/hats/toad.png' },
+        { id: 'beer_helmet', name: 'Пивной шлем', rarity: 'common', emoji: '🍺', image: '/hats/beer_helmet.png' },
+        { id: 'gold_crown', name: 'Золотая корона', rarity: 'common', emoji: '👑', image: '/hats/gold_crown.png' },
+        { id: 'ushanka', name: 'Шапка-ушанка', rarity: 'common', emoji: '🪆', image: '/hats/ushanka.png' },
+        { id: 'welder_mask', name: 'Сварочная маска', rarity: 'common', emoji: '🥽', image: '/hats/welder_mask.png' },
+        { id: 'altyn_helmet', name: 'Шлем «Алтын»', rarity: 'rare', emoji: '🪖', image: '/hats/altyn_helmet.png' },
+        { id: 'fire_red', name: 'Огонь на голове (красный)', rarity: 'rare', emoji: '🔥', image: '/hats/fire_red.png', subtitle: 'Анимировано' },
+        { id: 'fire_blue', name: 'Огонь на голове (синий)', rarity: 'rare', emoji: '💠', image: '/hats/fire_blue.png', subtitle: 'Анимировано' },
+        { id: 'bear_hat', name: 'Медвежья шапка', rarity: 'rare', emoji: '🐻', image: '/hats/bear_hat.png' },
+        { id: 'fox_hat', name: 'Лисья шапка', rarity: 'rare', emoji: '🦊', image: '/hats/fox_hat.png' },
+        { id: 'propeller_cap', name: 'Кепка с пропеллером', rarity: 'rare', emoji: '🧢', image: '/hats/propeller_cap.png', subtitle: 'Анимировано' },
+        { id: 'kabuto_helmet', name: 'Шлем «Кабуто»', rarity: 'rare', emoji: '🥷', image: '/hats/kabuto_helmet.png' },
+        { id: 'halo', name: 'Нимб', rarity: 'legendary', emoji: '😇', image: '/hats/halo.png' },
+        { id: 'cigarette', name: 'Сигарета', rarity: 'legendary', emoji: '🚬', image: '/hats/cigarette.png', subtitle: 'Анимировано' },
+        { id: 'mlg_glasses', name: 'MLG очки', rarity: 'legendary', emoji: '🕶️', image: '/hats/mlg_glasses.png' },
+      ];
+
+      function getRandomHatServer(excludedIds = []) {
+        const excludedSet = new Set(excludedIds);
+        let available = SERVER_HATS.filter((h) => !excludedSet.has(h.id));
+        if (available.length === 0) available = SERVER_HATS;
+
+        const commonCount = available.filter((h) => h.rarity === 'common').length;
+        const rareCount = available.filter((h) => h.rarity === 'rare').length;
+        const legCount = available.filter((h) => h.rarity === 'legendary').length;
+
+        const weights = available.map((h) => {
+          if (h.rarity === 'common') return commonCount > 0 ? 70 / commonCount : 0;
+          if (h.rarity === 'rare') return rareCount > 0 ? 25 / rareCount : 0;
+          return legCount > 0 ? 5 / legCount : 0;
+        });
+
+        const totalWeight = weights.reduce((s, w) => s + w, 0);
+        const rand = Math.random() * totalWeight;
+        let cumulative = 0;
+        for (let i = 0; i < available.length; i++) {
+          cumulative += weights[i];
+          if (rand <= cumulative) return available[i];
+        }
+        return available[0];
+      }
+
+      // 1. Get all gift links (Admin)
+      if (pathname === '/api/gift-links' && method === 'GET') {
+        return sendJson(res, 200, db.giftLinks || []);
+      }
+
+      // 2. Create gift link (Admin)
+      if (pathname === '/api/gift-links' && method === 'POST') {
+        const body = await parseJsonBody(req);
+        const totalBoxes = Math.max(1, Math.min(100, Number(body.totalBoxes) || 1));
+        const durationMinutes = Number(body.durationMinutes) || 15;
+        const createdAt = Date.now();
+        const expiresAt = createdAt + durationMinutes * 60 * 1000;
+        const linkId = `gift-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+        // Smart-token encoding matching client algorithm
+        const payloadStr = JSON.stringify({
+          i: linkId,
+          n: body.nickname ? String(body.nickname).trim() : '',
+          b: totalBoxes,
+          c: createdAt,
+          e: expiresAt,
+          d: durationMinutes,
+          s: Math.random().toString(36).substring(2, 8),
+        });
+
+        const encoded = Buffer.from(payloadStr)
+          .toString('base64')
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
+
+        let hash = 0x811c9dc5;
+        for (let i = 0; i < payloadStr.length; i++) {
+          hash ^= payloadStr.charCodeAt(i);
+          hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+        }
+        const checksum = (hash >>> 0).toString(36);
+        const token = `gsq_${encoded}_${checksum}`;
+
+        const newGiftLink = {
+          id: linkId,
+          token,
+          nickname: body.nickname ? String(body.nickname).trim() : undefined,
+          totalBoxes,
+          remainingBoxes: totalBoxes,
+          wonHats: [],
+          createdAt,
+          expiresAt,
+          durationMinutes,
+          note: body.note ? String(body.note).trim() : undefined,
+          isRevoked: false,
+        };
+
+        db.giftLinks = db.giftLinks || [];
+        db.giftLinks.unshift(newGiftLink);
+        await writeDb(db);
+
+        return sendJson(res, 201, newGiftLink);
+      }
+
+      // 3. Get single gift link by token (Public player query)
+      if (pathname.startsWith('/api/gift-links/') && !pathname.endsWith('/open') && method === 'GET') {
+        const tokenOrId = decodeURIComponent(pathname.replace('/api/gift-links/', ''));
+        const link = (db.giftLinks || []).find((l) => l.token === tokenOrId || l.id === tokenOrId);
+
+        if (!link) {
+          return sendJson(res, 404, { error: 'Ссылка не найдена' });
+        }
+
+        const isExpired = Date.now() > link.expiresAt;
+        const isCompleted = link.remainingBoxes <= 0;
+
+        return sendJson(res, 200, {
+          link,
+          isExpired,
+          isCompleted,
+        });
+      }
+
+      // 4. Open crate for gift link (Public player spin)
+      if (pathname.startsWith('/api/gift-links/') && pathname.endsWith('/open') && method === 'POST') {
+        const tokenOrId = decodeURIComponent(
+          pathname.replace('/api/gift-links/', '').replace('/open', '')
+        );
+        const link = (db.giftLinks || []).find((l) => l.token === tokenOrId || l.id === tokenOrId);
+
+        if (!link) {
+          return sendJson(res, 404, { error: 'Ссылка не найдена' });
+        }
+
+        if (link.isRevoked) {
+          return sendJson(res, 403, { error: 'Ссылка была отозвана администратором' });
+        }
+
+        if (Date.now() > link.expiresAt) {
+          return sendJson(res, 410, { error: 'Срок действия ссылки (15 минут) истёк' });
+        }
+
+        if (link.remainingBoxes <= 0) {
+          return sendJson(res, 400, { error: 'Все коробки по этой ссылке уже открыты' });
+        }
+
+        const body = await parseJsonBody(req);
+        const excludedIds = Array.isArray(body.excludedHatIds)
+          ? body.excludedHatIds
+          : (link.wonHats || []).map((h) => h.id);
+
+        const wonHat = body.wonHat || getRandomHatServer(excludedIds);
+
+        link.wonHats = link.wonHats || [];
+        link.wonHats.push(wonHat);
+        link.remainingBoxes = Math.max(0, link.remainingBoxes - 1);
+
+        await writeDb(db);
+
+        return sendJson(res, 200, {
+          success: true,
+          wonHat,
+          remainingBoxes: link.remainingBoxes,
+          wonHats: link.wonHats,
+          isCompleted: link.remainingBoxes <= 0,
+        });
+      }
+
+      // 5. Delete or Revoke gift link (Admin)
+      if (pathname.startsWith('/api/gift-links/') && method === 'DELETE') {
+        const tokenOrId = decodeURIComponent(pathname.replace('/api/gift-links/', ''));
+        db.giftLinks = (db.giftLinks || []).filter((l) => l.id !== tokenOrId && l.token !== tokenOrId);
+        await writeDb(db);
+        return sendJson(res, 200, { success: true });
       }
 
       // If no API route matched

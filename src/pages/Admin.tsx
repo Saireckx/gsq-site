@@ -5,6 +5,7 @@ import { ProductsTab } from './admin/ProductsTab';
 import { CouponsTab } from './admin/CouponsTab';
 import { OrdersTab } from './admin/OrdersTab';
 import { HatDropsTab } from './admin/HatDropsTab';
+import { GiftLinksTab } from './admin/GiftLinksTab';
 import { ServerSettingsTab } from './admin/ServerSettingsTab';
 import { 
   ArrowLeft, 
@@ -17,11 +18,12 @@ import {
   KeyRound, 
   ExternalLink,
   ShieldCheck,
-  Package
+  Package,
+  Gift
 } from 'lucide-react';
 import { api, getAuthToken, setAuthToken } from '../lib/api';
 
-type AdminTab = 'dashboard' | 'products' | 'coupons' | 'orders' | 'drops' | 'settings';
+type AdminTab = 'dashboard' | 'products' | 'coupons' | 'orders' | 'drops' | 'gift-links' | 'settings';
 
 export const Admin: React.FC = () => {
   // Secure password / PIN authentication
@@ -144,6 +146,7 @@ export const Admin: React.FC = () => {
     { id: 'coupons', label: 'Купоны', icon: <Ticket className="w-4 h-4" /> },
     { id: 'orders', label: 'История продаж', icon: <History className="w-4 h-4" /> },
     { id: 'drops', label: 'Выбитые шляпы', icon: <Package className="w-4 h-4" /> },
+    { id: 'gift-links', label: 'Выдача ссылок', icon: <Gift className="w-4 h-4" /> },
     { id: 'settings', label: 'Настройки', icon: <Settings className="w-4 h-4" /> },
   ];
 
@@ -214,6 +217,7 @@ export const Admin: React.FC = () => {
         {activeTab === 'coupons' && <CouponsTab />}
         {activeTab === 'orders' && <OrdersTab />}
         {activeTab === 'drops' && <HatDropsTab />}
+        {activeTab === 'gift-links' && <GiftLinksTab />}
         {activeTab === 'settings' && <ServerSettingsTab />}
       </main>
     </div>

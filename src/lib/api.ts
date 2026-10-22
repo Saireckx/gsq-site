@@ -250,4 +250,38 @@ export const api = {
       body: JSON.stringify(settings),
     });
   },
+
+  // Gift Links (Discord tickets)
+  async getGiftLinks() {
+    return request<any[]>('/gift-links');
+  },
+
+  async createGiftLink(data: {
+    nickname?: string;
+    totalBoxes: number;
+    durationMinutes?: number;
+    note?: string;
+  }) {
+    return request<any>('/gift-links', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getGiftLink(token: string) {
+    return request<any>(`/gift-links/${encodeURIComponent(token)}`);
+  },
+
+  async openGiftLinkBox(token: string, excludedHatIds: string[] = []) {
+    return request<any>(`/gift-links/${encodeURIComponent(token)}/open`, {
+      method: 'POST',
+      body: JSON.stringify({ excludedHatIds }),
+    });
+  },
+
+  async deleteGiftLink(id: string) {
+    return request<any>(`/gift-links/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+  },
 };

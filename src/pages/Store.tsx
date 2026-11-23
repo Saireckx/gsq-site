@@ -59,21 +59,22 @@ export const Store: React.FC = () => {
     id: 'author-hat-box',
     numericId: 1060516,
     name: 'Коробка с авторскими шапками',
-    price: 79,
+    price: 49,
+    oldPrice: 89,
     period: '1 шт.',
     type: 'Рулетка',
     command: 'box give {user} elite_crate 1',
-    description: 'Эксклюзивный кейс с 26 авторскими аксессуарами, анимированными нимбами и масками.',
+    description: 'Эксклюзивный кейс с 18 авторскими головными уборами, анимациями и нимбами.',
     category: 'Кейсы',
     iconColor: 'gold',
     hidden: false,
     offlineAllowed: true,
     popular: true,
     features: [
-      '26 уникальных авторских моделей сервера',
-      'Шанс 5% на легендарные анимации (Нимб вознесения, Солнечная система, Кот в шляпе)',
-      'Шанс 25% на редкие маски, ушки, рога и венок',
-      'Эксклюзивные 3D-модели сервера',
+      '18 уникальных авторских моделей сервера',
+      'Шанс 5% на легендарные анимации (Нимб вознесения, Солнечная система, Цензура)',
+      'Шанс 25% на редкие кошачьи ушки, венок, гнездо и наушники',
+      'Моментальное открытие и примерка',
     ],
   };
 
@@ -86,7 +87,7 @@ export const Store: React.FC = () => {
   const hatBoxPrice = hatBoxProduct?.price || 49;
 
   const authorHatBoxProduct = products.find((p) => p.id === 'author-hat-box') || DEFAULT_AUTHOR_HAT_BOX;
-  const authorHatBoxPrice = authorHatBoxProduct?.price || 79;
+  const authorHatBoxPrice = authorHatBoxProduct?.price || 49;
 
   // Auto-open box contents if navigated with url param
   useEffect(() => {
@@ -499,7 +500,7 @@ export const Store: React.FC = () => {
                   setActiveBoxModal('author');
                 }}
                 className="relative group cursor-pointer"
-                title="Нажмите, чтобы посмотреть авторские шапки (26 предметов)"
+                title="Нажмите, чтобы посмотреть авторские шапки (18 предметов)"
               >
                 <img
                   src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/elite_box.png`}
@@ -518,7 +519,7 @@ export const Store: React.FC = () => {
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-amber-500/40 hover:border-amber-400 text-amber-200 hover:text-white text-xs font-semibold shadow-md transition-all active:scale-95 group"
                 >
                   <Eye className="w-3.5 h-3.5 text-amber-300 group-hover:text-white transition-colors" />
-                  <span>Посмотреть авторские шапки (26 шт.)</span>
+                  <span>Посмотреть авторские шапки (18 шт.)</span>
                 </button>
                 <span className="text-[11px] text-neutral-500 font-mono">
                   {authorHatBoxPrice * authorBoxQuantity} ₽ / {authorBoxQuantity} шт.
@@ -537,7 +538,7 @@ export const Store: React.FC = () => {
                   Коробка с авторскими шапками
                 </h2>
                 <p className="text-sm text-neutral-400 leading-relaxed max-w-xl">
-                  Эксклюзивная коллекция из 26 авторских моделей сервера: анимированные нимбы, Солнечная система, Кот в шляпе, рога, лавровый венок и стильные маски.
+                  Эксклюзивная коллекция из 18 авторских моделей сервера: анимированные нимбы, Солнечная система, Цензура, кошачьи ушки, лавровый венок и наушники.
                 </p>
               </div>
 
@@ -556,7 +557,7 @@ export const Store: React.FC = () => {
                     className="text-xs text-amber-300/80 hover:text-amber-200 transition-colors underline underline-offset-2 flex items-center gap-1"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Посмотреть все 26 предметов</span>
+                    <span>Посмотреть все 18 предметов</span>
                   </button>
                 </div>
 
@@ -568,11 +569,11 @@ export const Store: React.FC = () => {
                       setActiveBoxModal('author');
                     }}
                     className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
-                    title="Нажмите, чтобы просмотреть 14 базовых авторских шапок"
+                    title="Нажмите, чтобы просмотреть 7 обычных авторских шапок"
                   >
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block group-hover:text-neutral-300">Базовая</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">70%</span>
-                    <span className="text-[10px] text-neutral-500 block mt-0.5">14 моделей (~5.0%)</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">7 моделей (~10.0%)</span>
                   </button>
 
                   <button
@@ -596,11 +597,11 @@ export const Store: React.FC = () => {
                       setActiveBoxModal('author');
                     }}
                     className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-amber-500/40 hover:border-amber-400 text-center transition-all cursor-pointer group"
-                    title="Нажмите, чтобы просмотреть 4 легендарных предмета"
+                    title="Нажмите, чтобы просмотреть 3 легендарных предмета"
                   >
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-amber-300 block group-hover:text-white">Легендарная</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">5%</span>
-                    <span className="text-[10px] text-neutral-500 block mt-0.5">Нимб, Космос, Кот</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">Нимб, Космос, Цензура</span>
                   </button>
                 </div>
               </div>
@@ -675,10 +676,10 @@ export const Store: React.FC = () => {
                       setActiveBoxModal('author');
                     }}
                     className="py-3.5 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-amber-200 hover:text-white font-semibold text-xs transition-all border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-2 active:scale-[0.99] whitespace-nowrap"
-                    title="Посмотреть все 26 авторских аксессуаров"
+                    title="Посмотреть все 18 авторских аксессуаров"
                   >
                     <Eye className="w-4 h-4 text-amber-400" />
-                    <span>Содержимое (26)</span>
+                    <span>Содержимое (18)</span>
                   </button>
 
                   <button
@@ -796,7 +797,7 @@ export const Store: React.FC = () => {
         initialFilter={boxContentsFilter}
         hats={AUTHOR_HATS_LIST}
         boxName="Коробка с авторскими шапками"
-        title="26 авторских аксессуаров в коробке"
+        title="18 авторских аксессуаров в коробке"
       />
     </div>
   );

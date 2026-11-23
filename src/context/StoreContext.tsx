@@ -245,22 +245,22 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
     id: 'author-hat-box',
     numericId: 1060516,
     name: 'Коробка с авторскими шапками',
-    price: 79,
-    oldPrice: 119,
+    price: 49,
+    oldPrice: 89,
     period: '1 шт.',
     type: 'Рулетка',
     command: 'box give {user} elite_crate 1',
-    description: 'Эксклюзивный кейс с 26 авторскими головными уборами, нимбами и масками.',
+    description: 'Эксклюзивный кейс с 18 авторскими головными уборами, анимациями и нимбами.',
     category: 'Кейсы',
     iconColor: 'gold',
     hidden: false,
     offlineAllowed: true,
     popular: true,
     features: [
-      '26 уникальных авторских моделей и аксессуаров',
-      'Шанс 5% на легендарные анимации (Нимб вознесения, Солнечная система, Кот в шляпе)',
-      'Шанс 25% на редкие маски, ушки, рога и венок',
-      'Эксклюзивные 3D-модели сервера',
+      '18 уникальных авторских моделей сервера',
+      'Шанс 5% на легендарные анимации (Нимб вознесения, Солнечная система, Цензура)',
+      'Шанс 25% на редкие кошачьи ушки, венок, гнездо и наушники',
+      'Моментальное открытие и примерка',
     ],
   },
 ];
@@ -331,6 +331,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 price: 749,
                 monthlyPrice: 289,
                 features: DEFAULT_PRODUCTS[1].features,
+              };
+            }
+            if (p.id === 'author-hat-box') {
+              return {
+                ...p,
+                price: 49,
+                oldPrice: 89,
+                features: DEFAULT_PRODUCTS.find((d) => d.id === 'author-hat-box')?.features || p.features,
+                description: 'Эксклюзивный кейс с 18 авторскими головными уборами, анимациями и нимбами.',
               };
             }
             return p;

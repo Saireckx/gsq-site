@@ -75,36 +75,28 @@ export const HATS_LIST: HatItem[] = [
 
 export const AUTHOR_HATS_LIST: HatItem[] = [
   // Базовая редкость (70%)
-  { id: 'leaf_mask', name: 'Лиственная маска', rarity: 'common', emoji: '🌿', image: `${baseUrl}hats/leaf_mask.png`, scale: 'scale-105' },
-  { id: 'horns_mask', name: 'Маска шамана', rarity: 'common', emoji: '🦌', image: `${baseUrl}hats/horns_mask.png`, scale: 'scale-105' },
-  { id: 'pumpkin_mask', name: 'Маска тыквы', rarity: 'common', emoji: '🎃', image: `${baseUrl}hats/pumpkin_mask.png`, scale: 'scale-105' },
-  { id: 'zombie_mask', name: 'Маска зомби', rarity: 'common', emoji: '🧟', image: `${baseUrl}hats/zombie_mask.png`, scale: 'scale-105' },
-  { id: 'skeleton_mask', name: 'Маска скелета', rarity: 'common', emoji: '💀', image: `${baseUrl}hats/skeleton_mask.png`, scale: 'scale-105' },
-  { id: 'creeper_mask', name: 'Маска крипера', rarity: 'common', emoji: '💥', image: `${baseUrl}hats/creeper_mask.png`, scale: 'scale-105' },
-  { id: 'black_bunny_hat', name: 'Шапка кролика (черная)', rarity: 'common', emoji: '🐰', image: `${baseUrl}hats/black_bunny_hat.png`, scale: 'scale-105' },
-  { id: 'bunny_hat', name: 'Шапка кролика (белая)', rarity: 'common', emoji: '🐇', image: `${baseUrl}hats/bunny_hat.png`, scale: 'scale-105' },
-  { id: 'black_headphones', name: 'Черные наушники', rarity: 'common', emoji: '🎧', image: `${baseUrl}hats/black_headphones.png`, scale: 'scale-105' },
-  { id: 'white_bunny_ears', name: 'Заячьи ушки (белые)', rarity: 'common', emoji: '🐰', image: `${baseUrl}hats/white_bunny_ears.png`, scale: 'scale-105' },
-  { id: 'black_bunny_ears', name: 'Заячьи ушки (черные)', rarity: 'common', emoji: '🖤', image: `${baseUrl}hats/black_bunny_ears.png`, scale: 'scale-105' },
-  { id: 'killer_bunny_hat', name: 'Шапка кролика-убийцы', rarity: 'common', emoji: '🩸', image: `${baseUrl}hats/killer_bunny_hat.png`, scale: 'scale-105' },
-  { id: 'spider_hat', name: 'Шапка паука', rarity: 'common', emoji: '🕷️', image: `${baseUrl}hats/spider_hat.png`, scale: 'scale-105' },
-  { id: 'earflap_cap', name: 'Кепка-ушанка', rarity: 'common', emoji: '🧢', image: `${baseUrl}hats/earflap_cap.png`, scale: 'scale-105' },
+  { id: 'white_bunny_ears', name: 'Кроличьи ушки (белые)', rarity: 'common', emoji: '🐰', image: `${baseUrl}hats/white_bunny_ears.png`, scale: 'scale-105' },
+  { id: 'black_bunny_ears', name: 'Кроличьи ушки (черные)', rarity: 'common', emoji: '🖤', image: `${baseUrl}hats/black_bunny_ears.png`, scale: 'scale-105' },
+  { id: 'black_bunny_hat', name: 'Кролик черный', rarity: 'common', emoji: '🐰', image: `${baseUrl}hats/black_bunny_hat.png`, scale: 'scale-105' },
+  { id: 'bunny_hat', name: 'Кролик дефолт', rarity: 'common', emoji: '🐇', image: `${baseUrl}hats/bunny_hat.png`, scale: 'scale-105' },
+  { id: 'black_headphones', name: 'Накладные наушники', rarity: 'common', emoji: '🎧', image: `${baseUrl}hats/black_headphones.png`, scale: 'scale-105' },
+  { id: 'cat_in_hat', name: 'Наглый кот', rarity: 'common', emoji: '😼', subtitle: 'Анимировано', image: `${baseUrl}hats/cat_in_hat.png`, scale: 'scale-115' },
+  { id: 'viking_helmet', name: 'Шлем викинга', rarity: 'common', emoji: '⚔️', image: `${baseUrl}hats/viking_helmet.png`, scale: 'scale-105' },
 
   // Редкая редкость (25%)
-  { id: 'bird_nest', name: 'Птичье гнездо', rarity: 'rare', emoji: '🪺', subtitle: 'Анимировано', image: `${baseUrl}hats/bird_nest.png`, scale: 'scale-105' },
-  { id: 'demon_horns', name: 'Рога демона', rarity: 'rare', emoji: '😈', image: `${baseUrl}hats/demon_horns.png`, scale: 'scale-105' },
-  { id: 'cat_headphones', name: 'Кошачьи наушники', rarity: 'rare', emoji: '🐱', image: `${baseUrl}hats/cat_headphones.png`, scale: 'scale-105' },
-  { id: 'viking_helmet', name: 'Шлем викинга', rarity: 'rare', emoji: '⚔️', image: `${baseUrl}hats/viking_helmet.png`, scale: 'scale-105' },
-  { id: 'greek_wreath', name: 'Лавровый венок', rarity: 'rare', emoji: '🍃', image: `${baseUrl}hats/greek_wreath.png`, scale: 'scale-105' },
-  { id: 'white_cat_ears', name: 'Кошачьи ушки (белые)', rarity: 'rare', emoji: '🤍', subtitle: 'Анимировано', image: `${baseUrl}hats/white_cat_ears.png`, scale: 'scale-105' },
+  { id: 'killer_bunny_hat', name: 'Кролик убийца', rarity: 'rare', emoji: '🩸', image: `${baseUrl}hats/killer_bunny_hat.png`, scale: 'scale-105' },
+  { id: 'white_cat_ears', name: 'Кошачьи ушки (Белые)', rarity: 'rare', emoji: '🤍', subtitle: 'Анимировано', image: `${baseUrl}hats/white_cat_ears.png`, scale: 'scale-105' },
   { id: 'black_cat_ears', name: 'Кошачьи ушки (черные)', rarity: 'rare', emoji: '🐈‍⬛', subtitle: 'Анимировано', image: `${baseUrl}hats/black_cat_ears.png`, scale: 'scale-105' },
-  { id: 'censor_bar', name: 'Пиксельная цензура', rarity: 'rare', emoji: '⬛', image: `${baseUrl}hats/censor_bar.png`, scale: 'scale-110' },
+  { id: 'spider_hat', name: 'Павук', rarity: 'rare', emoji: '🕷️', image: `${baseUrl}hats/spider_hat.png`, scale: 'scale-105' },
+  { id: 'bird_nest', name: 'Гнездо', rarity: 'rare', emoji: '🪺', subtitle: 'Анимировано', image: `${baseUrl}hats/bird_nest.png`, scale: 'scale-105' },
+  { id: 'earflap_cap', name: 'Кепка с ушками', rarity: 'rare', emoji: '🧢', image: `${baseUrl}hats/earflap_cap.png`, scale: 'scale-105' },
+  { id: 'cat_headphones', name: 'Наушники с ушками', rarity: 'rare', emoji: '🐱', image: `${baseUrl}hats/cat_headphones.png`, scale: 'scale-105' },
+  { id: 'greek_wreath', name: 'Греческий венок', rarity: 'rare', emoji: '🍃', image: `${baseUrl}hats/greek_wreath.png`, scale: 'scale-105' },
 
   // Легендарная редкость (5%)
-  { id: 'ascension_nimbus', name: 'Нимб вознесения', rarity: 'legendary', emoji: '🌟', subtitle: 'Анимировано', image: `${baseUrl}hats/ascension_nimbus.png`, scale: 'scale-125' },
   { id: 'solar_system', name: 'Солнечная система', rarity: 'legendary', emoji: '🪐', subtitle: 'Анимировано', image: `${baseUrl}hats/solar_system.png`, scale: 'scale-125' },
-  { id: 'glowing_nimbus', name: 'Сияющий нимб', rarity: 'legendary', emoji: '✨', subtitle: 'Анимировано', image: `${baseUrl}hats/glowing_nimbus.png`, scale: 'scale-120' },
-  { id: 'cat_in_hat', name: 'Кот в шляпе', rarity: 'legendary', emoji: '🐱', subtitle: 'Анимировано', image: `${baseUrl}hats/cat_in_hat.png`, scale: 'scale-115' },
+  { id: 'ascension_nimbus', name: 'Нимб вознесения', rarity: 'legendary', emoji: '🌟', subtitle: 'Анимировано', image: `${baseUrl}hats/ascension_nimbus.png`, scale: 'scale-125' },
+  { id: 'censor_bar', name: 'Цензура', rarity: 'legendary', emoji: '⬛', image: `${baseUrl}hats/censor_bar.png`, scale: 'scale-110' },
 ];
 
 /**

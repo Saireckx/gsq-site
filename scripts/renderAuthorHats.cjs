@@ -38,8 +38,9 @@ const authorHats = [
   { id: 'censor_bar', model: 'models/item/hats/censor_bar.json' },
   { id: 'solar_system', model: 'models/item/hats/solar_system.json' },
   { id: 'ascension_nimbus', model: 'models/item/hats/ascension_nimbus.json' },
-  // Also render elite_box
-  { id: 'elite_box', model: 'models/item/elite_crate.json', isBox: true }
+  // Also render elite_box and classic_box (hat_crate)
+  { id: 'elite_box', model: 'models/item/elite_crate.json', isBox: true },
+  { id: 'classic_box', model: 'models/item/hat_crate.json', isBox: true }
 ];
 
 // Helper to resolve texture paths
@@ -383,6 +384,9 @@ const server = http.createServer((req, res) => {
           if (id === 'elite_box') {
             fs.writeFileSync(path.join(__dirname, '../public/elite_box.png'), base64Data, 'base64');
             console.log('Saved public/elite_box.png');
+          } else if (id === 'classic_box') {
+            fs.writeFileSync(path.join(__dirname, '../public/box.png'), base64Data, 'base64');
+            console.log('Saved public/box.png');
           } else {
             fs.writeFileSync(path.join(outputDir, `${id}.png`), base64Data, 'base64');
             count++;

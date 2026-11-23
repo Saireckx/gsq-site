@@ -117,16 +117,33 @@ function buildMatrix(angle, scale, axis) {
 }
 
 function rotateCubeCorners(corners, rotation) {
-    const origin = new THREE.Vector3().fromArray(rotation.origin).subScalar(8);
-    const angle = rotation.angle / 180 * Math.PI;
-    const scale = rotation.rescale ? Math.SQRT2 / Math.sqrt(Math.pow(Math.cos(angle || Math.PI / 4), 2) * 2) : 1;
-    const matrix = buildMatrix(angle, scale, rotation.axis);
-    return corners.map(vertex => new THREE.Vector3()
-        .fromArray(vertex)
-        .sub(origin)
-        .applyMatrix3(matrix)
-        .add(origin)
-        .toArray());
+    if (!rotation) return corners;
+    if (rotation.axis) {
+        const origin = new THREE.Vector3().fromArray(rotation.origin || [8, 8, 8]).subScalar(8);
+        const angle = ((rotation.angle || 0) / 180) * Math.PI;
+        const scale = rotation.rescale ? Math.SQRT2 / Math.sqrt(Math.pow(Math.cos(angle || Math.PI / 4), 2) * 2) : 1;
+        const matrix = buildMatrix(angle, scale, rotation.axis);
+        return corners.map(vertex => new THREE.Vector3()
+            .fromArray(vertex)
+            .sub(origin)
+            .applyMatrix3(matrix)
+            .add(origin)
+            .toArray());
+    }
+    if (rotation.x !== undefined || rotation.y !== undefined || rotation.z !== undefined) {
+        const origin = new THREE.Vector3().fromArray(rotation.origin || [8, 8, 8]).subScalar(8);
+        const rx = ((rotation.x || 0) * Math.PI) / 180;
+        const ry = ((rotation.y || 0) * Math.PI) / 180;
+        const rz = ((rotation.z || 0) * Math.PI) / 180;
+        const euler = new THREE.Euler(rx, ry, rz, 'XYZ');
+        return corners.map(vertex => new THREE.Vector3()
+            .fromArray(vertex)
+            .sub(origin)
+            .applyEuler(euler)
+            .add(origin)
+            .toArray());
+    }
+    return corners;
 }
 
 function getCornerVertices(from, to) {

@@ -8,6 +8,9 @@ interface BoxContentsModalProps {
   onBuy?: () => void;
   pricePerBox?: number;
   initialFilter?: 'all' | HatRarity;
+  hats?: HatItem[];
+  title?: string;
+  boxName?: string;
 }
 
 export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
@@ -16,18 +19,27 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
   onBuy,
   pricePerBox = 49,
   initialFilter = 'all',
+  hats,
+  title,
+  boxName = 'Коробка со шляпой',
 }) => {
   const [filter, setFilter] = useState<'all' | HatRarity>(initialFilter);
 
   if (!isOpen) return null;
 
-  const filteredHats = filter === 'all' 
-    ? HATS_LIST 
-    : HATS_LIST.filter((h) => h.rarity === filter);
+  const hatsList = hats && hats.length > 0 ? hats : HATS_LIST;
 
-  const legendaryCount = HATS_LIST.filter((h) => h.rarity === 'legendary').length;
-  const rareCount = HATS_LIST.filter((h) => h.rarity === 'rare').length;
-  const commonCount = HATS_LIST.filter((h) => h.rarity === 'common').length;
+  const filteredHats = filter === 'all' 
+    ? hatsList 
+    : hatsList.filter((h) => h.rarity === filter);
+
+  const legendaryCount = hatsList.filter((h) => h.rarity === 'legendary').length;
+  const rareCount = hatsList.filter((h) => h.rarity === 'rare').length;
+  const commonCount = hatsList.filter((h) => h.rarity === 'common').length;
+
+  const legItemChance = legendaryCount > 0 ? (5 / legendaryCount).toFixed(1) + '%' : '0%';
+  const rareItemChance = rareCount > 0 ? (25 / rareCount).toFixed(1) + '%' : '0%';
+  const commonItemChance = commonCount > 0 ? (70 / commonCount).toFixed(1) + '%' : '0%';
 
   const getRarityBadge = (rarity: HatRarity) => {
     switch (rarity) {
@@ -35,7 +47,7 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
         return {
           label: 'Легендарная',
           chance: '5%',
-          itemChance: '1.67%',
+          itemChance: legItemChance,
           badgeClass: 'text-amber-300 bg-amber-500/10 border-amber-500/30',
           icon: Crown,
         };
@@ -43,7 +55,7 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
         return {
           label: 'Редкая',
           chance: '25%',
-          itemChance: '3.57%',
+          itemChance: rareItemChance,
           badgeClass: 'text-purple-300 bg-purple-500/10 border-purple-500/30',
           icon: Gem,
         };
@@ -52,7 +64,7 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
         return {
           label: 'Базовая',
           chance: '70%',
-          itemChance: '10.0%',
+          itemChance: commonItemChance,
           badgeClass: 'text-sky-300 bg-sky-500/10 border-sky-500/30',
           icon: Shield,
         };
@@ -73,10 +85,10 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300 text-xs font-semibold">
               <Package className="w-3.5 h-3.5 text-neutral-300" />
-              <span>Содержимое коробки</span>
+              <span>{boxName}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              17 аксессуаров в коробке
+              {title || `${hatsList.length} аксессуаров в коробке`}
             </h2>
             <p className="text-xs sm:text-sm text-neutral-400">
               Каждый предмет можно надевать на персонажа на сервере. Предметы выпадают с указанными шансами.
@@ -109,7 +121,7 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
                 <span>Базовые</span>
                 <span className="font-mono font-bold text-white">70%</span>
               </div>
-              <p className="text-[10px] text-neutral-500 mt-0.5">{commonCount} предметов (~10% на вещь)</p>
+              <p className="text-[10px] text-neutral-500 mt-0.5">{commonCount} предметов (~{commonItemChance} на вещь)</p>
             </button>
 
             <button
@@ -125,7 +137,7 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
                 <span>Редкие</span>
                 <span className="font-mono font-bold text-white">25%</span>
               </div>
-              <p className="text-[10px] text-neutral-500 mt-0.5">{rareCount} предметов (~3.5% на вещь)</p>
+              <p className="text-[10px] text-neutral-500 mt-0.5">{rareCount} предметов (~{rareItemChance} на вещь)</p>
             </button>
 
             <button
@@ -141,7 +153,7 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
                 <span>Легендарные</span>
                 <span className="font-mono font-bold text-white">5%</span>
               </div>
-              <p className="text-[10px] text-neutral-500 mt-0.5">{legendaryCount} предмета (~1.7% на вещь)</p>
+              <p className="text-[10px] text-neutral-500 mt-0.5">{legendaryCount} предмета (~{legItemChance} на вещь)</p>
             </button>
           </div>
 
@@ -156,7 +168,7 @@ export const BoxContentsModal: React.FC<BoxContentsModalProps> = ({
                   : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
               }`}
             >
-              Все предметы ({HATS_LIST.length})
+              Все предметы ({hatsList.length})
             </button>
             <button
               type="button"

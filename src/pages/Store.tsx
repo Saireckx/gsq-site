@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useStore, ProductItem } from '../context/StoreContext';
 import { DiscordInstructionModal, PurchaseItem } from '../components/DiscordInstructionModal';
 import { BoxContentsModal } from '../components/BoxContentsModal';
-import { Crown, Check, RotateCcw, MessageSquare, Sparkles, Clock, Package, ShoppingBag, Eye } from 'lucide-react';
+import { HATS_LIST, AUTHOR_HATS_LIST } from '../lib/boxHats';
+import { Crown, Check, RotateCcw, MessageSquare, Sparkles, Clock, Package, ShoppingBag, Eye, Star } from 'lucide-react';
 import { SERVER_INFO } from '../lib/constants';
 
 export const Store: React.FC = () => {
@@ -21,6 +22,7 @@ export const Store: React.FC = () => {
       p.id !== 'sub' &&
       p.id !== 'sub-plus' &&
       p.id !== 'hat-box' &&
+      p.id !== 'author-hat-box' &&
       p.id !== 'diamond-sword' &&
       p.id !== 'donate' &&
       p.category !== 'Поддержка' &&
@@ -39,7 +41,7 @@ export const Store: React.FC = () => {
     period: '1 шт.',
     type: 'Рулетка',
     command: 'box give {user} hat_box 1',
-    description: 'Кейс с аксессуарами: 17 шляп (70% Базовые, 25% Редкие, 5% Легендарные).',
+    description: 'Кейс с классическими аксессуарами: 17 шляп (70% Базовые, 25% Редкие, 5% Легендарные).',
     category: 'Кейсы',
     iconColor: 'gold',
     hidden: false,
@@ -53,18 +55,47 @@ export const Store: React.FC = () => {
     ],
   };
 
+  const DEFAULT_AUTHOR_HAT_BOX: ProductItem = {
+    id: 'author-hat-box',
+    numericId: 1060516,
+    name: 'Коробка с авторскими шапками',
+    price: 79,
+    period: '1 шт.',
+    type: 'Рулетка',
+    command: 'box give {user} elite_crate 1',
+    description: 'Эксклюзивный кейс с 26 авторскими аксессуарами, анимированными нимбами и масками.',
+    category: 'Кейсы',
+    iconColor: 'gold',
+    hidden: false,
+    offlineAllowed: true,
+    popular: true,
+    features: [
+      '26 уникальных авторских моделей сервера',
+      'Шанс 5% на легендарные анимации (Нимб вознесения, Солнечная система, Кот в шляпе)',
+      'Шанс 25% на редкие маски, ушки, рога и венок',
+      'Эксклюзивные 3D-модели сервера',
+    ],
+  };
+
   const [boxQuantity, setBoxQuantity] = useState(1);
-  const [isBoxContentsOpen, setIsBoxContentsOpen] = useState(false);
+  const [authorBoxQuantity, setAuthorBoxQuantity] = useState(1);
+  const [activeBoxModal, setActiveBoxModal] = useState<'classic' | 'author' | null>(null);
   const [boxContentsFilter, setBoxContentsFilter] = useState<'all' | 'common' | 'rare' | 'legendary'>('all');
+
   const hatBoxProduct = products.find((p) => p.id === 'hat-box') || DEFAULT_HAT_BOX;
   const hatBoxPrice = hatBoxProduct?.price || 49;
 
-  // Auto-open box contents if navigated with ?openBox=true or ?contents=true
+  const authorHatBoxProduct = products.find((p) => p.id === 'author-hat-box') || DEFAULT_AUTHOR_HAT_BOX;
+  const authorHatBoxPrice = authorHatBoxProduct?.price || 79;
+
+  // Auto-open box contents if navigated with url param
   useEffect(() => {
     const search = window.location.hash.split('?')[1] || window.location.search;
     const params = new URLSearchParams(search);
-    if (params.get('openBox') === 'true' || params.get('box') === 'true' || params.get('contents') === 'true') {
-      setIsBoxContentsOpen(true);
+    if (params.get('authorBox') === 'true' || params.get('author') === 'true') {
+      setActiveBoxModal('author');
+    } else if (params.get('openBox') === 'true' || params.get('box') === 'true' || params.get('contents') === 'true') {
+      setActiveBoxModal('classic');
     }
   }, []);
 
@@ -85,7 +116,7 @@ export const Store: React.FC = () => {
 
   const handleBuy = (product: ProductItem, initialQuantity: number = 1) => {
     const isSub = product.id === 'sub' || product.id === 'sub-plus';
-    const isBox = product.id === 'hat-box';
+    const isBox = product.id === 'hat-box' || product.id === 'author-hat-box' || product.name.toLowerCase().includes('коробк');
     const period = selectedPeriods[product.id] || 'forever';
     const monthly = product.monthlyPrice || (product.id === 'sub' ? 139 : 289);
     const forever = product.price;
@@ -239,8 +270,18 @@ export const Store: React.FC = () => {
         })}
       </div>
 
-      {/* Hat Box Showcase Section */}
-      <div className="mb-16 sm:mb-20">
+      {/* Hat Boxes Section: Classic & Author Boxes */}
+      <div className="mb-16 sm:mb-20 space-y-8">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Коробки с аксессуарами
+          </h2>
+          <p className="mt-1 text-sm text-neutral-400">
+            Уникальные головные уборы и 3D-аксессуары для вашего персонажа на сервере.
+          </p>
+        </div>
+
+        {/* 1. Classic Box (17 Hats) */}
         <div className="rounded-3xl p-6 sm:p-10 bg-neutral-900/60 border border-white/10 relative overflow-hidden shadow-2xl">
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left: Box Image with View Contents Trigger */}
@@ -248,7 +289,7 @@ export const Store: React.FC = () => {
               <div
                 onClick={() => {
                   setBoxContentsFilter('all');
-                  setIsBoxContentsOpen(true);
+                  setActiveBoxModal('classic');
                 }}
                 className="relative group cursor-pointer"
                 title="Нажмите, чтобы посмотреть содержимое коробки (17 аксессуаров)"
@@ -265,7 +306,7 @@ export const Store: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setBoxContentsFilter('all');
-                    setIsBoxContentsOpen(true);
+                    setActiveBoxModal('classic');
                   }}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700 hover:border-neutral-500 text-neutral-200 hover:text-white text-xs font-semibold shadow-md transition-all active:scale-95 group"
                 >
@@ -283,7 +324,7 @@ export const Store: React.FC = () => {
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-800 text-neutral-300 text-xs font-semibold uppercase tracking-wider">
                   <Package className="w-3.5 h-3.5 text-white" />
-                  <span>Кейс с аксессуарами</span>
+                  <span>Классический кейс</span>
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
                   Коробка со шляпой
@@ -293,7 +334,7 @@ export const Store: React.FC = () => {
                 </p>
               </div>
 
-              {/* Rarity Chances (Clean Neutral Styling with quick filter view) */}
+              {/* Rarity Chances */}
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
@@ -303,7 +344,7 @@ export const Store: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setBoxContentsFilter('all');
-                      setIsBoxContentsOpen(true);
+                      setActiveBoxModal('classic');
                     }}
                     className="text-xs text-neutral-400 hover:text-white transition-colors underline underline-offset-2 flex items-center gap-1"
                   >
@@ -317,10 +358,9 @@ export const Store: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setBoxContentsFilter('common');
-                      setIsBoxContentsOpen(true);
+                      setActiveBoxModal('classic');
                     }}
                     className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
-                    title="Нажмите, чтобы просмотреть 7 базовых шляп"
                   >
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block group-hover:text-neutral-300">Базовая</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">70%</span>
@@ -331,10 +371,9 @@ export const Store: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setBoxContentsFilter('rare');
-                      setIsBoxContentsOpen(true);
+                      setActiveBoxModal('classic');
                     }}
                     className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
-                    title="Нажмите, чтобы просмотреть 7 редких шляп"
                   >
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block group-hover:text-neutral-300">Редкая</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">25%</span>
@@ -345,10 +384,9 @@ export const Store: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setBoxContentsFilter('legendary');
-                      setIsBoxContentsOpen(true);
+                      setActiveBoxModal('classic');
                     }}
                     className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
-                    title="Нажмите, чтобы просмотреть 3 легендарных аксессуара"
                   >
                     <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-300 block group-hover:text-white">Легендарная</span>
                     <span className="text-lg sm:text-xl font-black text-white font-mono">5%</span>
@@ -424,7 +462,7 @@ export const Store: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setBoxContentsFilter('all');
-                      setIsBoxContentsOpen(true);
+                      setActiveBoxModal('classic');
                     }}
                     className="py-3.5 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white font-semibold text-xs transition-all border border-neutral-700 hover:border-neutral-600 flex items-center justify-center gap-2 active:scale-[0.99] whitespace-nowrap"
                     title="Посмотреть все 17 предметов в коробке"
@@ -440,6 +478,216 @@ export const Store: React.FC = () => {
                     <ShoppingBag className="w-4 h-4" />
                     <span>
                       Купить {boxQuantity > 1 ? `${boxQuantity} коробок` : 'коробку'} ({hatBoxPrice * boxQuantity} ₽)
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Author Box (26 Custom Hats) */}
+        <div className="rounded-3xl p-6 sm:p-10 bg-neutral-900/60 border border-amber-500/30 relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left: Author Box Image */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center text-center">
+              <div
+                onClick={() => {
+                  setBoxContentsFilter('all');
+                  setActiveBoxModal('author');
+                }}
+                className="relative group cursor-pointer"
+                title="Нажмите, чтобы посмотреть авторские шапки (26 предметов)"
+              >
+                <img
+                  src={`${(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')}/elite_box.png`}
+                  alt="Коробка с авторскими шапками"
+                  className="relative w-60 sm:w-68 h-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-200"
+                />
+              </div>
+
+              <div className="flex flex-col items-center gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBoxContentsFilter('all');
+                    setActiveBoxModal('author');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-amber-500/40 hover:border-amber-400 text-amber-200 hover:text-white text-xs font-semibold shadow-md transition-all active:scale-95 group"
+                >
+                  <Eye className="w-3.5 h-3.5 text-amber-300 group-hover:text-white transition-colors" />
+                  <span>Посмотреть авторские шапки (26 шт.)</span>
+                </button>
+                <span className="text-[11px] text-neutral-500 font-mono">
+                  {authorHatBoxPrice * authorBoxQuantity} ₽ / {authorBoxQuantity} шт.
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Info, Drop Rates, Action Buttons */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
+                  <Star className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Эксклюзивные авторские шапки</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                  Коробка с авторскими шапками
+                </h2>
+                <p className="text-sm text-neutral-400 leading-relaxed max-w-xl">
+                  Эксклюзивная коллекция из 26 авторских моделей сервера: анимированные нимбы, Солнечная система, Кот в шляпе, рога, лавровый венок и стильные маски.
+                </p>
+              </div>
+
+              {/* Rarity Chances */}
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+                    Шансы выпадения:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('all');
+                      setActiveBoxModal('author');
+                    }}
+                    className="text-xs text-amber-300/80 hover:text-amber-200 transition-colors underline underline-offset-2 flex items-center gap-1"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Посмотреть все 26 предметов</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('common');
+                      setActiveBoxModal('author');
+                    }}
+                    className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
+                    title="Нажмите, чтобы просмотреть 14 базовых авторских шапок"
+                  >
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block group-hover:text-neutral-300">Базовая</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">70%</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">14 моделей (~5.0%)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('rare');
+                      setActiveBoxModal('author');
+                    }}
+                    className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-center transition-all cursor-pointer group"
+                    title="Нажмите, чтобы просмотреть 8 редких авторских шапок"
+                  >
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-neutral-400 block group-hover:text-neutral-300">Редкая</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">25%</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">8 моделей (~3.1%)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('legendary');
+                      setActiveBoxModal('author');
+                    }}
+                    className="p-3 rounded-2xl bg-neutral-950/60 hover:bg-neutral-900 border border-amber-500/40 hover:border-amber-400 text-center transition-all cursor-pointer group"
+                    title="Нажмите, чтобы просмотреть 4 легендарных предмета"
+                  >
+                    <span className="text-[10px] sm:text-xs font-bold uppercase text-amber-300 block group-hover:text-white">Легендарная</span>
+                    <span className="text-lg sm:text-xl font-black text-white font-mono">5%</span>
+                    <span className="text-[10px] text-neutral-500 block mt-0.5">Нимб, Космос, Кот</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quantity selector for author box */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-neutral-950/60 border border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-neutral-400">Количество:</span>
+                  <span className="text-xs font-mono font-bold text-white">
+                    {authorBoxQuantity} шт. • {authorHatBoxPrice * authorBoxQuantity} ₽
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center rounded-xl bg-neutral-900 border border-neutral-800 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setAuthorBoxQuantity((q) => Math.max(1, q - 1))}
+                      disabled={authorBoxQuantity <= 1}
+                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      title="Уменьшить"
+                    >
+                      -
+                    </button>
+                    <span className="px-3 text-xs font-mono font-black text-white min-w-[32px] text-center">
+                      {authorBoxQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAuthorBoxQuantity((q) => Math.min(50, q + 1))}
+                      disabled={authorBoxQuantity >= 50}
+                      className="w-8 h-8 flex items-center justify-center text-sm font-bold text-white hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      title="Увеличить"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {[1, 3, 5, 10].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setAuthorBoxQuantity(n)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                          authorBoxQuantity === n
+                            ? 'bg-amber-400 text-black shadow-sm'
+                            : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Price and Action Buttons */}
+              <div className="pt-3 border-t border-neutral-800 flex flex-wrap items-center gap-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-4xl font-black text-white font-mono">
+                    {authorHatBoxPrice * authorBoxQuantity} ₽
+                  </span>
+                  <span className="text-xs text-neutral-400 font-medium">/ {authorBoxQuantity} шт.</span>
+                </div>
+
+                <div className="flex items-center gap-3 flex-1 min-w-[280px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBoxContentsFilter('all');
+                      setActiveBoxModal('author');
+                    }}
+                    className="py-3.5 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-amber-200 hover:text-white font-semibold text-xs transition-all border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-2 active:scale-[0.99] whitespace-nowrap"
+                    title="Посмотреть все 26 авторских аксессуаров"
+                  >
+                    <Eye className="w-4 h-4 text-amber-400" />
+                    <span>Содержимое (26)</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleBuy(authorHatBoxProduct, authorBoxQuantity)}
+                    className="flex-1 py-3.5 px-5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.99] shadow-md"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>
+                      Купить {authorBoxQuantity > 1 ? `${authorBoxQuantity} коробок` : 'коробку'} ({authorHatBoxPrice * authorBoxQuantity} ₽)
                     </span>
                   </button>
                 </div>
@@ -522,13 +770,33 @@ export const Store: React.FC = () => {
         onClose={() => setSelectedPurchaseItem(null)}
       />
 
-      {/* Box Contents Preview Modal */}
+      {/* Box Contents Preview Modals */}
       <BoxContentsModal
-        isOpen={isBoxContentsOpen}
-        onClose={() => setIsBoxContentsOpen(false)}
-        onBuy={() => handleBuy(hatBoxProduct, boxQuantity)}
+        isOpen={activeBoxModal === 'classic'}
+        onClose={() => setActiveBoxModal(null)}
+        onBuy={() => {
+          setActiveBoxModal(null);
+          handleBuy(hatBoxProduct, boxQuantity);
+        }}
         pricePerBox={hatBoxPrice}
         initialFilter={boxContentsFilter}
+        hats={HATS_LIST}
+        boxName="Коробка со шляпой"
+        title="17 классических аксессуаров в коробке"
+      />
+
+      <BoxContentsModal
+        isOpen={activeBoxModal === 'author'}
+        onClose={() => setActiveBoxModal(null)}
+        onBuy={() => {
+          setActiveBoxModal(null);
+          handleBuy(authorHatBoxProduct, authorBoxQuantity);
+        }}
+        pricePerBox={authorHatBoxPrice}
+        initialFilter={boxContentsFilter}
+        hats={AUTHOR_HATS_LIST}
+        boxName="Коробка с авторскими шапками"
+        title="26 авторских аксессуаров в коробке"
       />
     </div>
   );

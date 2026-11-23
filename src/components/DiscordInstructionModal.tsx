@@ -25,11 +25,25 @@ export const DiscordInstructionModal: React.FC<DiscordInstructionModalProps> = (
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'forever'>('forever');
   const [boxQuantity, setBoxQuantity] = useState(1);
   const [copied, setCopied] = useState(false);
+  const [contact, setContact] = useState(() => {
+    try {
+      return localStorage.getItem('gsq_contact') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [nickname, setNickname] = useState(() => {
+    try {
+      return localStorage.getItem('gsq_nickname') || localStorage.getItem('gsq_last_nickname') || '';
+    } catch {
+      return '';
+    }
+  });
 
   if (!item) return null;
 
   const isSub = !!item.isSubscription;
-  const isBox = item.id === 'hat-box' || !!item.isBox;
+  const isBox = item.id === 'hat-box' || item.id === 'author-hat-box' || !!item.isBox || item.name.toLowerCase().includes('коробк');
 
   // Calculate current price & label
   let displayPrice = item.price;
@@ -48,7 +62,16 @@ export const DiscordInstructionModal: React.FC<DiscordInstructionModalProps> = (
     detailLabel = `${boxQuantity} шт.`;
   }
 
-  const ticketText = `Здравствуйте! Хочу приобрести: ${item.name} (${detailLabel} — ${displayPrice} ₽)`;
+  const ticketLines = [
+    `Здравствуйте! Хочу приобрести: ${item.name} (${detailLabel} — ${displayPrice} ₽)`,
+  ];
+  if (nickname.trim()) {
+    ticketLines.push(`Никнейм в игре: ${nickname.trim()}`);
+  }
+  if (contact.trim()) {
+    ticketLines.push(`Контакт для связи: ${contact.trim()}`);
+  }
+  const ticketText = ticketLines.join('\n');
 
   const handleCopy = () => {
     navigator.clipboard.writeText(ticketText);
@@ -147,6 +170,48 @@ export const DiscordInstructionModal: React.FC<DiscordInstructionModalProps> = (
           </div>
         )}
 
+        {/* Contact & Nickname Fields */}
+        <div className="mt-4 p-3.5 rounded-xl bg-neutral-900/90 border border-neutral-800 space-y-3">
+          <div>
+            <label className="text-[11px] font-semibold text-neutral-300 block mb-1.5 flex items-center justify-between">
+              <span>Контакт для связи:</span>
+              <span className="text-[10px] text-neutral-500 font-normal">Telegram или Email</span>
+            </label>
+            <input
+              type="text"
+              value={contact}
+              onChange={(e) => {
+                setContact(e.target.value);
+                try {
+                  localStorage.setItem('gsq_contact', e.target.value);
+                } catch {}
+              }}
+              placeholder="@username в TG или почта (куда написать)"
+              className="w-full px-3 py-2 rounded-lg bg-black/60 border border-neutral-700 focus:border-white/50 focus:outline-none text-xs text-white placeholder-neutral-500 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-semibold text-neutral-300 block mb-1.5 flex items-center justify-between">
+              <span>Игровой никнейм:</span>
+              <span className="text-[10px] text-neutral-500 font-normal">Minecraft</span>
+            </label>
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => {
+                setNickname(e.target.value);
+                try {
+                  localStorage.setItem('gsq_nickname', e.target.value);
+                  localStorage.setItem('gsq_last_nickname', e.target.value);
+                } catch {}
+              }}
+              placeholder="Ваш ник на сервере"
+              className="w-full px-3 py-2 rounded-lg bg-black/60 border border-neutral-700 focus:border-white/50 focus:outline-none text-xs text-white placeholder-neutral-500 transition-colors"
+            />
+          </div>
+        </div>
+
         {/* Instructions */}
         <div className="mt-5 space-y-2.5">
           <p className="text-[11px] uppercase tracking-wider font-bold text-neutral-400">
@@ -168,7 +233,9 @@ export const DiscordInstructionModal: React.FC<DiscordInstructionModalProps> = (
                 2
               </span>
               <p className="leading-relaxed">
-                Укажите товар, который хотите приобрести: <span className="text-white font-semibold">{item.name}</span> ({detailLabel}).
+                Укажите товар: <span className="text-white font-semibold">{item.name}</span> ({detailLabel})
+                {nickname.trim() && <>, ник: <span className="text-white font-semibold">{nickname.trim()}</span></>}
+                {contact.trim() && <>, контакт: <span className="text-white font-semibold">{contact.trim()}</span></>}.
               </p>
             </div>
 

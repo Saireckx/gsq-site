@@ -241,6 +241,28 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
       'Моментальное открытие и примерка',
     ],
   },
+  {
+    id: 'author-hat-box',
+    numericId: 1060516,
+    name: 'Коробка с авторскими шапками',
+    price: 79,
+    oldPrice: 119,
+    period: '1 шт.',
+    type: 'Рулетка',
+    command: 'box give {user} elite_crate 1',
+    description: 'Эксклюзивный кейс с 26 авторскими головными уборами, нимбами и масками.',
+    category: 'Кейсы',
+    iconColor: 'gold',
+    hidden: false,
+    offlineAllowed: true,
+    popular: true,
+    features: [
+      '26 уникальных авторских моделей и аксессуаров',
+      'Шанс 5% на легендарные анимации (Нимб вознесения, Солнечная система, Кот в шляпе)',
+      'Шанс 25% на редкие маски, ушки, рога и венок',
+      'Эксклюзивные 3D-модели сервера',
+    ],
+  },
 ];
 
 const LEGACY_MOCK_PROMOS = ['TECH10', 'KOT10', 'CODE20', 'END10', 'GSQ'];
